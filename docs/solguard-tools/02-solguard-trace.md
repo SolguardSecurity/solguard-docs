@@ -77,6 +77,14 @@ El informe JSON anade:
 
 Solo las relaciones `resolved` deben tratarse como evidencia fuerte. Las relaciones `partial` o `unresolved` se conservan como preguntas de revision y no se introducen como llamadas confirmadas en `call_trace`.
 
+### Hardening v0.9.1
+
+El hardening v0.9.1 mantiene `schema_version: "trace.v0.9"` y anade `tool_version`, `hardening_revision`, `input_capabilities`, `consumed_capabilities` y `output_capabilities`. Esto permite distinguir que ofrecio MAP, que uso TRACE y que produjo finalmente el informe.
+
+`semantic_findings` deja de ser una lista plana de sospechas. Cada finding incluye `status`, `semantic_rule_id`, `rule_version`, `fingerprint`, superficies separadas (`root_cause_surface`, `trigger_surface`, `impact_surface`), `evidence_chain`, evidencia de soporte, evidencia contradictoria, `missing_evidence` y confidence objects. TRACE puede emitir `signal`, `candidate`, `supported` o `review_required`; `validated` y `refuted` quedan reservados para `solguard-validate`.
+
+La promocion es conservadora: un finding `supported` requiere fuente primaria no heuristica, cadena causal suficiente y pasos resueltos. Evidencia heuristic-only solo puede producir `signal` o `review_required`, y relaciones `partial` o `unresolved` bajan confianza o fuerzan revision en vez de convertirse en llamadas confirmadas.
+
 ## Batch mode como paquete de revisión
 
 El modo batch no es solo un bucle sobre targets. La propia CLI aclara que `--top` representa un presupuesto de trazado y no un recorte bruto. El objetivo es mantener diversidad por lenguaje y componente, evitando que un único clúster de alta señal expulse superficies relevantes de otras capas del sistema, como relayers TypeScript, consenso Go o ejecución C++.
