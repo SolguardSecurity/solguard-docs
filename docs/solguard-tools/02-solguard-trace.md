@@ -58,6 +58,25 @@ La herramienta busca especialmente fronteras entre guardias y efectos, estados m
 
 En el caso multi-lenguaje, parte de esta detección es genérica y depende del texto y del contexto del mapa. En Solidity, la profundidad semántica es mayor porque la herramienta puede apoyarse más en la estructura sintáctica del código fuente.
 
+## Consumo de rutas cross-component
+
+Desde `trace.v0.8`, `solguard-trace` consume las colecciones `cross_component_links` y `cross_component_paths` emitidas por `solguard-map`. La herramienta no duplica parsers para esta capa: trata el mapa como fuente de verdad estructural y traduce las rutas `resolved` en `assembled_paths`.
+
+Las relaciones `partial` y `unresolved` se mantienen como evidencia y preguntas de revisión. No se incorporan como llamadas confirmadas ni como paths fuertes. Esto permite revisar eventos, RPC, queues, base de datos y configuración entre componentes sin convertir señales incompletas en comportamiento probado.
+
+## Contexto semantico v0.9
+
+Desde `trace.v0.9`, `solguard-trace` consume la capa `audit_map.v0.9` sin crear parsers propios. MAP sigue siendo la fuente de verdad para `semantic_contexts`, `context_couplings`, `identity_schemas` y `atomicity_boundaries`; TRACE evalua esos datos contra el target y los convierte en checks estructurados.
+
+El informe JSON anade:
+
+- `semantic_context_flows`, para relaciones como cache/persistent o guard/effect con temporalidad simbolica.
+- `identity_completeness`, para dedupe/cache/context keys con campos observados, esperados y faltantes.
+- `atomicity_checks`, para garantias de rollback/transaction/queue ack/compensacion.
+- `semantic_findings`, con causa diferenciada: `missing_identity_field`, `stale_context_candidate`, `cache_persistent_divergence`, `rollback_gap` u `ordering_gap`.
+
+Solo las relaciones `resolved` deben tratarse como evidencia fuerte. Las relaciones `partial` o `unresolved` se conservan como preguntas de revision y no se introducen como llamadas confirmadas en `call_trace`.
+
 ## Batch mode como paquete de revisión
 
 El modo batch no es solo un bucle sobre targets. La propia CLI aclara que `--top` representa un presupuesto de trazado y no un recorte bruto. El objetivo es mantener diversidad por lenguaje y componente, evitando que un único clúster de alta señal expulse superficies relevantes de otras capas del sistema, como relayers TypeScript, consenso Go o ejecución C++.
