@@ -60,6 +60,27 @@ Esa clasificación es una decisión de producto importante porque condiciona qu�
 
 `audit_map.json` es el artefacto más importante para el resto del ecosistema. `solguard-trace` y `solguard-diff` pueden enriquecer su razonamiento con contexto procedente de este archivo, y `solguard-backend` lo usa como entrada estructural del pipeline de análisis.
 
+## Relaciones cross-component
+
+Desde `audit_map.v0.8`, `solguard-map` no solo emite aristas locales en `graph_edges`. También normaliza recursos compartidos y construye relaciones productor-consumidor entre componentes. Esta capa cubre eventos on-chain y off-chain, llamadas RPC/HTTP, queues, lecturas/escrituras de base de datos y configuración producida o consumida por el código.
+
+El contrato mantiene `graph_edges` como hechos atómicos y añade dos colecciones de mayor nivel: `cross_component_links`, que empareja productor y consumidor sobre un recurso normalizado, y `cross_component_paths`, que agrupa esos enlaces en rutas de revisión consumibles por `solguard-trace`.
+
+Cada enlace conserva `resolution`, `confidence`, `evidence_ids`, `resource_kind`, `resource_name` y `resource_key`. Una relación `resolved` requiere clave exacta y roles opuestos claros; `partial` y `unresolved` se exportan como evidencia de revisión, no como comportamiento confirmado.
+
+## Contexto semantico v0.9
+
+Desde `audit_map.v0.9`, `solguard-map` anade una capa de semantic context tracking. Esta capa sigue siendo conservadora: no intenta ejecutar data-flow interprocedural completo, sino normalizar senales que antes quedaban repartidas entre tags, risk patterns y evidencia textual.
+
+El mapa exporta cuatro colecciones aditivas:
+
+- `semantic_contexts`, con dimensiones como `epoch`, `version`, `domain`, `session`, `fork`, `route`, `validator_set` y `checkpoint`.
+- `context_couplings`, con enlaces cache/persistent, guard/effect, producer/consumer y config/code, incluyendo temporalidad simbolica (`captured_at`, `validated_at`, `consumed_at`, `invalidated_by`).
+- `identity_schemas`, con campos observados, campos esperados con procedencia y campos faltantes para dedupe/cache/context keys.
+- `atomicity_boundaries`, con garantias `atomic`, `rollback_guaranteed`, `rollback_partial`, `compensated`, `non_atomic` o `unknown`.
+
+Los campos economicos o de identidad (`nonce`, `payload_hash`, `sender`, `recipient`, `amount`, `emitter`, `chain_id`) no se mezclan con las dimensiones de contexto. Cuando un campo aparece en `expected_fields`, debe explicar su `source`, `confidence_score` y `evidence_ids`. Los defaults DTL solo se aplican si el mapa observa contexto suficiente, por ejemplo un flujo route/domain/message.
+
 ## Relación con el resto del stack
 
 Dentro del ecosistema Solguard, `solguard-map` es la herramienta que responde qué existe en el objetivo y por dónde conviene empezar. No valida hipótesis ni analiza cambios históricos. Su papel es establecer el espacio de revisión: componentes, entrypoints, dependencias, estados, flujos y superficies críticas. Por eso suele ser la primera herramienta determinista en ejecutarse cuando el backend prepara un análisis completo.
