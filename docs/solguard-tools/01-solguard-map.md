@@ -81,6 +81,12 @@ El mapa exporta cuatro colecciones aditivas:
 
 Los campos economicos o de identidad (`nonce`, `payload_hash`, `sender`, `recipient`, `amount`, `emitter`, `chain_id`) no se mezclan con las dimensiones de contexto. Cuando un campo aparece en `expected_fields`, debe explicar su `source`, `confidence_score` y `evidence_ids`. Los defaults DTL solo se aplican si el mapa observa contexto suficiente, por ejemplo un flujo route/domain/message.
 
+### Hardening v0.9.1
+
+El hardening v0.9.1 mantiene `schema_version: "audit_map.v0.9"` y anade metadatos aditivos: `tool_version`, `hardening_revision` y `source_capabilities`. La intencion es separar version de esquema y version de herramienta; los consumidores antiguos pueden ignorar estos campos, mientras que `solguard-trace` puede saber que capacidades ofrecio realmente el mapa.
+
+`source_capabilities` describe senales disponibles en el artefacto, por ejemplo `graph_edges`, `cross_component_links`, `semantic_context_tracking`, `identity_schemas` o `atomicity_boundaries`. No sustituye a la evidencia concreta: cada conclusion debe seguir referenciando `evidence_ids`, `resolution` y `confidence_score`.
+
 ## Relación con el resto del stack
 
 Dentro del ecosistema Solguard, `solguard-map` es la herramienta que responde qué existe en el objetivo y por dónde conviene empezar. No valida hipótesis ni analiza cambios históricos. Su papel es establecer el espacio de revisión: componentes, entrypoints, dependencias, estados, flujos y superficies críticas. Por eso suele ser la primera herramienta determinista en ejecutarse cuando el backend prepara un análisis completo.
