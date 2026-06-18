@@ -8,3 +8,5 @@ Documentación técnica de las herramientas deterministas de Solguard y de la cr
 2. [Solguard Trace](./02-solguard-trace.md)
 3. [Solguard Diff](./03-solguard-diff.md)
 4. [Solguard Core](./04-solguard-core.md)
+5. [Solguard Invariant](./05-solguard-invariant.md)
+6. [Solguard Validate](./06-solguard-validate.md)
