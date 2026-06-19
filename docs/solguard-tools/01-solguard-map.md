@@ -83,6 +83,42 @@ Cada arista conserva archivo, línea, evidencia, confianza y resolución. `resol
 
 Además de `audit_map.json`, MAP exporta `graph_symbols.csv`, `graph_edges.csv` y un `call_graph.dot` que incluye todas las relaciones interprocedurales.
 
+## Modelo de estado y transiciones de v0.8.0
+
+La Fase 2 añade dos colecciones autoritativas: `state_machines` y `state_transitions`. La primera agrupa el ciclo observado para una variable o campo; la segunda conserva cada cambio localizado en código.
+
+El vocabulario temporal normalizado es:
+
+```text
+created
+pending
+queued
+active
+cancelled
+expired
+executed
+settled
+claimed
+```
+
+Cada transición representa exactamente:
+
+```text
+state_before
+operation
+state_after
+guard
+writer
+reader
+consumer
+```
+
+La IR también conserva `machine_id`, `state_symbol_id`, componente, archivo, línea, resolución, confianza y evidencia. `guard`, `reader` y `consumer` son colecciones porque una transición puede depender de varias condiciones o alimentar varios sinks.
+
+MAP resuelve el estado anterior desde guards como `require`, `assert`, `if`, `match` o `ensure!`. Cuando no existe un guard explícito, puede conservar el predecesor convencional como relación `partial`; no lo presenta como hecho demostrado. Los consumers se derivan de lectores que ejecutan mensajes, mueven valor, realizan llamadas externas o materializan operaciones como execute, settle, finalize y claim.
+
+Los artefactos tabulares son `state_machines.csv` y `state_transitions.csv`. `state_graph.dot` incorpora las transiciones junto a las lecturas y escrituras de storage.
+
 ## Relaciones cross-component
 
 Desde `audit_map.v0.8`, `solguard-map` no solo emite aristas locales en `graph_edges`. También normaliza recursos compartidos y construye relaciones productor-consumidor entre componentes. Esta capa cubre eventos on-chain y off-chain, llamadas RPC/HTTP, queues, lecturas/escrituras de base de datos y configuración producida o consumida por el código.
