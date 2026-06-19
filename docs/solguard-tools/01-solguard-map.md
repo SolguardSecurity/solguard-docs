@@ -119,6 +119,35 @@ MAP resuelve el estado anterior desde guards como `require`, `assert`, `if`, `ma
 
 Los artefactos tabulares son `state_machines.csv` y `state_transitions.csv`. `state_graph.dot` incorpora las transiciones junto a las lecturas y escrituras de storage.
 
+## Modelo de flujo económico de v0.8.0
+
+La Fase 3 incorpora una IR económica con cuatro colecciones:
+
+- `economic_values`, para magnitudes tipadas y su papel en el flujo;
+- `economic_operations`, para efectos económicos localizados;
+- `economic_value_links`, para bindings entre argumentos y parámetros interprocedurales;
+- `economic_flows`, para rutas ordenadas desde entrypoints.
+
+Las métricas cubiertas son balances, assets, shares, supply, debt, collateral, rewards, fees, exchange rates y cantidades. Los roles distinguen `requested_amount`, `transferred_amount`, `balance_before`, `balance_after`, `actual_balance_delta`, `actual_received_amount`, `accounting_value`, `mint_burn_amount` y `settlement_amount`.
+
+La propagación normalizada es:
+
+```text
+input_amount
+-> transfer
+-> balance_snapshot
+-> actual_balance_delta
+-> accounting_update
+-> mint/burn
+-> settlement
+```
+
+Cada operación conserva valores de entrada y salida, símbolo, componente, expresión, asset, amount, archivo, línea, resolución, confianza y evidencia. Las llamadas internas resueltas por el grafo interprocedural generan enlaces `argument_binding`, de modo que un `actualReceived` calculado en el entrypoint puede alcanzar accounting o mint dentro de helpers.
+
+`economic_flows` diferencia las cantidades solicitadas, transferidas y realmente recibidas, enumera targets contables y publica `missing_stages`. Solo una ruta con todas las etapas observadas y operaciones resueltas queda `resolved`; las demás permanecen `partial` sin producir un verdict de vulnerabilidad.
+
+Los artefactos añadidos son `economic_values.csv`, `economic_operations.csv`, `economic_value_links.csv`, `economic_flows.csv`, `economic_flow_steps.csv` y `economic_graph.dot`.
+
 ## Relaciones cross-component
 
 Desde `audit_map.v0.8`, `solguard-map` no solo emite aristas locales en `graph_edges`. También normaliza recursos compartidos y construye relaciones productor-consumidor entre componentes. Esta capa cubre eventos on-chain y off-chain, llamadas RPC/HTTP, queues, lecturas/escrituras de base de datos y configuración producida o consumida por el código.
