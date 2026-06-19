@@ -148,6 +148,49 @@ Cada operación conserva valores de entrada y salida, símbolo, componente, expr
 
 Los artefactos añadidos son `economic_values.csv`, `economic_operations.csv`, `economic_value_links.csv`, `economic_flows.csv`, `economic_flow_steps.csv` y `economic_graph.dot`.
 
+## Modelo de dependencias externas de v0.8.0
+
+La Fase 4 añade `external_dependency_contracts` y `dependency_assumptions`. Una dependencia deja de ser únicamente un nombre o risk tag: pasa a declarar qué comportamiento consume el protocolo y cuál es la consecuencia si ese comportamiento no se cumple.
+
+Las clases específicas son:
+
+```text
+non_standard_erc20
+fee_on_transfer
+rebasing_token
+erc777_callback
+oracle
+dex
+bridge
+messenger
+external_vault
+hook
+signature_verification
+validator_set
+```
+
+Las dependencias que no pertenecen a estas familias usan `generic_external`, con assumptions de disponibilidad y validación del trust boundary.
+
+Cada contrato contiene identidad, componente, símbolos de dependencia, clases, consumers, call edges, assumptions, resolución, confianza y evidencia. Cada assumption contiene:
+
+```text
+assumption
+expected_behavior
+failure_condition
+failure_effect
+status
+affected_symbols
+resolution
+confidence
+evidence_ids
+```
+
+`status` distingue `enforced`, `observed` y `unverified`. Esta clasificación describe evidencia estática; `unverified` no equivale a vulnerabilidad y `enforced` no demuestra que la protección sea completa en runtime.
+
+La clasificación se basa en el target y callsite de cada dependencia. La evaluación de protecciones usa ventanas locales y la cabecera del consumer, evitando contaminar un oracle con la semántica de un DEX, bridge o hook utilizado por la misma función.
+
+Los artefactos son `external_dependency_contracts.csv`, `dependency_assumptions.csv` y `external_dependency_graph.dot`.
+
 ## Relaciones cross-component
 
 Desde `audit_map.v0.8`, `solguard-map` no solo emite aristas locales en `graph_edges`. También normaliza recursos compartidos y construye relaciones productor-consumidor entre componentes. Esta capa cubre eventos on-chain y off-chain, llamadas RPC/HTTP, queues, lecturas/escrituras de base de datos y configuración producida o consumida por el código.
