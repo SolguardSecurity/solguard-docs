@@ -1,49 +1,226 @@
-# Motor de Análisis y Orquestación
+# 07. Motor de Analisis y Orquestacion
 
-El motor de análisis es la pieza más compleja de `solguard-backend`. Su implementación está concentrada en `src/services/analyzer/runtime.rs` y representa la transición desde un backend administrativo a un backend de auditoría asistida.
+El analisis se ejecuta desde `services/analyzer/runtime.rs`. Cada ejecucion crea
+o reutiliza el proyecto, resuelve el target, limpia directorios generados de
+fases, crea un `PipelineJournal` y avanza en orden estricto.
 
-## Entrada del análisis
+## Orden de fases
 
-La operación de análisis recibe dos datos: nombre de proyecto y objetivo. El objetivo puede ser una ruta local, un archivo `.zip` o un repositorio Git remoto. A partir de ahí, el backend resuelve el código fuente real sobre el que trabajará.
+El orden esta fijado en `services/pipeline.rs`:
 
-Si el objetivo es una carpeta, usa esa carpeta directamente. Si es un ZIP, lo extrae dentro del workspace del proyecto y trata de detectar una raíz única. Si es un repositorio remoto, ejecuta `git clone` dentro de `project/source/repo`. Esta resolución convierte entradas heterogéneas en una misma abstracción operativa: un `source_dir`.
+```text
+map
+diff
+trace
+discover
+economic
+invariant
+candidates
+validate
+historical-enrichment
+impact
+poc-plan
+report
+```
 
-## Preparación del workspace
+`PipelineJournal::begin` rechaza fases fuera de orden. Cada fase escribe un
+`phase.json` y el resumen global queda en:
 
-Antes de ejecutar herramientas, el backend garantiza que exista el proyecto y prepara una estructura persistente con varios subdirectorios: `tool-outputs/map`, `tool-outputs/trace`, `tool-outputs/diff` y `knowledge`. También inicializa `analysis_log.md`, que registra el progreso textual del pipeline.
+```text
+<project>/tool-outputs/pipeline.json
+```
 
-Este enfoque tiene una consecuencia importante: el análisis no devuelve resultados efímeros en memoria, sino un expediente de auditoría local persistente que puede inspeccionarse y reutilizarse después.
+## Estados de fase
 
-## Guardas de coherencia
+Estados posibles:
 
-El motor contiene una verificación específica para detectar desalineación entre la etiqueta del proyecto y el repositorio resuelto, al menos en la distinción DeFi frente a DTL. Si el proyecto se presenta como DeFi pero el target resuelve a un repositorio DTL, o viceversa, el pipeline marca la ejecución como inválida y genera artefactos explicando la inconsistencia.
+- `completed`: fase ejecutada y outputs esperados presentes.
+- `degraded`: ejecucion exitosa pero salida detectada como degradada.
+- `completed_with_errors`: ejecucion termino con error registrable.
+- `fallback`: el backend genero salida fallback para mantener trazabilidad.
+- `skipped`: fase no ejecutada o marcada como omitida.
 
-Esta guarda no prueba corrección funcional del objetivo, pero evita un error operativo frecuente: correr el análisis de una familia sobre una muestra de otra familia.
+Estos estados son diagnostico, no finding. El veredicto de seguridad vive en
+`validation_results.json`.
 
-## Ejecución de herramientas deterministas
+## Fases
 
-La primera fase sustantiva del pipeline es la ejecución de `solguard-map`, `solguard-trace` y `solguard-diff`. `map` se ejecuta primero porque genera el `audit_map.json` que puede alimentar a `trace`. `trace` depende de ese mapa cuando está disponible. `diff` se ejecuta únicamente si el objetivo resuelto es un repositorio Git, ya que necesita historial de cambios.
+### `map`
 
-Cada herramienta produce un `ToolRun` con nombre, éxito, código de salida y extractos compactados de `stdout` y `stderr`. Estos resultados se almacenan tanto en la respuesta HTTP como en el log persistido.
+Construye mapa de codigo. Usa `solguard-map` con `--graph --no-color`. Para
+repos grandes de mas de `150` archivos fuente soportados usa `--fast`; si
+`--deep` excede su ventana acotada, reintenta `--fast` y registra degradacion.
 
-## Recuperación de conocimiento contextual
+### `diff`
 
-Tras ejecutar las herramientas, el backend construye una consulta de recuperación derivada de múltiples fuentes: nombre de proyecto, target original, contenido estructurado de `audit_map.json`, señales de los trazados y pistas de cambios recientes. Esa consulta se usa para pedir a `knowledge` un contexto enriquecido.
+Construye contexto de cambios cuando aplica. Sus salidas alimentan candidatos,
+pero no son requisito suficiente para validar un finding.
 
-La metadata de recuperación se escribe en `knowledge/retrieved_patterns.json`, mientras que el bloque textual se persiste en `knowledge/similar_findings.md`. De este modo, la fase de retrieval deja rastro explícito dentro del expediente del proyecto.
+### `trace`
 
-## Generación de hipótesis
+Ejecuta `solguard-trace` sobre targets priorizados. Los limites se configuran con
+`SOLGUARD_TRACE_MAX_TARGETS` y `SOLGUARD_TRACE_MAX_DEPTH`.
 
-Con los outputs deterministas y el contexto de conocimiento listos, el motor genera semillas de hipótesis. Estas semillas son construcciones estructuradas derivadas de evidencia estable en `trace` y `diff`, no ocurrencias libres del modelo.
+### `discover`
 
-Después se construye un briefing compartido para el modelo y se llama al servicio interno para producir dos artefactos: `hypothesis.md` y `rejected_hypotheses.md`. El primero amplía hipótesis plausibles; el segundo recoge refutaciones o hipótesis descartadas durante la fase adversarial.
+Ejecuta `solguard-discover` y produce:
 
-## Finalización y findings
+```text
+tool-outputs/discover/protocol_model.json
+tool-outputs/discover/index.json
+```
 
-El archivo `findings.md` no se construye como una simple salida libre del modelo. El runtime actual deja explícito que el pase dedicado de findings con LLM se omite y que los candidatos se renderizan mediante reglas de promoción deterministas. Esto es una decisión de arquitectura importante: el modelo ayuda en hipótesis y contraste, pero los borradores de findings se derivan desde reglas controladas por el backend.
+Modela superficies, rutas, gaps, capacidades y hipotesis blind del protocolo.
+Sus hipotesis pueden entrar en candidatos con
+`primary_evidence_source = protocol_invariant_discovery` si tienen evidencia
+estructurada suficiente.
 
-Finalmente, el sistema genera `validation_plan.md`, que convierte los artefactos previos en una guía operativa de validación manual.
+### `economic`
 
-## Artefactos persistentes
+Ejecuta `solguard-economic` y produce:
 
-El resultado del análisis queda repartido en varios archivos: outputs de `map`, `trace` y `diff`, metadata de recuperación, findings similares, semillas de hipótesis, hipótesis promovidas, rechazos, borradores de findings, plan de validación y log de análisis. Esta colección constituye la unidad documental real del backend cuando actúa como orquestador de auditoría.
+```text
+tool-outputs/economic/economic_model.json
+tool-outputs/economic/synthesized_invariants.json
+tool-outputs/economic/index.json
+```
+
+Modela activos, shares, deuda, collateral, rewards, fees, oraculos y reservas.
+Puede producir hipotesis con
+`primary_evidence_source = economic_state_discovery`.
+
+### `invariant`
+
+Ejecuta `solguard-invariant` y genera invariantes runtime. Si no hay salida
+completa, el backend crea contratos fallback suficientes para que candidatos y
+VALIDATE expliquen lo que falta.
+
+### `candidates`
+
+Fusiona senales de map, trace, discover, economic, invariant, seeds
+deterministas y model discovery acotado. Escribe:
+
+```text
+tool-outputs/candidates/raw_candidates.json
+tool-outputs/candidates/validation_candidates.json
+tool-outputs/candidates/rejected_candidates.json
+tool-outputs/candidates/model_discovery_packs.json
+tool-outputs/candidates/model_discovery_diagnostics.json
+tool-outputs/candidates/candidate_lifecycle.json
+canonical_candidates.json
+analysis_funnel.json
+```
+
+Reglas importantes:
+
+- Los candidatos con binding incompleto no se borran silenciosamente.
+- Los rechazos conservan etapa, razon, requisitos faltantes y evidencias.
+- `candidate_lifecycle.json` traza la senal fuente hasta admision,
+  canonicalizacion, binding y veredicto.
+- `analysis_funnel.json` resume cobertura, senales, invariantes, candidatos,
+  rechazos y resultados.
+
+### `validate`
+
+Ejecuta `solguard-validate` o genera inconclusiones fallback cuando el runtime de
+validacion no esta disponible. Produce:
+
+```text
+tool-outputs/validate/validation_results.json
+tool-outputs/validate/validation_results.md
+```
+
+Este es el contrato autoritativo. Resultados:
+
+- `supported`
+- `refuted`
+- `inconclusive`
+
+Clases de finding:
+
+- `supported_finding`
+- `review_queue`
+- `reviewable_lead`
+- `non_finding`
+
+`findings.md` solo refleja `supported_finding`. `review_queue.md` refleja
+inconclusos y leads.
+
+### `historical-enrichment`
+
+Despues de validar, consulta la base historica con las solicitudes generadas para
+candidatos y veredictos. Escribe:
+
+```text
+tool-outputs/historical-enrichment/historical_enrichment.json
+knowledge/post_candidate_retrieval.json
+```
+
+El runtime calcula el hash de `validation_results.json` antes y comprueba que no
+cambia despues.
+
+### `impact`
+
+Analiza impacto de candidatos validados. Escribe:
+
+```text
+tool-outputs/impact/impact_escalation.json
+tool-outputs/impact/impact_escalation.md
+```
+
+Si falla, crea reporte fallback y marca la fase como `fallback`; no modifica
+veredictos.
+
+### `poc-plan`
+
+Genera planes de PoC y seleccion de harness:
+
+```text
+tool-outputs/poc-plan/poc_plan.json
+tool-outputs/poc-plan/poc_plan.md
+```
+
+Es planificacion, no ejecucion de PoC.
+
+### `report`
+
+Renderiza informes tecnicos para findings soportados:
+
+```text
+reports/<candidate_id>.md
+reports/report_manifest.json
+tool-outputs/report/phase.json
+```
+
+## Salidas raiz del proyecto
+
+Archivos principales en la raiz del proyecto:
+
+- `canonical_candidates.json`
+- `analysis_funnel.json`
+- `hypothesis.md`
+- `rejected_hypotheses.md`
+- `findings.md`
+- `review_queue.md`
+- `validation_plan.md`
+- `analysis_log.md`
+- `profile.json`
+
+## Model discovery
+
+Cuando `SOLGUARD_MODEL_DISCOVERY_BATCHES > 0`, el backend prepara paquetes
+acotados desde evidencia estructurada y llama al servicio interno. Los limites
+actuales incluyen packs compactados y quotas por tipo de evidencia. Los rechazos
+del modelo quedan en `model_discovery_diagnostics.json`; no se pierden.
+
+## Reconstruccion de candidatos
+
+Para depurar sin repetir todo el analisis:
+
+```powershell
+cargo run --bin solguard-backend -- rebuild-candidates "<project-dir>"
+```
+
+Este comando reconstruye candidatos desde artefactos existentes. Es util cuando
+se corrige logica de candidate generation, binding, canonicalizacion o
+diagnosticos.

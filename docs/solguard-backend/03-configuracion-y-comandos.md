@@ -1,45 +1,144 @@
-# Configuración y Comandos
+# 03. Configuracion y Comandos
 
-La configuración de `solguard-backend` está distribuida entre la carga de entorno de Rust y la carga de entorno de Node. Ambos lados comparten variables comunes, pero cada uno las interpreta según su propia responsabilidad operativa.
+La configuracion se divide entre el proceso Rust externo y el proceso Node
+interno. `bun start` es el arranque normal porque levanta primero Node y despues
+el servidor Rust.
 
 ## Variables obligatorias
 
-Hay tres grupos de variables críticas. El primero define la topología local del sistema: `INTERNAL_PORT` y `EXTERNAL_PORT`. El segundo define el cierre de seguridad del plano interno: `INTERNAL_API_KEY`. El tercero define la capa de IA: `OLLAMA_MODEL`, `OLLAMA_HOST` y `OLLAMA_TIMEOUT_MS`. A esto se suma `VERSION`, usada como metadato público y privado del servicio.
+| Variable | Usada por | Descripcion |
+| --- | --- | --- |
+| `INTERNAL_API_KEY` | Rust y Node | Token compartido entre API externa y servicio interno. |
+| `VERSION` | Rust y Node | Version publicada en `/health` e `/info`. |
+| `OLLAMA_MODEL` | Node | Modelo local que usara Ollama. |
 
-Rust además consume rutas y binarios auxiliares: `SOLGUARD_DATABASE_PATH`, `SOLGUARD_DATABASE_CONNECTOR_DIR`, `SOLGUARD_BACKEND_DATA_DIR`, `SOLGUARD_PROJECTS_DIR`, `SOLGUARD_MAP_DIR`, `SOLGUARD_TRACE_DIR`, `SOLGUARD_DIFF_DIR`, `CARGO_BIN`, `GIT_BIN`, `BUN_BIN` y `NODE_BIN`.
+Si alguna obligatoria falta, el proceso que la necesita falla al arrancar.
 
-Si esas variables no se definen, el backend aplica valores por defecto razonables orientados a una instalación de desarrollo local dentro de un workspace donde conviven varios repositorios de Solguard.
+## Puertos y Ollama
 
-## Resolución de configuración en Rust
+| Variable | Default | Descripcion |
+| --- | ---: | --- |
+| `INTERNAL_PORT` | `4000` | Puerto local de Express interno. |
+| `EXTERNAL_PORT` | `5000` | Puerto local de la API Axum. |
+| `OLLAMA_HOST` | `http://127.0.0.1:11434` | Endpoint local de Ollama. |
+| `OLLAMA_TIMEOUT_MS` | `600000` | Timeout de llamadas a Ollama en milisegundos. |
 
-`src/config.rs` construye un objeto `Config` a partir del entorno. Ese objeto no solo guarda puertos y tokens, sino también todas las rutas operativas usadas durante el análisis: ubicación de la base SQLite, directorios de herramientas, carpeta de datos local y workspace de proyectos.
+Ambos servidores escuchan solo en `127.0.0.1`.
 
-La construcción de `Config` también define convenciones importantes. El directorio de proyectos, por ejemplo, por defecto se resuelve a `Documents/Solguard` dentro del perfil del usuario en Windows. Esto hace que el backend gestione su propio workspace fuera del repositorio fuente.
+## Paths del backend
 
-## Resolución de configuración en Node
+| Variable | Default |
+| --- | --- |
+| `SOLGUARD_DATABASE_PATH` | `../solguard-database/data/solguard.sqlite` |
+| `SOLGUARD_DATABASE_CONNECTOR_DIR` | `../solguard-database/apps/db-connector` |
+| `SOLGUARD_BACKEND_DATA_DIR` | `data` |
+| `SOLGUARD_PROJECTS_DIR` | `%USERPROFILE%/Documents/Solguard` |
+| `SOLGUARD_MAP_DIR` | `../solguard-map` |
+| `SOLGUARD_TRACE_DIR` | `../solguard-trace` |
+| `SOLGUARD_DIFF_DIR` | `../solguard-diff` |
+| `SOLGUARD_DISCOVER_DIR` | `../solguard-discover` |
+| `SOLGUARD_ECONOMIC_DIR` | `../solguard-economic` |
+| `SOLGUARD_INVARIANT_DIR` | `../solguard-invariant` |
+| `SOLGUARD_VALIDATE_DIR` | `../solguard-validate` |
 
-La capa Node carga variables desde archivo con `node/utils/env.ts`. En desarrollo intenta leer `.env.development`, `.env.develpment` y `.env`; en producción o test intenta `.env.<modo>` y después `.env`. La lectura es conservadora: si una variable ya existe en `process.env`, no se sobrescribe.
+Los paths relativos se resuelven desde el directorio de trabajo del backend.
 
-Después de cargar el entorno, `readInternalConfig()` valida puertos, timeout, modelo, clave interna y versión. Con ello se evita que el servidor interno arranque en un estado ambiguo.
+## Parametros de analisis
 
-## Comandos de desarrollo
+| Variable | Default | Reglas |
+| --- | ---: | --- |
+| `SOLGUARD_TRACE_MAX_TARGETS` | `192` | Entero positivo. |
+| `SOLGUARD_TRACE_MAX_DEPTH` | `4` | Entero positivo. |
+| `SOLGUARD_MODEL_DISCOVERY_BATCHES` | `5` | Entero no negativo; `0` desactiva llamadas de descubrimiento con modelo. |
+| `SOLGUARD_MODEL_DISCOVERY_TIMEOUT_SECS` | `75` | Entero positivo. |
 
-La base de comandos del backend es simple y está pensada para trabajo local:
+Guards internos actuales:
 
-- `bun install` instala dependencias del plano Node/TypeScript.
-- `bun run fmt` formatea la capa TypeScript con Prettier.
-- `bun run test` compila TypeScript y ejecuta los tests del plano Node.
-- `cargo test` ejecuta los tests del plano Rust.
-- `bun start` arranca el sistema completo, incluyendo Node interno y servidor Rust.
+- Repos con mas de `150` archivos fuente soportados usan `map --fast`.
+- Un `map --deep` que excede su ventana acotada se reintenta con `--fast`.
+- Las fases externas tienen timeouts largos para evitar ejecuciones colgadas,
+  pero el pipeline registra `fallback`, `degraded` o `completed_with_errors`
+  cuando no se obtiene salida completa.
 
-La elección de `bun start` como punto de entrada principal no es accidental. En este diseño, Bun funciona como supervisor liviano del backend híbrido, delegando en `cargo` el arranque del proceso Rust.
+## Binaries configurables
 
-## Binarios y herramientas auxiliares
+| Variable | Default |
+| --- | --- |
+| `CARGO_BIN` | `cargo` |
+| `GIT_BIN` | `git` |
+| `BUN_BIN` | `bun` |
+| `NODE_BIN` | `node` |
 
-El backend depende de herramientas externas dentro del ecosistema Solguard. `cargo` se usa para lanzar `solguard-map`, `solguard-trace` y `solguard-diff` a partir de sus respectivos `Cargo.toml`. `git` se usa para clonar objetivos remotos cuando el análisis apunta a un repositorio URL. `node` se usa para invocar el conector CLI de `solguard-database`. `bun` se usa para compilar dicho conector si todavía no existe su artefacto `dist/cli.js`.
+## Archivos `.env`
 
-Esto implica que la configuración del entorno no solo decide puertos o modelos. También define la capacidad real del backend para completar una ingesta o una ejecución de análisis extremo a extremo.
+Node carga variables sin sobrescribir las ya existentes en el entorno.
 
-## Convención de ejecución
+En desarrollo:
 
-El backend está diseñado para ejecutarse en local, con rutas relativas a repositorios hermanos y con herramientas presentes en la máquina del operador. No hay, por ahora, un modelo desacoplado de despliegue distribuido. La documentación técnica debe leerse bajo esa premisa: `solguard-backend` es una pieza de orquestación local avanzada, no un servicio SaaS remoto.
+```text
+.env.development
+.env.develpment
+.env
+```
+
+En `NODE_ENV=production` o `NODE_ENV=test`:
+
+```text
+.env.production / .env.test
+.env
+```
+
+La variante `.env.develpment` se conserva porque existe en el cargador actual.
+
+## Comandos habituales
+
+Instalar dependencias Node:
+
+```powershell
+bun install
+```
+
+Construir TypeScript:
+
+```powershell
+bun run build
+```
+
+Ejecutar tests Node:
+
+```powershell
+bun run test
+```
+
+Ejecutar tests Rust:
+
+```powershell
+cargo test
+```
+
+Formatear la capa Node/TS del backend:
+
+```powershell
+bun run fmt
+```
+
+Arrancar backend completo:
+
+```powershell
+bun start
+```
+
+Arrancar solo Rust, si el servicio interno ya esta levantado:
+
+```powershell
+cargo run --bin solguard-backend
+```
+
+Reconstruir candidatos desde un proyecto existente:
+
+```powershell
+cargo run --bin solguard-backend -- rebuild-candidates "<project-dir>"
+```
+
+Este ultimo comando no arranca HTTP; imprime el resultado JSON de la
+reconstruccion.

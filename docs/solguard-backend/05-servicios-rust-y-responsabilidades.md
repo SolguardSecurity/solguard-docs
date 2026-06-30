@@ -1,43 +1,160 @@
-# Servicios Rust y Responsabilidades
+# 05. Servicios Rust y Responsabilidades
 
-La mayor parte de la lógica del backend vive en `src/services`. Esta capa es el núcleo operativo real del servidor Rust. Los controladores apenas validan entradas y serializan salidas; la semántica del sistema se concentra en los servicios.
+La carpeta `src/services` concentra la logica de negocio. Los controladores HTTP
+deben mantenerse delgados: validan body/query/path, llaman servicios y traducen
+errores a respuestas JSON.
 
-## `projects`
+## `projects.rs`
 
-El servicio `projects` gestiona el workspace local de auditoría. Su responsabilidad incluye crear el directorio raíz de trabajo, inicializar proyectos concretos, listar proyectos existentes y resolver la ruta estándar de un proyecto a partir de su nombre.
+Gestiona el workspace local:
 
-Una decisión importante de este servicio es la sanitización del nombre del proyecto. Los nombres se normalizan para generar rutas de filesystem estables, evitando que el backend dependa de nombres arbitrarios introducidos por el cliente.
+- crea `SOLGUARD_PROJECTS_DIR`;
+- sanea nombres de proyecto;
+- inicializa `program.json`, `program.md`, `tool-outputs/` y `reports/`;
+- lista proyectos existentes;
+- resuelve rutas de proyecto.
 
-Además, `ensure_project` permite que el pipeline de análisis trabaje con una semántica idempotente: si el proyecto ya existe con `program.json`, se reutiliza; si no existe, se crea automáticamente.
+## `internal_client.rs`
 
-## `internal_client`
+Cliente HTTP del servicio interno Node. Usa `INTERNAL_API_KEY` como bearer o
+header interno y expone:
 
-`internal_client` encapsula toda la comunicación Rust -> Node. Implementa tres operaciones: `health`, `info` y `search`. Cada una firma la petición con `x-internal-api-key` y valida el resultado antes de deserializarlo.
+- health interno;
+- info interno;
+- busqueda con modo `general`, `knowledge` o `hybrid`.
 
-Esta pieza es importante porque concentra la frontera entre el backend determinista y la capa de IA. El resto del sistema no necesita conocer detalles de Express ni de Ollama. Solo conoce un cliente tipado que devuelve estructuras internas bien definidas.
+Los fallos aqui se convierten en error upstream (`502`) desde controladores.
 
-## `knowledge`
+## `knowledge.rs`
 
-El servicio `knowledge` es la puerta de entrada de Rust a `solguard-database`. Trabaja directamente sobre SQLite mediante `rusqlite` y produce dos tipos de salidas: resúmenes agregados de base de datos y contextos de búsqueda enriquecidos para la IA.
+Lee la base SQLite de `solguard-database` para:
 
-Su comportamiento es más rico de lo que parece a primera vista. No se limita a hacer una búsqueda textual. Construye perfiles de recuperación, deriva términos FTS, extrae filtros taxonómicos, selecciona invariantes relevantes y combina hits de findings, chunks y embeddings locales. Además, es capaz de responder directamente a ciertas consultas agregadas sin pasar por el modelo.
+- resumen de conocimiento en `/info`;
+- contexto de busqueda para `/search`;
+- respuestas directas de base de datos en modo `knowledge`;
+- recuperacion historica posterior a candidatos.
 
-Por tanto, `knowledge` funciona como un sistema híbrido de retrieval estructurado y heurístico, pero manteniendo a SQLite y a la taxonomía de findings como base de autoridad.
+La recuperacion historica usada por el analisis ocurre despues de VALIDATE. No
+debe alimentar la decision determinista previa.
 
-## `ingest`
+## `ingest.rs`
 
-`ingest` transforma documentos fuente en payloads compatibles con `solguard-database` y coordina su inserción. Utiliza `solguard_core::ingest_document` para producir un payload normalizado, lo escribe como JSON dentro de `data/payloads` y después invoca el conector CLI de `solguard-database` para insertar ese payload en la base.
+Orquesta la ingesta de informes. Recorre rutas, filtra formatos soportados,
+invoca el conector de `solguard-database` con Bun y devuelve:
 
-Este servicio también resuelve el caso batch. Si la entrada es una carpeta, recorre todos los documentos compatibles, omite `README.md`, acumula éxitos, fallos y archivos omitidos y devuelve un resumen completo.
+- archivos procesados;
+- informes insertados;
+- rutas omitidas;
+- fallos parciales;
+- ruta de base de datos utilizada.
 
-Su papel arquitectónico es relevante porque convierte al backend en puente entre documentación desestructurada y conocimiento estructurado listo para consulta posterior.
+## `analyze.rs`
 
-## `analyze` y `analyzer`
+Fachada publica del analizador. Reexporta tipos (`AnalyzeOutputs`,
+`AnalyzeStatus`, `ToolRun`) y llama al runtime de `services/analyzer`.
 
-`analyze.rs` solo reexporta el motor real, que vive en `services/analyzer`. Este submódulo concentra la lógica más sofisticada del backend: resolución del objetivo, preparación del workspace, ejecución de herramientas externas, recuperación de conocimiento, construcción de semillas de hipótesis, interacción con la IA y escritura de artefactos de salida.
+## `analyzer/runtime.rs`
 
-`runtime.rs` coordina todo el flujo. `support.rs` agrupa utilidades de soporte como extracción de ZIPs, compactado de textos y escritura del log. `types.rs` define el contrato estructural del resultado. `seeds.rs` y `finalizers.rs` convierten evidencia determinista en hipótesis semiestructuradas y, posteriormente, en borradores de findings y material de validación.
+Orquestador principal del pipeline. Responsabilidades:
 
-## Middlewares y observabilidad
+- preparar proyecto y source tree;
+- clonar o resolver el target;
+- ejecutar herramientas externas;
+- registrar cada fase en `PipelineJournal`;
+- construir seeds y candidatos;
+- llamar al modelo para discovery acotado cuando procede;
+- ejecutar VALIDATE;
+- impedir que fases posteriores modifiquen `validation_results.json`;
+- escribir artefactos finales, perfil y logs.
 
-Aunque no están en `services`, los middlewares complementan esta capa. El backend aplica `TraceLayer` para trazas HTTP y un `CorsLayer::permissive()` para evitar fricción en desarrollo. Esto refuerza la idea de que el backend actual está optimizado para uso local y experimentación controlada, no para exposición endurecida a internet pública.
+Tambien contiene guards de runtime como fast-map en repos grandes y reintento de
+`map --deep` con `--fast` cuando excede la ventana acotada.
+
+## `analyzer/types.rs`
+
+Define los contratos serializados de analisis:
+
+- `AnalyzeResult`
+- `AnalyzeStatus`
+- `AnalyzeOutputs`
+- `ToolRun`
+- `AnalysisProfile`
+- estructuras de candidatos canonicos, evidencias, superficies, transiciones,
+  protecciones y diagnosticos.
+
+Cuando se anade un artefacto nuevo que deba ver el cliente, este archivo debe
+actualizarse junto con la documentacion de API.
+
+## `analyzer/validation.rs`
+
+Construye y normaliza `validation_results.json` y su markdown. Sus clases son:
+
+- `supported_finding`: finding soportado y renderizable.
+- `review_queue`: candidato inconcluso que necesita revision.
+- `reviewable_lead`: lead que todavia no esta listo para validacion completa.
+- `non_finding`: candidato refutado o clasificado como no finding.
+
+Tambien genera mirrors seguros:
+
+- `findings.md` solo incluye `supported_finding`.
+- `review_queue.md` conserva lo inconcluso para investigacion manual.
+- `rejected_hypotheses.md` apunta al contrato autoritativo.
+
+## `analyzer/seeds/*`
+
+Familias de patrones deterministas que transforman senales de source/trace/map
+en hipotesis estructuradas. Incluye familias Solidity, Vyper, TypeScript,
+Rust/C++, NFT y patrones de protocolos reales.
+
+Estas semillas no deben emitir texto libre sin evidencia: deben producir
+invariantes, superficies, break conditions, flujo/estado y referencias que
+puedan llegar a VALIDATE.
+
+## `analyzer/bug_family_registry.rs`
+
+Registro de familias de bugs. Sirve para normalizar taxonomia, evitar llaves
+inconsistentes y mantener una relacion trazable entre senales y familias.
+
+## `analyzer/finalizers.rs`
+
+Finaliza candidatos y resultados para mantener contratos estables antes de
+renderizar o exponer salidas.
+
+## `pipeline.rs`
+
+Implementa el journal del pipeline. Enforcea el orden:
+
+```text
+map -> diff -> trace -> discover -> economic -> invariant -> candidates -> validate -> historical-enrichment -> impact -> poc-plan -> report
+```
+
+Estados posibles:
+
+- `completed`
+- `degraded`
+- `completed_with_errors`
+- `fallback`
+- `skipped`
+
+Cada fase escribe su propio `phase.json` y el manifiesto global vive en
+`tool-outputs/pipeline.json`.
+
+## `impact.rs`
+
+Analiza impacto solo despues de tener veredictos. Consume candidatos,
+`validation_results.json`, map y trace. Si falla, genera un reporte fallback sin
+alterar el veredicto determinista.
+
+## `poc_plan.rs`
+
+Genera planes de PoC para candidatos soportados o parcialmente accionables.
+Evalua idoneidad de harnesses como Foundry, Hardhat, Anchor, Rust test,
+fork test e integracion multiproceso. Es planificacion: no ejecuta exploits y no
+modifica veredictos.
+
+## `technical_report.rs`
+
+Renderiza informes tecnicos en `reports/` para findings soportados y un
+`report_manifest.json`. Puede usar texto del modelo en partes redactadas, pero
+los IDs, veredictos, severidad, evidencia y rutas provienen de contratos
+deterministas.

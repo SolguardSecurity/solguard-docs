@@ -1,33 +1,94 @@
-# Arquitectura General
+# 02. Arquitectura General
 
-La arquitectura de `solguard-backend` está dividida en dos planos: un plano externo de API pública implementado en Rust y un plano interno de IA implementado en TypeScript. Ambos procesos se ejecutan localmente y cooperan en una topología sencilla, pero suficientemente expresiva para separar responsabilidades sensibles.
+El backend esta compuesto por dos procesos locales y varias herramientas de
+analisis que se invocan como dependencias de workspace.
 
-## Topología de servicios
+```text
+cliente / runner
+    |
+    v
+Rust HTTP API (Axum, 127.0.0.1:EXTERNAL_PORT)
+    |
+    +-- proyectos, ingesta, busqueda, orquestacion
+    |
+    +-- herramientas locales: map, diff, trace, discover, economic, invariant, validate
+    |
+    +-- SQLite de conocimiento via solguard-database
+    |
+    v
+Node internal API (Express, 127.0.0.1:INTERNAL_PORT)
+    |
+    v
+Ollama local
+```
 
-El servicio externo es un servidor HTTP con Axum. Su punto de entrada es `src/main.rs`, donde se inicializa la configuración, se construye un `InternalClient` para hablar con el servicio interno y se monta el `Router` con middlewares de trazas y CORS. Este servicio escucha en `127.0.0.1` sobre el puerto configurado como `EXTERNAL_PORT`.
+## Proceso Rust externo
 
-El servicio interno se construye en `node/app.ts` como una aplicación Express. Su responsabilidad es exponer una API privada para salud, metadatos del motor de IA y consultas de búsqueda asistida por modelo. Este proceso escucha en `127.0.0.1` sobre `INTERNAL_PORT`.
+El binario `solguard-backend` arranca en `src/main.rs`, carga `Config` desde
+entorno, crea `InternalClient`, registra las rutas de `src/routes/mod.rs` y
+escucha en `127.0.0.1:{EXTERNAL_PORT}`.
 
-El arranque coordinado se hace desde `node/start.ts`. Esa capa arranca primero el servidor interno y después lanza el binario Rust mediante `cargo run --bin solguard-backend`, inyectando las variables de entorno necesarias para que ambos lados compartan la misma configuración base.
+Capas relevantes:
 
-## División por capas
+- `controllers/`: validacion HTTP, serializacion de respuestas y errores.
+- `routes/`: tabla de rutas Axum.
+- `middlewares/`: CORS y trazas HTTP.
+- `services/`: logica de negocio y orquestacion.
+- `config.rs`: variables de entorno, defaults y paths de herramientas.
 
-La capa Rust se organiza en `config`, `routes`, `controllers`, `middlewares` y `services`. Es una separación clásica, pero aquí tiene una utilidad concreta. `config` centraliza la resolución de variables de entorno y rutas del sistema. `routes` declara la superficie HTTP externa. `controllers` implementa el contrato de entrada y salida de cada endpoint. `services` agrupa la lógica operativa: proyectos, conocimiento, ingesta, cliente interno y motor de análisis.
+El mismo binario tambien soporta el subcomando:
 
-La capa TypeScript se divide en `interfaces`, `utils`, `services` y `tests`. `interfaces` define contratos internos de configuración y búsqueda. `utils/env.ts` carga y valida variables de entorno. `services/ollama.ts` abstrae la comunicación con Ollama. `app.ts` monta la API privada y transforma consultas del backend Rust en mensajes de chat concretos.
+```powershell
+cargo run --bin solguard-backend -- rebuild-candidates <project-dir>
+```
 
-## Flujo entre procesos
+Ese modo no levanta servidor; reconstruye candidatos desde artefactos existentes
+y devuelve JSON por stdout.
 
-La interacción entre ambos procesos siempre nace en Rust. Un endpoint externo, como `/search` o una fase del pipeline de análisis, prepara un contexto y llama al `InternalClient`. Ese cliente firma la petición con la clave interna, la envía al endpoint `/internal/search` y recibe una respuesta estructurada que incluye modo, texto de respuesta, modelo usado y una marca de si se utilizó contexto.
+## Proceso Node interno
 
-Esto significa que Node no conoce las rutas públicas ni la semántica completa del sistema. Solo conoce su API interna, el modelo configurado y el mensaje que se le pide resolver. La inteligencia de composición del contexto permanece en Rust.
+`bun start` ejecuta `node/start.ts`. Ese script:
 
-## Dependencias de infraestructura
+1. Carga `.env.development`, `.env.develpment` y `.env` en desarrollo.
+2. Arranca Express en `127.0.0.1:{INTERNAL_PORT}`.
+3. Lanza `cargo run --bin solguard-backend` como proceso hijo.
+4. Propaga `INTERNAL_PORT`, `EXTERNAL_PORT`, `INTERNAL_API_KEY`,
+   `OLLAMA_MODEL` y `VERSION` al proceso Rust.
 
-La arquitectura asume varias dependencias locales. Necesita una base SQLite perteneciente a `solguard-database`, un conector Node compilado para insertar payloads en esa base, los binarios o repositorios locales de `solguard-map`, `solguard-trace` y `solguard-diff`, y un runtime de Ollama accesible por HTTP en la máquina local.
+El servicio interno no debe exponerse fuera de localhost. Todas sus rutas exigen
+`x-internal-api-key` o `Authorization: Bearer <token>`.
 
-Estas dependencias no se registran como microservicios distribuidos. El backend las trata como herramientas o recursos de trabajo locales, lo que simplifica el despliegue inicial pero aumenta la importancia de la configuración correcta del entorno.
+## Herramientas externas
 
-## Principio de diseño dominante
+El motor de analisis usa repos hermanos por path configurable:
 
-El principio dominante en esta arquitectura es la separación entre ejecución determinista y razonamiento asistido por modelo. Todo lo que pueda resolverse con estado explícito, herramientas reproducibles o consultas estructuradas se mantiene del lado Rust. Todo lo relacionado con conversación con modelos se encapsula en la capa interna. Esa frontera reduce el acoplamiento y deja más claro qué partes del sistema son auditables por invariantes técnicas y cuáles son meramente asistivas.
+- `solguard-map`
+- `solguard-diff`
+- `solguard-trace`
+- `solguard-discover`
+- `solguard-economic`
+- `solguard-invariant`
+- `solguard-validate`
+
+El backend no asume que todas las fases seran perfectas. Si una fase falla,
+agota timeout o genera salida degradada, el pipeline lo registra y conserva los
+artefactos disponibles para diagnostico.
+
+## Workspace de proyectos
+
+Por defecto los proyectos viven en:
+
+```text
+%USERPROFILE%\Documents\Solguard
+```
+
+Cada proyecto contiene metadatos (`program.json`, `program.md`), artefactos de
+herramientas bajo `tool-outputs/`, informes bajo `reports/` y documentos de
+resumen en la raiz del proyecto.
+
+## Frontera entre determinismo y modelo
+
+El modelo local ayuda a buscar, redactar o proponer senales en paquetes acotados.
+No es autoridad final para verdictos. Las decisiones que promocionan un finding
+dependen de validacion, evidencia estructurada, referencias a artefactos y
+clasificacion explicita en `validation_results.json`.

@@ -1,29 +1,56 @@
-# Introducción
+# 01. Introduccion
 
-`solguard-backend` es el backend operativo de Solguard. Su función no es almacenar conocimiento por sí mismo ni actuar como interfaz gráfica, sino coordinar el trabajo entre la API pública, la capa de conocimiento, las herramientas deterministas de análisis y la IA local que asiste en la generación de hipótesis de auditoría.
+`solguard-backend` es el cerebro operativo local de SolGuard. Su funcion no es
+solo exponer endpoints: prepara proyectos, descarga o ubica codigo objetivo,
+ejecuta herramientas especializadas, normaliza candidatos, valida evidencias y
+publica artefactos que permiten entender por que un candidato fue soportado,
+rechazado o enviado a revision.
 
-Desde el punto de vista de producto, este repositorio es el punto de entrada técnico del sistema. Expone la API que consume `solguard-cli`, crea y gestiona workspaces locales de auditoría, procesa documentación de entrada, consulta la base de conocimiento histórica y ejecuta pipelines de análisis sobre objetivos Web3.
+## Responsabilidades principales
 
-## Alcance del backend
+- Exponer la API local que usa el cliente o los runners.
+- Levantar y autenticar el servicio interno de IA.
+- Coordinar herramientas externas: map, diff, trace, discover, economic,
+  invariant y validate.
+- Convertir salidas heterogeneas en contratos JSON estables.
+- Generar artefactos humanos: `findings.md`, `review_queue.md`,
+  `validation_plan.md`, informes tecnicos y planes de PoC.
+- Consultar la base de conocimiento para busqueda e ingesta.
+- Enriquecer findings ya validados con similitudes historicas sin contaminar la
+  decision determinista.
 
-La responsabilidad del backend está claramente delimitada. Debe exponer la API consumida por el cliente, inicializar proyectos de auditoría locales, consultar `solguard-database` como fuente de conocimiento, ejecutar herramientas como `solguard-map`, `solguard-trace` y `solguard-diff`, y coordinar la IA local mediante un servicio interno dedicado.
+## Modelo de confianza
 
-El backend no pretende reemplazar a `solguard-database`, ni debe mezclar lógica de interfaz de usuario, ni asumir tareas que ya estén mejor resueltas en otros componentes del ecosistema. La idea estructural es que funcione como capa de orquestación y no como un monolito que absorbe todo el sistema.
+El backend distingue entre tres niveles:
 
-## Dirección técnica
+- Senal: informacion de herramientas, patrones o modelo que sugiere riesgo.
+- Candidato: hipotesis normalizada con superficies, invariantes, transiciones y
+  evidencia referenciada.
+- Finding soportado: candidato que VALIDATE clasifica como `supported_finding`.
 
-La implementación actual sigue un modelo híbrido Rust + TypeScript. Rust concentra la API externa, la carga de configuración, el sistema de rutas, la lógica de controladores, la integración con la base de conocimiento, la ingesta y la orquestación de herramientas de auditoría. TypeScript, ejecutado sobre Node y arrancado con Bun, concentra la capa interna para IA local, en particular la integración con Ollama y la construcción del canal privado que recibe consultas desde Rust.
+La salida publica de findings solo debe venir del tercer nivel. Los candidatos
+inconclusos permanecen visibles en `review_queue.md` o como `reviewable_lead`,
+pero no se mezclan con findings soportados.
 
-Este reparto no es accesorio. Define una frontera operativa clara: Rust resuelve la superficie pública y la ejecución determinista del backend, mientras que TypeScript encapsula la dependencia del modelo local y la abstracción de chat.
+## Flujo de uso
 
-## Modelo de operación
+1. `POST /install` crea el workspace local si no existe.
+2. `POST /projects/init` crea un proyecto con `program.json`, `program.md`,
+   `tool-outputs/` y `reports/`.
+3. `POST /analyze` ejecuta el pipeline completo sobre un target local o remoto.
+4. `GET /projects/:project/validation-results` permite consultar el contrato de
+   validacion y filtrarlo.
+5. `POST /search` consulta el modelo local y, segun modo, la base de
+   conocimiento.
+6. `POST /ingest` incorpora informes externos a la base SQLite.
 
-El backend levanta dos procesos locales coordinados. El primero es el servidor externo escrito en Rust con Axum, que expone la API principal en `127.0.0.1` y sirve como entrada oficial del sistema. El segundo es un servicio Node/Express también local, no expuesto públicamente, que ofrece una API interna usada por Rust para resolver búsquedas, razonamiento con contexto y futuras capacidades relacionadas con modelos.
+## Principios actuales
 
-La comunicación entre ambas capas no es abierta. Rust accede al servicio interno exclusivamente a través de `127.0.0.1` y exige autenticación por clave compartida mediante la cabecera `x-internal-api-key`. Ese detalle convierte al servicio interno en una dependencia privada del backend y no en una API de usuario final.
-
-## Papel dentro del flujo de auditoría
-
-Cuando el sistema opera en modo de análisis, el backend deja de ser una simple API de utilidades y pasa a convertirse en un orquestador de evidencias. Primero resuelve el objetivo de análisis, después ejecuta herramientas deterministas sobre el código fuente, posteriormente consulta la base de conocimiento con términos derivados de ese mismo análisis y, por último, usa la IA local para producir hipótesis y material auxiliar de validación.
-
-Ese orden es importante. En la arquitectura actual, la IA no actúa como fuente primaria de verdad. La evidencia determinista y la base de conocimiento estructurada aparecen antes, y la capa de modelo se usa como asistente para expandir, contrastar o redactar material de trabajo a partir de esas entradas.
+- Preferir evidencia enlazada a artefactos antes que texto libre.
+- Conservar diagnosticos de rechazo; no borrar senales solo porque no puedan
+  validarse.
+- Registrar degradaciones de fase de forma explicita.
+- Mantener el modelo fuera de decisiones autoritativas cuando el codigo ya tiene
+  una regla determinista.
+- Separar enriquecimiento historico posterior a la validacion del analisis ciego
+  previo.

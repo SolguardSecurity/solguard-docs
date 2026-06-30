@@ -1,45 +1,212 @@
-# API Externa y Rutas HTTP
+# 04. API Externa y Rutas HTTP
 
-La API externa es la superficie pública del backend y está implementada en Axum. Todas las rutas se registran en `src/routes/mod.rs` y comparten el mismo `AppState`, que contiene la configuración resuelta y el cliente interno usado para hablar con la capa Node.
+La API externa corre en Rust/Axum y escucha en:
 
-## Estructura general
+```text
+http://127.0.0.1:{EXTERNAL_PORT}
+```
 
-La API sigue un patrón directo: cada ruta delega en un controlador y cada controlador traduce el contrato HTTP hacia un servicio interno del backend. La capa de error usa `ApiError`, que normaliza respuestas JSON con un campo `error` y permite diferenciar, de forma básica, entre errores de entrada y errores de upstream.
+Los errores de validacion local devuelven `400` con `{ "error": "..." }`. Los
+errores al hablar con el servicio interno devuelven `502` con el mismo formato.
 
-## Rutas de estado
+## GET `/health`
 
-`GET /health` devuelve un estado mínimo del backend Rust. Su objetivo es confirmar que el servidor externo está vivo y qué versión expone.
+Comprueba que el servidor Rust esta vivo.
 
-`GET /info` devuelve una vista más amplia del sistema. Incluye versión, puertos, estado del servicio interno cuando responde, información del modelo interno y un resumen del estado de la base de conocimiento. Esta ruta es especialmente útil como endpoint de diagnóstico porque combina señales de varias capas.
+Respuesta:
 
-## Rutas de workspace y proyectos
+```json
+{
+  "status": "ok",
+  "service": "solguard-backend",
+  "version": "..."
+}
+```
 
-`POST /install` crea el workspace local de Solguard en el directorio de proyectos configurado. No crea un proyecto concreto, sino la carpeta raíz que alojará futuros objetivos de auditoría.
+## GET `/info`
 
-`GET /projects` enumera los proyectos existentes dentro del workspace local. Si encuentra `program.json` dentro de cada carpeta, usa ese archivo como metadato principal; en caso contrario, infiere el nombre desde el directorio.
+Devuelve metadatos del backend, estado del servicio interno y resumen de la base
+de conocimiento.
 
-`POST /projects/init` crea un nuevo proyecto local. Sanitiza el nombre, crea la carpeta del proyecto, crea `tool-outputs/` y escribe dos artefactos iniciales: `program.json` y `program.md`. Esta ruta es la que prepara el contenedor persistente donde luego se escribirán evidencias y resultados de análisis.
+Campos principales:
 
-## Ruta de búsqueda asistida
+- `service`: siempre `solguard-backend`.
+- `version`: valor de `VERSION`.
+- `external_port` e `internal_port`.
+- `internal_health`: respuesta de `/internal/health` si esta disponible.
+- `internal`: respuesta de `/internal/info` si esta disponible.
+- `knowledge`: resumen calculado desde SQLite.
+- `capabilities`: actualmente lista `health`, `info`, `search` e `ingest`. No
+  debe interpretarse como lista exhaustiva de rutas implementadas.
 
-`POST /search` es la ruta que conecta la base de conocimiento con la capa de IA. Acepta una consulta y un modo opcional. Los modos disponibles son `general`, `knowledge` y `hybrid`.
+## POST `/install`
 
-En `general`, no se construye contexto desde la base de datos. En `knowledge` y `hybrid`, Rust genera un contexto a partir de `solguard-database`. Además, en `knowledge`, si la consulta parece un agregado claro, el backend puede responder de forma directa sin pasar por el modelo, devolviendo una respuesta autoritativa basada en datos reales de la base.
+Crea `SOLGUARD_PROJECTS_DIR` si no existe.
 
-La respuesta de esta ruta incluye también metadatos de recuperación. Ese detalle es importante porque permite distinguir entre respuesta generada por modelo y evidencia objetiva derivada del sistema de recuperación.
+Respuesta:
 
-## Ruta de ingesta
+```json
+{
+  "projects_dir": "..."
+}
+```
 
-`POST /ingest` procesa un archivo individual o una carpeta completa. Soporta `pdf`, `md`, `markdown` y `txt`. Si la entrada es un directorio, recorre los archivos de forma recursiva y excluye explícitamente `README.md`.
+## GET `/projects`
 
-El resultado de la ingesta no es solo una confirmación binaria. La respuesta detalla cuántos documentos se procesaron, cuáles se insertaron, cuáles se omitieron y qué fallos ocurrieron. Esto convierte la ruta en un endpoint de batch ingestion con tolerancia a fallos parciales.
+Lista proyectos encontrados en `SOLGUARD_PROJECTS_DIR`.
 
-## Ruta de análisis
+Respuesta:
 
-`POST /analyze` es la ruta más compleja del backend. Recibe un nombre de proyecto y un objetivo, que puede ser un directorio local, una URL Git o un archivo `.zip`. A partir de esa entrada, el backend resuelve el código fuente, ejecuta herramientas deterministas, consulta conocimiento contextual, genera hipótesis y escribe múltiples artefactos persistentes dentro del proyecto.
+```json
+{
+  "projects_dir": "...",
+  "projects": [
+    {
+      "name": "Proyecto",
+      "description": "...",
+      "path": "..."
+    }
+  ]
+}
+```
 
-No devuelve solo una cadena de texto. Devuelve un estado estructurado con la ruta del proyecto, la ruta del código fuente resuelto, el resultado de cada herramienta ejecutada y las ubicaciones de los artefactos generados.
+## POST `/projects/init`
 
-## Consideraciones de contrato
+Crea o inicializa un proyecto.
 
-La API externa es deliberadamente local y orientada a automatización. No está diseñada como una API REST pública de terceros, sino como una interfaz técnica consumida por herramientas de Solguard. Eso explica varias decisiones del contrato: rutas directas, fuerte dependencia del filesystem local y respuestas que incluyen paths del sistema operativo como parte del resultado.
+Body:
+
+```json
+{
+  "name": "Proyecto",
+  "description": "opcional"
+}
+```
+
+El nombre se sanea para ser seguro en filesystem. Se crean `program.json`,
+`program.md`, `tool-outputs/` y `reports/`.
+
+## GET `/projects/:project/validation-results`
+
+Lee el contrato autoritativo de validacion del proyecto.
+
+Filtros opcionales:
+
+| Query | Valores validos |
+| --- | --- |
+| `result` | `supported`, `refuted`, `inconclusive` |
+| `finding_class` | `supported_finding`, `review_queue`, `reviewable_lead`, `non_finding` |
+
+Ejemplo:
+
+```text
+GET /projects/Curve-Finance-Metapool/validation-results?finding_class=supported_finding
+```
+
+## POST `/search`
+
+Consulta el modelo local y, segun modo, la base de conocimiento.
+
+Body:
+
+```json
+{
+  "query": "patrones parecidos a share inflation",
+  "mode": "hybrid"
+}
+```
+
+`mode` es opcional. Valores:
+
+- `general`: no prepara contexto de base de conocimiento.
+- `knowledge`: usa la base de conocimiento; para algunas preguntas agregadas
+  puede responder directamente con `model = "solguard-database"`.
+- `hybrid`: default; usa contexto historico como prior y pide al modelo razonar
+  sobre la consulta.
+
+Respuesta:
+
+```json
+{
+  "mode": "hybrid",
+  "answer": "...",
+  "model": "...",
+  "used_context": true,
+  "retrieval": {}
+}
+```
+
+## POST `/ingest`
+
+Ingiere informes desde un archivo o directorio hacia `solguard-database`.
+
+Body:
+
+```json
+{
+  "path": "C:\\ruta\\a\\informes"
+}
+```
+
+Respuesta:
+
+```json
+{
+  "processed": 1,
+  "inserted": [
+    {
+      "source_sha256": "...",
+      "report_title": "...",
+      "finding_count": 3,
+      "payload_path": "..."
+    }
+  ],
+  "skipped": [],
+  "failures": [],
+  "database_path": "..."
+}
+```
+
+## POST `/analyze`
+
+Ejecuta el pipeline completo sobre un target.
+
+Body:
+
+```json
+{
+  "project": "Proyecto",
+  "target": "https://github.com/org/repo"
+}
+```
+
+`target` puede ser una ruta local o una referencia remota soportada por el
+runtime. La respuesta incluye:
+
+- `project`, `project_dir`, `source_dir`.
+- `status`: `completed` o `completed_with_errors`.
+- `tool_runs`: ejecuciones externas con estado, codigo, duracion y excerpts.
+- `findings_path`: ruta a `findings.md`.
+- `outputs`: mapa de rutas a artefactos.
+
+Artefactos destacados en `outputs`:
+
+- `pipeline_json`
+- `analysis_funnel_json`
+- `canonical_candidates_json`
+- `raw_candidates_json`
+- `rejected_candidates_json`
+- `candidate_lifecycle_json`
+- `model_discovery_diagnostics_json`
+- `validation_results_json`
+- `validation_results_md`
+- `findings_md`
+- `review_queue_md`
+- `impact_escalation_json`
+- `poc_plan_json`
+- `report_manifest_json`
+- `profile_json`
+
+El campo `status = completed` no significa que haya findings; significa que el
+pipeline completo produjo sus artefactos sin degradaciones relevantes. Los
+findings reales se determinan leyendo `validation_results_json`.

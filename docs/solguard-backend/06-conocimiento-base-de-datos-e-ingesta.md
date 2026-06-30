@@ -1,39 +1,99 @@
-# Conocimiento, Base de Datos e Ingesta
+# 06. Conocimiento, Base de Datos e Ingesta
 
-La relación entre `solguard-backend` y `solguard-database` es central para entender el sistema. El backend no almacena conocimiento como repositorio primario, pero sí lo consulta, lo resume y lo alimenta mediante un pipeline de ingesta documental.
+El backend usa `solguard-database` como memoria historica, no como autoridad de
+veredicto para un analisis nuevo. La base SQLite sirve para buscar patrones,
+responder preguntas y enriquecer resultados ya validados.
 
-## Papel de `solguard-database`
+## Base SQLite
 
-La base SQLite de `solguard-database` actúa como memoria estructurada del sistema. Desde el backend se consumen conteos agregados, taxonomías, findings normalizados, chunks textuales y embeddings asociados a esos findings. Esa información se usa tanto para respuestas directas como para construir contexto útil para la IA.
+La ruta se configura con:
 
-La ventaja de este diseño es que la base de conocimiento no depende del modelo para ser útil. Puede responder preguntas agregadas, devolver muestras representativas y soportar retrieval contextual incluso si la capa de IA está caída.
+```text
+SOLGUARD_DATABASE_PATH
+```
 
-## Resumen autoritativo de conocimiento
+Default:
 
-El backend puede generar un resumen autoritativo del contenido de la base. Ese resumen incluye disponibilidad de la base, número de reportes, número de findings, distribución por severidad, muestras taxonómicas y rankings de clases de bug, categorías de impacto, tipos de causa raíz y tipos de componente afectados.
+```text
+../solguard-database/data/solguard.sqlite
+```
 
-Esa salida aparece en `/info`, pero también alimenta respuestas más específicas cuando una consulta del usuario pide conteos o rankings explícitos. En esos casos, el backend puede evitar completamente la llamada al modelo y responder desde datos estructurados.
+`knowledge.rs` lee directamente SQLite para resumenes, busqueda y recuperacion
+historica. `ingest.rs` usa el conector de `solguard-database` para insertar
+nuevos informes.
 
-## Contexto de búsqueda enriquecido
+## Busqueda de conocimiento
 
-Cuando una consulta requiere recuperación contextual, el backend construye un `KnowledgeSearchContext`. Para ello mezcla varias estrategias. Primero deriva términos compatibles con SQLite FTS. Después añade filtros taxonómicos cuando detecta familias conceptuales relevantes. Posteriormente incorpora findings y chunks recuperados, y también utiliza embeddings locales generados por hash para aproximar búsqueda vectorial sin depender de un servicio externo adicional.
+`POST /search` acepta tres modos:
 
-El resultado no es un simple bloque de texto. También se devuelve metadata de recuperación: términos FTS usados, filtros estructurados, filtros taxonómicos, términos descartados, invariantes seleccionados y número de findings o chunks recuperados. Esto hace auditable la propia fase de retrieval.
+- `general`: no prepara contexto de la base.
+- `knowledge`: busca en la base; algunas preguntas agregadas se responden de
+  forma directa con `model = "solguard-database"`.
+- `hybrid`: default; recupera contexto historico y lo entrega al modelo local
+  como prior.
 
-## Pipeline de ingesta
+La respuesta incluye `retrieval` cuando hubo consulta a base. Ese bloque sirve
+para auditar que contexto fue recuperado y no debe confundirse con validacion de
+un finding.
 
-La ingesta comienza con un archivo o carpeta local. Si la entrada es válida, el servicio procesa los documentos compatibles con `solguard_core::ingest_document`, una dependencia reutilizada desde `solguard-database`. Ese paso convierte PDF, Markdown o texto plano en un payload estructurado que contiene metadatos del informe, findings y datos fuente normalizados.
+## Ingesta
 
-Ese payload se persiste primero dentro de `SOLGUARD_BACKEND_DATA_DIR/payloads/` usando como nombre el `sha256` del documento de origen. Esta decisión permite conservar trazabilidad y reutilizar artefactos de ingesta sin depender solo de la base de datos final.
+`POST /ingest` recibe una ruta y procesa archivos soportados. La respuesta
+separa:
 
-Después, el backend invoca el conector CLI de `solguard-database` para insertar el payload en SQLite. Si el conector todavía no está compilado, intenta construirlo con Bun antes de la inserción.
+- `processed`: total evaluado.
+- `inserted`: informes insertados con hash, titulo, numero de findings y payload.
+- `skipped`: rutas omitidas.
+- `failures`: errores parciales.
+- `database_path`: SQLite final.
 
-## Semántica operacional de la ingesta
+La ingesta debe ser idempotente respecto a hashes de fuente. Si un informe ya
+existe o no es soportado, debe aparecer como omitido o fallo parcial, no tumbar
+todo el proceso sin diagnostico.
 
-La ruta de ingesta está diseñada para tolerar fallos parciales. En un directorio puede haber documentos válidos, documentos incompatibles y documentos que fallen durante la normalización o la inserción. El backend no aborta todo el lote al primer error; acumula resultados y devuelve un informe de ejecución con insertados, fallidos y omitidos.
+## Politica durante analisis
 
-Este comportamiento es importante en flujos reales, donde la calidad documental de las fuentes puede ser heterogénea. La infraestructura de backend prioriza la continuidad del batch y la observabilidad del resultado.
+El pipeline separa dos momentos:
 
-## Principio de diseño
+1. Antes de VALIDATE: se usan source, map, diff, trace, discover, economic,
+   invariant, seeds deterministas y model discovery acotado. La base historica no
+   decide si algo es un finding.
+2. Despues de VALIDATE: se recupera evidencia historica para enriquecer,
+   comparar familias y ayudar a redactar o priorizar.
 
-La clave de esta capa es que conocimiento e ingesta están acoplados por contrato, pero desacoplados por implementación. La ingesta escribe artefactos reproducibles y llama a un conector externo; la recuperación consulta una base ya estructurada. Eso permite evolucionar uno de los lados sin rehacer completamente el otro.
+Esta separacion evita overfitting directo al corpus historico y permite auditar
+por que un candidato fue soportado o rechazado sin depender de similitudes de
+base de datos.
+
+## Artefactos de conocimiento por proyecto
+
+Durante el analisis se escriben artefactos bajo:
+
+```text
+<project>/knowledge/
+```
+
+Archivos principales:
+
+- `historical_evidence.json`: placeholder pre-validacion que declara que la
+  recuperacion historica se difiere hasta despues de la validacion determinista.
+- `post_candidate_retrieval.json`: solicitudes y respuestas de recuperacion
+  despues de validar candidatos.
+- `retrieved_patterns.json`: alias de compatibilidad del reporte post-candidate.
+- `similar_findings.md`, `similar_exploit_paths.md`, `similar_fixes.md`,
+  `similar_impact_escalations.md` y `similar_triage_results.md`: resumenes
+  humanos por categoria.
+
+La fase `historical-enrichment` tambien escribe:
+
+```text
+<project>/tool-outputs/historical-enrichment/historical_enrichment.json
+```
+
+Ese artefacto referencia el hash de `validation_results.json` usado como
+autoridad. Si una fase posterior cambia ese archivo, el runtime aborta.
+
+## Regla de oro
+
+La base de conocimiento puede decir "esto se parece a algo visto antes". No puede
+decir "esto es un finding" sin pasar por candidatos canonicos y VALIDATE.

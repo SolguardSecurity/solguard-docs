@@ -1,43 +1,178 @@
-# Capa Interna de IA y Ollama
+# 08. Capa Interna de IA y Ollama
 
-La capa interna de IA de `solguard-backend` está implementada en Node/Express y actúa como una API privada para conversación con modelos locales. Su principal objetivo es encapsular la integración con Ollama y evitar que el servidor Rust tenga que conocer detalles de transporte, formato de mensajes o políticas de prompt.
+La capa interna vive en `node/` y se arranca con `bun start`. Su responsabilidad
+es aislar las llamadas al modelo local y dar al proceso Rust un contrato pequeno
+y autenticado.
 
-## API interna
+## Endpoints internos
 
-La aplicación interna expone tres endpoints: `GET /internal/health`, `GET /internal/info` y `POST /internal/search`. Todos requieren autenticación por `x-internal-api-key` o, alternativamente, por `Authorization: Bearer <token>`.
+Base:
 
-`/internal/health` ofrece una señal mínima de vida del proceso Node. `/internal/info` expone versión, modelo activo y capacidades declaradas. `/internal/search` es el endpoint operativo real: recibe una consulta, un modo y un contexto opcional, construye mensajes de chat y los envía al cliente configurado.
+```text
+http://127.0.0.1:{INTERNAL_PORT}
+```
 
-## Construcción del prompt
+Rutas:
 
-La aplicación interna no recibe prompts libres ya listos para enviar. Recibe una intención de búsqueda y un contexto opcional. A partir de eso construye una secuencia de mensajes con un `system` fijo y un `user` derivado del modo de operación.
+- `GET /internal/health`
+- `GET /internal/info`
+- `POST /internal/search`
 
-El prompt de sistema impone varias restricciones: ser conciso, no inventar datos de base de conocimiento cuando no hay contexto, tratar los agregados exactos como autoritativos y no inferir totales a partir de muestras de findings o chunks recuperados. Estas reglas son importantes porque reflejan el principio de subordinación del modelo respecto a la evidencia estructurada.
+Todas requieren token por uno de estos headers:
 
-El prompt de usuario cambia según el modo:
+```text
+x-internal-api-key: <INTERNAL_API_KEY>
+Authorization: Bearer <INTERNAL_API_KEY>
+```
 
-- En `general`, el servicio responde como asistente local normal.
-- En `knowledge`, debe apoyarse en el contexto de la base de conocimiento cuando exista, especialmente para preguntas de conteo o ranking.
-- En `hybrid`, usa el contexto como conocimiento previo de auditoría y después razona sobre la petición del usuario.
+El servidor usa `express.json({ limit: "1mb" })` y desactiva `x-powered-by`.
 
-## Integración con Ollama
+## `/internal/health`
 
-La implementación concreta está en `node/services/ollama.ts`. El servicio llama a `POST /api/chat` del host configurado de Ollama, con `stream: false` y una configuración conservadora: temperatura cero, `top_p` y `top_k` fijados, semilla fija y un máximo de tokens de salida acotado.
+Respuesta:
 
-Esta elección no es cosmética. Busca reproducibilidad local y minimizar variabilidad en respuestas que después pueden influir en hipótesis de auditoría. No garantiza determinismo absoluto del sistema completo, pero sí reduce el ruido del componente generativo.
+```json
+{
+  "status": "ok",
+  "service": "solguard-internal-node",
+  "version": "..."
+}
+```
 
-## Validación de entrada y errores
+## `/internal/info`
 
-La aplicación interna valida que exista `query`, que el modo sea soportado y que la respuesta del modelo no venga vacía. Si la validación falla, devuelve un `400`. Si el problema ocurre al comunicarse con Ollama o al resolver el backend del modelo, devuelve un `502`.
+Respuesta:
 
-Desde el punto de vista arquitectónico, esto convierte al servicio interno en una fachada estricta y no en un simple proxy transparente hacia Ollama.
+```json
+{
+  "service": "solguard-internal-node",
+  "version": "...",
+  "model": "...",
+  "capabilities": [
+    "ollama-chat",
+    "search-general",
+    "search-knowledge",
+    "search-hybrid"
+  ]
+}
+```
 
-## Configuración y arranque
+## `/internal/search`
 
-La capa interna lee su configuración desde entorno, valida puertos, timeout, versión, token y modelo, y se inicia con `startInternalServer()`. Durante el arranque global del backend, `node/start.ts` la levanta primero y luego arranca Rust en un proceso hijo.
+Body interno:
 
-Esto permite que cuando Rust intente hablar con `/internal/health`, `/internal/info` o `/internal/search`, el servicio Node ya exista y comparta el mismo universo de configuración.
+```json
+{
+  "query": "texto",
+  "mode": "hybrid",
+  "context": "opcional"
+}
+```
 
-## Papel dentro del sistema
+`query` es obligatorio. `mode` acepta:
 
-La IA interna no decide la arquitectura del análisis ni resuelve por sí sola el problema de auditoría. Su papel es actuar como motor de razonamiento asistivo dentro de un pipeline gobernado por evidencias deterministas y recuperación estructurada. Esa subordinación es una propiedad de diseño relevante: el modelo está integrado como herramienta, no como árbitro principal del backend.
+- `general`
+- `knowledge`
+- `hybrid`
+
+Si `mode` falta, se usa `hybrid`.
+
+Respuesta:
+
+```json
+{
+  "mode": "hybrid",
+  "answer": "...",
+  "model": "...",
+  "usedContext": true
+}
+```
+
+## Prompt base
+
+El prompt de sistema fija estas reglas:
+
+- actuar como asistente local de auditoria Web3;
+- responder de forma concreta y basada en evidencia;
+- no inventar hechos de base de datos si no hay contexto;
+- tratar conteos agregados exactos como autoritativos;
+- no inferir totales desde muestras recuperadas.
+
+El modo anade instrucciones:
+
+- `general`: respuesta normal sin contexto obligatorio.
+- `knowledge`: usar contexto SolGuard si existe; conteos y rankings vienen de
+  tablas agregadas.
+- `hybrid`: usar conocimiento como prior y razonar sobre la peticion.
+
+## Ollama
+
+`OllamaService` llama:
+
+```text
+POST {OLLAMA_HOST}/api/chat
+```
+
+Payload relevante:
+
+```json
+{
+  "stream": false,
+  "options": {
+    "temperature": 0,
+    "top_p": 1,
+    "top_k": 1,
+    "seed": 0,
+    "num_predict": 900
+  }
+}
+```
+
+Esto busca salidas reproducibles y acotadas. Si Ollama devuelve HTTP no exitoso,
+el error incluye status y un excerpt compacto. Si la respuesta viene vacia, la
+capa interna falla explicitamente.
+
+## Carga de entorno
+
+`node/utils/env.ts` carga archivos `.env` segun modo sin sobrescribir variables
+ya presentes.
+
+Desarrollo:
+
+```text
+.env.development
+.env.develpment
+.env
+```
+
+Produccion o test:
+
+```text
+.env.production / .env.test
+.env
+```
+
+Variables leidas:
+
+- `INTERNAL_PORT`
+- `EXTERNAL_PORT`
+- `INTERNAL_API_KEY`
+- `OLLAMA_HOST`
+- `OLLAMA_MODEL`
+- `OLLAMA_TIMEOUT_MS`
+- `VERSION`
+
+## Errores
+
+La capa interna responde:
+
+- `401` si falta o no coincide el token.
+- `400` si falta `query` o el modo no es soportado.
+- `502` para fallos de Ollama u otros errores upstream.
+
+## Limites de responsabilidad
+
+El servicio Node no valida findings, no lee proyectos y no decide severidad. Su
+salida es texto de modelo para busqueda o asistencia. La autoridad de analisis
+permanece en los artefactos deterministas del pipeline Rust, especialmente
+`validation_results.json`.
