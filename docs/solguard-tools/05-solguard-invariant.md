@@ -1,26 +1,99 @@
-# Solguard Invariant
+# 05. SolGuard Invariant
 
-`solguard-invariant` responde qué propiedad semántica debería mantenerse. Consume `audit_map.v0.9`, uno o varios reportes `trace.v0.9` y, opcionalmente, evidencia histórica previamente normalizada.
+`solguard-invariant` convierte evidencia estructurada de MAP/TRACE y,
+opcionalmente, invariantes sintetizadas por ECONOMIC, en propiedades tipadas que
+deberian mantenerse.
 
-La herramienta no convierte frases históricas en reglas. Solo acepta conocimiento histórico normativo cuando ya contiene familia, predicado, scope y versión de regla tipados. Esto evita que taxonomía legacy o similitud textual creen propiedades que el código actual no justifica.
+No detecta bugs por si sola. Define que propiedad es aplicable, sobre que scope,
+con que evidencia y que condicion de ruptura debe evaluarse.
 
-## Modelo
+## Inputs
 
-Cada invariante contiene una familia, sujetos, operador, parámetros, scope, condiciones de mantenimiento, posibles condiciones de ruptura, resolución, confianza y referencias de evidencia.
+Obligatorios:
 
-El catálogo experimental inicial se limita a:
+- `--map <audit_map.json>`
+- `--trace <trace.json | trace directory>`
 
-- completitud de identidades operativas;
-- frescura de contexto;
-- consistencia entre cache y persistencia;
-- atomicidad y rollback;
-- ordering de efectos irreversibles;
-- consistencia de recursos cross-component.
+Opcionales:
 
-Los duplicados se fusionan por predicado y scope normalizados. Las relaciones `overlaps`, `strengthens` y `conflicts` permanecen explícitas. Un conflicto no invalida globalmente las demás propiedades.
+- `--knowledge <historical_evidence.json>`
+- `--synthesized <synthesized_invariants.json>` repetible
+
+## CLI actual
+
+```powershell
+cargo run --locked -- `
+  --map solguard-output/audit_map.json `
+  --trace solguard-trace-output `
+  --knowledge historical_evidence.json `
+  --synthesized solguard-economic-output/synthesized_invariants.json `
+  --out solguard-invariant-output
+```
+
+Opciones:
+
+| Opcion | Funcion |
+| --- | --- |
+| `--map` | MAP JSON. |
+| `--trace` | TRACE JSON o carpeta. |
+| `--knowledge` | Evidencia historica tipada. Opcional. |
+| `--synthesized` | Invariantes generadas por ECONOMIC. Repetible. |
+| `--out` | Directorio de salida. Default: `solguard-invariant-output`. |
+
+## Salidas
+
+Schema:
+
+```text
+invariant.v0.8
+```
+
+Archivos:
+
+- `invariants.json`
+- `invariants.md`
+- `summary.txt`
+
+## Catalogo
+
+El catalogo v0.8 cubre familias como:
+
+- conservacion de assets;
+- consistencia shares/assets;
+- solvencia;
+- deuda/collateral;
+- rewards;
+- fees;
+- backing de supply;
+- validez temporal y transiciones;
+- frescura de permisos;
+- binding cross-chain;
+- ejecucion de gobernanza;
+- assumptions externas;
+- disponibilidad.
 
 ## Determinismo
 
-`invariant_id` se deriva de familia, `rule_version`, predicado y scope. El hash no incorpora timestamps, paths absolutos, confianza, versión de herramienta ni orden de evidencia.
+Los IDs de invariantes dependen de:
 
-El contrato autoritativo es `invariant.v0.7` y se escribe en `invariants.json`.
+- familia;
+- version de regla;
+- predicado normalizado;
+- scope normalizado.
+
+No dependen de timestamps, paths absolutos, orden de evidencia, confianza ni
+version de herramienta.
+
+## Knowledge historico
+
+`--knowledge` solo puede alimentar invariantes si el conocimiento ya esta
+normalizado con familia, predicado, scope y version de regla. Texto legacy o
+similitud textual se conserva como fuente omitida; no crea reglas nuevas.
+
+## Limites
+
+- No ejecuta codigo.
+- No usa SMT.
+- No confirma explotabilidad.
+- Una condicion de ruptura es una forma tipada de evaluar una hipotesis, no un
+  finding.

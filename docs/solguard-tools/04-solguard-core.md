@@ -1,71 +1,114 @@
-# Solguard Core
+# 04. SolGuard Core
 
-`solguard-core` no es una CLI como `solguard-map`, `solguard-trace` o `solguard-diff`. Es una crate Rust reutilizable que vive dentro del workspace de `solguard-database` y que el resto del ecosistema usa como biblioteca técnica para ingesta documental. En el estado actual del stack, esta es la librería Rust personalizada más clara y reutilizada por Solguard, y `solguard-backend` depende de ella directamente.
+`solguard-core` es una crate Rust dentro de `solguard-database`. No es una CLI de
+analisis de protocolos. Es la biblioteca que transforma informes de auditoria en
+payloads estructurados para la base de conocimiento.
 
-## Papel dentro del ecosistema
+## API publica
 
-La crate expone una capacidad central: convertir documentos de auditoría en payloads estructurados que puedan insertarse en `solguard-database`. Esto significa que `solguard-core` actúa como biblioteca de normalización, extracción y modelado de informes, findings, chunks y fragmentos de código.
+La API principal es:
 
-Su función no es servir consultas, montar una API ni hacer scoring de auditoría de repositorios. Su función es resolver la transición desde un documento bruto hasta un artefacto de conocimiento estructurado y persistible.
+```rust
+use solguard_core::{ingest_document, IngestConfig};
 
-## API pública
+let payload = ingest_document(path, &IngestConfig::default())?;
+```
 
-La superficie pública de la crate es deliberadamente pequeña. Desde `src/lib.rs` se reexportan el tipo de error, el alias de resultado, los tipos del modelo y, sobre todo, `IngestConfig` e `ingest_document`.
+`IngestConfig` permite sobreescribir metadata:
 
-Esa decisión es importante porque concentra la experiencia pública de la librería en una sola operación principal. El consumidor no necesita orquestar manualmente todos los submódulos; basta con suministrar un path y una configuración de ingesta para obtener un `IngestPayload`.
+- `title`
+- `protocol_name`
+- `ecosystem`
+- `auditor`
+- `report_type`
+- `published_date`
 
-## Pipeline de ingesta
+## Pipeline
 
-El núcleo funcional está en `src/pipeline.rs`. La función `ingest_document` ejecuta un pipeline secuencial bastante claro:
+`ingest_document` ejecuta:
 
-1. carga el documento desde disco,
-2. resuelve metadatos básicos de origen,
-3. normaliza el contenido a Markdown,
-4. detecta el perfil del documento,
-5. extrae metadatos del informe,
-6. selecciona una estrategia de extracción de findings,
-7. transforma borradores de finding en payloads estructurados,
-8. extrae fragmentos de código por finding,
-9. fragmenta el documento completo en chunks,
-10. y construye el `IngestPayload` final.
+1. Carga del documento.
+2. Resolucion de fuente y hash.
+3. Normalizacion a Markdown.
+4. Deteccion de perfil documental.
+5. Extraccion de metadata del reporte.
+6. Seleccion de estrategia de findings.
+7. Extraccion de findings candidatos.
+8. Extraccion de snippets de codigo por finding.
+9. Chunking del documento.
+10. Construccion de `IngestPayload`.
 
-Este orden expresa una filosofía concreta: primero se normaliza el documento, luego se clasifica su formato, después se decide cómo parsearlo y solo al final se serializa el conocimiento estructurado.
+## Contrato de payload
 
-## Módulos funcionales
+Version actual:
 
-`document_io` carga el documento y gestiona su origen. `pdf_text` resuelve la extracción de texto desde PDF. `normalization` transforma texto fuente a Markdown canónico. `document_profile` detecta familia documental y estrategia de parseo. `report_metadata` extrae datos como cabecera, periodo de auditoría o conteos de issues. `finding_strategies` selecciona la estrategia adecuada de extracción. `findings` materializa los findings. `code` detecta y clasifica snippets de código. `chunking` parte el documento en unidades reutilizables para retrieval posterior. `taxonomy` y `types` definen la semántica estructurada de la salida.
+```text
+schema_version: 2
+```
 
-Esta modularidad hace que la crate sea una biblioteca real y no una única función grande y opaca.
+Estructura:
 
-## Detección de perfil documental
+- `source`: tipo, titulo, URL, path local, sha256 y metadata.
+- `report`: titulo, protocolo, ecosistema, auditor, fechas, raw text,
+  markdown normalizado y metadata.
+- `findings`: findings estructurados.
+- `chunks`: particiones para indexacion/retrieval.
 
-Uno de los puntos más interesantes de `solguard-core` es `document_profile`. Este módulo intenta reconocer familias documentales como Zenith, Code4rena, Sherlock, Cantina, OffsideLabs o un formato genérico. Además, asigna una `ParserStrategy` concreta, como `SeverityIdHeadings`, `NumericSectionHeadings`, `ContestIssueHeadings`, `SingleFindingMarkdown` o `GenericHeadings`.
+## Findings
 
-Esto es importante porque el parser no trata todos los informes igual. Primero intenta entender de qué clase de documento se trata y solo entonces decide cómo extraer findings y metadatos.
+Cada finding puede incluir:
 
-## Modelo de datos estructurado
+- fingerprint;
+- titulo;
+- severidad;
+- confidence;
+- taxonomia;
+- contratos y funciones afectadas;
+- invariant roto;
+- root cause;
+- attack steps;
+- impacto;
+- exploitability;
+- preconditions;
+- primitive;
+- impact escalation;
+- severidad/impacto aceptado;
+- tipo de PoC;
+- codigo vulnerable y fixed;
+- commits vulnerable/fixed;
+- mitigation;
+- triage result;
+- recommendation;
+- snippets de codigo.
 
-El tipo central de salida es `IngestPayload`. Ese payload contiene:
+## Perfil documental
 
-- `source`, con metadatos del documento original,
-- `report`, con texto bruto, Markdown normalizado y metadatos enriquecidos,
-- `findings`, con los hallazgos estructurados,
-- y `chunks`, con particiones del documento útiles para indexación o retrieval.
+`document_profile` detecta familias y estrategias. Estrategias actuales:
 
-Dentro de `FindingPayload`, la librería captura severidad, fingerprint, taxonomía, contratos y funciones afectadas, causa raíz, impacto, explotabilidad, precondiciones, recomendación, estado de extracción, datos estructurados y snippets de código.
+- `SeverityIdHeadings`
+- `NumericSectionHeadings`
+- `ContestIssueHeadings`
+- `SingleFindingMarkdown`
+- `GenericHeadings`
 
-Esto confirma que `solguard-core` no produce una simple conversión de formato. Produce un modelo de conocimiento preparado para indexación, búsqueda y análisis posterior.
+La seleccion de estrategia evita tratar cualquier heading numerico como finding
+si el formato del informe no lo justifica.
 
-## Taxonomía y snippets de código
+## PDFs
 
-La crate también normaliza la taxonomía de findings y clasifica fragmentos de código. Los snippets pueden ser `diff`, `vulnerable`, `new_code`, `fixed`, `proof_of_concept` o `unknown`. Esta capacidad es especialmente útil porque muchos informes incluyen pruebas, diffs o extractos relevantes que más tarde pueden utilizarse para retrieval contextual o para enriquecer findings en la base.
+La normalizacion de PDFs conserva marcadores de pagina
+`[[solguard-pdf-page:N]]`, repara mojibake comun, recompone prosa partida y
+mantiene metadata de paginas en chunks/findings cuando aplica.
 
-Desde el punto de vista de producto, esto amplía el valor de la base de conocimiento: no solo se guardan textos de findings, sino también artefactos técnicos asociados a ellos.
+## Relacion con backend/database
 
-## Relación con `solguard-backend`
+`solguard-backend` usa esta crate en `/ingest`. Despues guarda payloads y llama
+al conector de `solguard-database` para insertar en SQLite.
 
-`solguard-backend` usa `solguard-core` directamente durante la ingesta. Cuando el backend recibe una ruta por `/ingest`, invoca `ingest_document`, escribe el payload JSON en disco y luego llama al conector de `solguard-database` para insertarlo en SQLite. Por tanto, `solguard-core` funciona como biblioteca de parsing e ingestión compartida entre la infraestructura documental y el backend operativo.
+## Limites
 
-## Rol estratégico
-
-Dentro del ecosistema Solguard, `solguard-core` es una biblioteca fundacional. No compite con las herramientas deterministas de mapeo, trazado o diff, porque resuelve otra fase del sistema: la estructuración del conocimiento documental. Su valor está en estandarizar cómo se transforman informes reales de auditoría en datos consistentes y reutilizables para búsqueda, análisis y razonamiento posterior.
+- No decide si un finding historico aplica al codigo actual.
+- No ejecuta auditorias.
+- No habla con Ollama.
+- Puede marcar extracciones como `needs_review` cuando la estructura no es
+  suficientemente fiable.
