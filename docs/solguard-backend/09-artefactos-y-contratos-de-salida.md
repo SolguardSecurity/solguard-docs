@@ -85,10 +85,10 @@ Clases:
 - `reviewable_lead`: todavia no esta listo para validacion completa.
 - `non_finding`: refutado o no accionable.
 
-Regla operativa:
+Regla operativa dentro de SolGuard:
 
 ```text
-finding real = result supported + finding_class supported_finding
+finding soportado por contrato estatico = result supported + finding_class supported_finding
 ```
 
 No basta con que exista en `canonical_candidates.json`.

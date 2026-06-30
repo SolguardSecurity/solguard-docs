@@ -6,6 +6,14 @@ Rust reutilizable que alimenta la base de conocimiento.
 Esta carpeta documenta contratos actuales de uso, inputs, outputs y limites. La
 fuente de verdad final sigue siendo el codigo de cada repositorio.
 
+## Alcance real
+
+Cuando esta documentacion dice que una herramienta "modela", "infiere",
+"sintetiza" o "evalua", significa que el codigo implementa esa fase y escribe
+artefactos con ese contrato. No significa que la herramienta tenga recall
+demostrado en protocolos fuera del corpus, ni que sus salidas sean findings
+pagables sin revision.
+
 ## Indice
 
 1. [SolGuard Map](01-solguard-map.md)
@@ -51,6 +59,6 @@ Ninguna herramienta individual confirma un bug pagable por si sola.
 - El backend decide que entra en `findings.md` usando
   `validation_results.json`.
 
-Un finding real para bug bounty exige mas que una senal: evidencia, alcance,
-impacto material, explotabilidad realista, PoC o plan reproducible y exclusiones
+Un finding de bug bounty exige mas que una senal: evidencia, alcance, impacto
+material, explotabilidad realista, PoC o plan reproducible y exclusiones
 revisadas.

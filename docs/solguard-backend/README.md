@@ -4,6 +4,14 @@ Esta carpeta documenta el backend actual de SolGuard. La fuente de verdad para
 estos contratos es el repositorio `solguard-backend`; esta documentacion describe
 el comportamiento que existe en codigo, no una arquitectura deseada.
 
+## Alcance real
+
+Esta documentacion enumera capacidades implementadas y artefactos que el backend
+genera. No afirma que SolGuard tenga recall general demostrado fuera del corpus,
+ni que pueda mandar findings a bug bounty sin humano. Cuando se habla de
+`supported_finding`, significa soporte estatico segun el contrato de
+`validation_results.json`, no explotabilidad confirmada por PoC.
+
 El backend es el orquestador local de analisis: expone una API HTTP en Rust,
 levanta un servicio interno en Node para llamadas al modelo local, coordina las
 herramientas de analisis, consulta la base de conocimiento y escribe todos los

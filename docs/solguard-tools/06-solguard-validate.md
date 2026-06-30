@@ -63,10 +63,10 @@ Archivos:
 - `reviewable_lead`
 - `non_finding`
 
-Regla operativa:
+Regla operativa dentro de SolGuard:
 
 ```text
-finding publicable = result supported + finding_class supported_finding
+finding soportado por contrato estatico = result supported + finding_class supported_finding
 ```
 
 ## Criterio de `supported`
