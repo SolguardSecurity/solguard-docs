@@ -2,7 +2,7 @@
 
 Fuente: resultados generados en `C:\Users\Roger G?mez Mart?nez\Documents\Solguard` y ground truth de `ground-truth-working.json` en `solguard-deploy`.
 
-Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. El resto de protocolos mantiene el ultimo resultado real disponible.
+Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. El resto de protocolos mantiene el ultimo resultado real disponible.
 
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
@@ -10,12 +10,12 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Benchmark v1 | 24 | 380 | 06:05:33 | 407 | 106 | 30 | 282 | 74.2% |
+| Benchmark v1 | 24 | 380 | 06:07:01 | 408 | 106 | 30 | 283 | 74.5% |
 | Benchmark v2 | 20 | 20 | 04:32:07 | 181 | 115 | 46 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 05:19:00 | 153 | 116 | 15 | 22 | 100% |
 | Labs | 8 | 24 | 01:10:30 | 113 | 38 | 55 | 20 | 83.3% |
-| **Benchmarks total** | **63** | **422** | **15:56:40** | **741** | **337** | **91** | **324** | **76.8%** |
-| **Total con labs** | **71** | **446** | **17:07:10** | **854** | **375** | **146** | **344** | **77.1%** |
+| **Benchmarks total** | **63** | **422** | **15:58:08** | **742** | **337** | **91** | **325** | **77.0%** |
+| **Total con labs** | **71** | **446** | **17:08:38** | **855** | **375** | **146** | **345** | **77.4%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -23,7 +23,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 
 | Nombre del protocolo | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Compound Finance | 1 | 00:13:16 | 5 | 5 | 0 | 0 | 0% |
+| Compound Finance | 1 | 00:14:44 | 6 | 5 | 0 | 1 | 100% |
 | Ondo Finance | 6 | 00:11:34 | 12 | 5 | 1 | 6 | 100% |
 | Astaria | 50 | 00:30:13 | 56 | 3 | 5 | 48 | 96% |
 | KUMA Protocol | 5 | 00:18:10 | 17 | 14 | 0 | 3 | 60% |
@@ -47,7 +47,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | EigenLayer | 4 | 00:33:36 | 32 | 18 | 10 | 4 | 100% |
 | Cosmos SDK | 1 | 00:13:18 | 3 | 3 | 0 | 0 | 0% |
 | Ethereum Geth | 1 | 00:14:24 | 2 | 2 | 0 | 0 | 0% |
-| **Total v1** | **380** | **06:05:33** | **407** | **106** | **30** | **282** | **74.2%** |
+| **Total v1** | **380** | **06:07:01** | **408** | **106** | **30** | **283** | **74.5%** |
 
 ## Benchmark v2
 
