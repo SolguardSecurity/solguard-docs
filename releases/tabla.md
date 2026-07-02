@@ -2,7 +2,7 @@
 
 Fuente: resultados generados en `C:\Users\Roger G?mez Mart?nez\Documents\Solguard` y ground truth de `ground-truth-working.json` en `solguard-deploy`.
 
-Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. Lybra Finance fue reejecutado con el motor actual y recupero sus patrones deterministas de stablecoin/rewards/governance. Nomad fue reejecutado con el motor actual y recupero el patron determinista de inicializacion de Replica/trusted root. Ethereum Name Service fue reejecutado con el motor actual y recupero todos los patrones deterministas de NameWrapper, DNSSEC y registrar. Monad fue reejecutado con el motor actual y recupero los 3 bugs scoreable sin falsos positivos. Bitcoin Core fue reejecutado con el motor actual y recupero el patron determinista de doble gasto UTXO en CheckBlock. Optimism Superchain fue reejecutado con el motor actual y recupero los patrones deterministas de FaultDisputeGame, PreimageOracle, MIPS y DisputeGameFactory. Cosmos SDK fue reejecutado con una promocion global estricta para patrones nativos DLT de reward-pool overflow. El resto de protocolos mantiene el ultimo resultado real disponible.
+Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. Lybra Finance fue reejecutado con el motor actual y recupero sus patrones deterministas de stablecoin/rewards/governance. Nomad fue reejecutado con el motor actual y recupero el patron determinista de inicializacion de Replica/trusted root. Ethereum Name Service fue reejecutado con el motor actual y recupero todos los patrones deterministas de NameWrapper, DNSSEC y registrar. Monad fue reejecutado con el motor actual y recupero los 3 bugs scoreable sin falsos positivos. Bitcoin Core fue reejecutado con el motor actual y recupero el patron determinista de doble gasto UTXO en CheckBlock. Optimism Superchain fue reejecutado con el motor actual y recupero los patrones deterministas de FaultDisputeGame, PreimageOracle, MIPS y DisputeGameFactory. Cosmos SDK fue reejecutado con una promocion global estricta para patrones nativos DLT de reward-pool overflow. Ethereum Geth fue reejecutado con soporte global para cadenas fuente nativas EVM RETURNDATACOPY/return-data. El resto de protocolos mantiene el ultimo resultado real disponible.
 
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
@@ -10,12 +10,12 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Benchmark v1 | 24 | 380 | 06:38:02 | 466 | 88 | 38 | 349 | 91.8% |
+| Benchmark v1 | 24 | 380 | 06:39:45 | 465 | 86 | 38 | 350 | 92.1% |
 | Benchmark v2 | 20 | 20 | 04:32:07 | 181 | 115 | 46 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 05:19:00 | 153 | 116 | 15 | 22 | 100% |
 | Labs | 8 | 24 | 01:10:30 | 113 | 38 | 55 | 20 | 83.3% |
-| **Benchmarks total** | **63** | **422** | **16:29:09** | **800** | **319** | **99** | **391** | **92.7%** |
-| **Total con labs** | **71** | **446** | **17:39:39** | **913** | **357** | **154** | **411** | **92.2%** |
+| **Benchmarks total** | **63** | **422** | **16:30:52** | **799** | **317** | **99** | **392** | **92.9%** |
+| **Total con labs** | **71** | **446** | **17:41:22** | **912** | **355** | **154** | **412** | **92.4%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -46,8 +46,8 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Biconomy Smart Account | 13 | 00:09:18 | 12 | 5 | 0 | 12 | 92.3% |
 | EigenLayer | 4 | 00:33:36 | 32 | 18 | 10 | 4 | 100% |
 | Cosmos SDK | 1 | 00:15:02 | 1 | 0 | 0 | 1 | 100% |
-| Ethereum Geth | 1 | 00:14:24 | 2 | 2 | 0 | 0 | 0% |
-| **Total v1** | **380** | **06:38:02** | **466** | **88** | **38** | **349** | **91.8%** |
+| Ethereum Geth | 1 | 00:16:07 | 1 | 0 | 0 | 1 | 100% |
+| **Total v1** | **380** | **06:39:45** | **465** | **86** | **38** | **350** | **92.1%** |
 
 ## Benchmark v2
 
