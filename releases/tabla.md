@@ -2,7 +2,7 @@
 
 Fuente: resultados generados en `C:\Users\Roger G?mez Mart?nez\Documents\Solguard` y ground truth de `ground-truth-working.json` en `solguard-deploy`.
 
-Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. El resto de protocolos mantiene el ultimo resultado real disponible.
+Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. Lybra Finance fue reejecutado con el motor actual y recupero sus patrones deterministas de stablecoin/rewards/governance. El resto de protocolos mantiene el ultimo resultado real disponible.
 
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
@@ -10,12 +10,12 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Benchmark v1 | 24 | 380 | 06:07:01 | 408 | 106 | 30 | 283 | 74.5% |
+| Benchmark v1 | 24 | 380 | 06:26:25 | 447 | 106 | 38 | 314 | 82.6% |
 | Benchmark v2 | 20 | 20 | 04:32:07 | 181 | 115 | 46 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 05:19:00 | 153 | 116 | 15 | 22 | 100% |
 | Labs | 8 | 24 | 01:10:30 | 113 | 38 | 55 | 20 | 83.3% |
-| **Benchmarks total** | **63** | **422** | **15:58:08** | **742** | **337** | **91** | **325** | **77.0%** |
-| **Total con labs** | **71** | **446** | **17:08:38** | **855** | **375** | **146** | **345** | **77.4%** |
+| **Benchmarks total** | **63** | **422** | **16:17:32** | **781** | **337** | **99** | **356** | **84.4%** |
+| **Total con labs** | **71** | **446** | **17:28:02** | **894** | **375** | **154** | **376** | **84.3%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -30,7 +30,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Asymmetry Finance | 20 | 00:07:01 | 22 | 3 | 0 | 19 | 95% |
 | Rubicon | 45 | 00:36:43 | 58 | 11 | 2 | 45 | 100% |
 | Maia DAO | 79 | 00:27:30 | 71 | 4 | 0 | 69 | 87.3% |
-| Lybra Finance | 31 | 00:04:43 | 0 | 0 | 0 | 0 | 0% |
+| Lybra Finance | 31 | 00:24:07 | 39 | 0 | 8 | 31 | 100% |
 | Basin / Beanstalk | 14 | 00:05:00 | 9 | 1 | 0 | 8 | 57.1% |
 | Shell Protocol | 1 | 00:05:56 | 3 | 1 | 1 | 1 | 100% |
 | Centrifuge | 6 | 00:10:58 | 6 | 3 | 0 | 3 | 50% |
@@ -47,7 +47,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | EigenLayer | 4 | 00:33:36 | 32 | 18 | 10 | 4 | 100% |
 | Cosmos SDK | 1 | 00:13:18 | 3 | 3 | 0 | 0 | 0% |
 | Ethereum Geth | 1 | 00:14:24 | 2 | 2 | 0 | 0 | 0% |
-| **Total v1** | **380** | **06:07:01** | **408** | **106** | **30** | **283** | **74.5%** |
+| **Total v1** | **380** | **06:26:25** | **447** | **106** | **38** | **314** | **82.6%** |
 
 ## Benchmark v2
 
