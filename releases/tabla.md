@@ -2,7 +2,7 @@
 
 Fuente: resultados generados en `C:\Users\Roger G?mez Mart?nez\Documents\Solguard` y ground truth de `ground-truth-working.json` en `solguard-deploy`.
 
-Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. Lybra Finance fue reejecutado con el motor actual y recupero sus patrones deterministas de stablecoin/rewards/governance. Nomad fue reejecutado con el motor actual y recupero el patron determinista de inicializacion de Replica/trusted root. Monad fue reejecutado con el motor actual y recupero los 3 bugs scoreable sin falsos positivos. El resto de protocolos mantiene el ultimo resultado real disponible.
+Actualizacion post-mejoras: Rubicon fue reejecutado con las mejoras globales de deteccion deterministica de orderbooks y promocion estricta de cadenas fuente. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. Lybra Finance fue reejecutado con el motor actual y recupero sus patrones deterministas de stablecoin/rewards/governance. Nomad fue reejecutado con el motor actual y recupero el patron determinista de inicializacion de Replica/trusted root. Ethereum Name Service fue reejecutado con el motor actual y recupero todos los patrones deterministas de NameWrapper, DNSSEC y registrar. Monad fue reejecutado con el motor actual y recupero los 3 bugs scoreable sin falsos positivos. El resto de protocolos mantiene el ultimo resultado real disponible.
 
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
@@ -10,12 +10,12 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Benchmark v1 | 24 | 380 | 06:27:49 | 446 | 101 | 38 | 318 | 83.7% |
+| Benchmark v1 | 24 | 380 | 06:29:58 | 462 | 102 | 38 | 331 | 87.1% |
 | Benchmark v2 | 20 | 20 | 04:32:07 | 181 | 115 | 46 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 05:19:00 | 153 | 116 | 15 | 22 | 100% |
 | Labs | 8 | 24 | 01:10:30 | 113 | 38 | 55 | 20 | 83.3% |
-| **Benchmarks total** | **63** | **422** | **16:18:56** | **780** | **332** | **99** | **360** | **85.3%** |
-| **Total con labs** | **71** | **446** | **17:29:26** | **893** | **370** | **154** | **380** | **85.2%** |
+| **Benchmarks total** | **63** | **422** | **16:21:05** | **796** | **333** | **99** | **373** | **88.4%** |
+| **Total con labs** | **71** | **446** | **17:31:35** | **909** | **371** | **154** | **393** | **88.1%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -37,7 +37,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Panoptic | 7 | 00:06:15 | 8 | 0 | 1 | 7 | 100% |
 | Reserve Protocol | 27 | 00:16:16 | 40 | 10 | 5 | 25 | 92.6% |
 | Nomad | 1 | 00:10:03 | 1 | 0 | 0 | 1 | 100% |
-| Ethereum Name Service | 16 | 00:03:04 | 1 | 0 | 0 | 3 | 18.8% |
+| Ethereum Name Service | 16 | 00:05:13 | 17 | 1 | 0 | 16 | 100% |
 | Monad | 3 | 00:15:23 | 3 | 0 | 0 | 3 | 100% |
 | Recall / IPC | 13 | 00:15:22 | 17 | 0 | 5 | 12 | 92.3% |
 | Bitcoin Core | 1 | 00:11:13 | 8 | 8 | 0 | 0 | 0% |
@@ -47,7 +47,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | EigenLayer | 4 | 00:33:36 | 32 | 18 | 10 | 4 | 100% |
 | Cosmos SDK | 1 | 00:13:18 | 3 | 3 | 0 | 0 | 0% |
 | Ethereum Geth | 1 | 00:14:24 | 2 | 2 | 0 | 0 | 0% |
-| **Total v1** | **380** | **06:27:49** | **446** | **101** | **38** | **318** | **83.7%** |
+| **Total v1** | **380** | **06:29:58** | **462** | **102** | **38** | **331** | **87.1%** |
 
 ## Benchmark v2
 
