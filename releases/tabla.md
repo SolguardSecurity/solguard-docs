@@ -26,18 +26,20 @@ Actualizacion Renzo: Renzo fue reejecutado con los gates globales actuales de ac
 
 Actualizacion Nibiru: Nibiru fue reejecutado con gates globales para trace/accounting y ordering single-surface, mas clasificacion global de carpetas e2e como superficies no productivas, manteniendo solo el patron determinista de StateDB compartido en bank keeper.
 
+Actualizacion Stader Labs: Stader Labs fue reejecutado con hardening global para placeholders deterministas de role-check, deployment clone/preemption y pause-admin no claim-like. El recall se mantiene al 100% y se conserva en validacion un claim-like de rewards para no perder cobertura global.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
 
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
-| Benchmark v2 | 20 | 20 | 03:55:26 | 50 | 26 | 4 | 20 | 100% |
+| Benchmark v1 | 24 | 380 | 06:43:10 | 445 | 19 | 56 | 380 | 100% |
+| Benchmark v2 | 20 | 20 | 03:50:07 | 43 | 19 | 4 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 04:33:34 | 39 | 16 | 1 | 22 | 100% |
-| Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:12:23** | **534** | **61** | **61** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:05:13** | **596** | **74** | **86** | **446** | **100%** |
+| Labs | 8 | 24 | 00:52:46 | 62 | 13 | 25 | 24 | 100% |
+| **Benchmarks total** | **63** | **422** | **15:06:51** | **527** | **54** | **61** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **15:59:37** | **589** | **67** | **86** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -69,7 +71,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | EigenLayer | 4 | 00:19:42 | 4 | 0 | 0 | 4 | 100% |
 | Cosmos SDK | 1 | 00:15:02 | 1 | 0 | 0 | 1 | 100% |
 | Ethereum Geth | 1 | 00:16:07 | 1 | 0 | 0 | 1 | 100% |
-| **Total v1** | **380** | **06:43:23** | **445** | **19** | **56** | **380** | **100%** |
+| **Total v1** | **380** | **06:43:10** | **445** | **19** | **56** | **380** | **100%** |
 
 ## Benchmark v2
 
@@ -81,7 +83,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Caviar | 1 | 00:04:47 | 3 | 2 | 0 | 1 | 100% |
 | Wenwin | 1 | 00:04:07 | 4 | 3 | 0 | 1 | 100% |
 | Size | 1 | 00:14:43 | 1 | 0 | 0 | 1 | 100% |
-| Stader Labs | 1 | 00:30:54 | 9 | 8 | 0 | 1 | 100% |
+| Stader Labs | 1 | 00:25:35 | 2 | 1 | 0 | 1 | 100% |
 | Papr / Backed | 1 | 00:06:57 | 3 | 1 | 1 | 1 | 100% |
 | Good Entry | 1 | 00:09:42 | 5 | 3 | 1 | 1 | 100% |
 | DYAD | 1 | 00:11:48 | 1 | 0 | 0 | 1 | 100% |
@@ -95,7 +97,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Web3.js | 1 | 00:14:49 | 5 | 2 | 2 | 1 | 100% |
 | Nibiru | 1 | 00:09:34 | 1 | 0 | 0 | 1 | 100% |
 | Arbitrum BoLD | 1 | 00:08:14 | 1 | 0 | 0 | 1 | 100% |
-| **Total v2** | **20** | **03:55:26** | **50** | **26** | **4** | **20** | **100%** |
+| **Total v2** | **20** | **03:50:07** | **43** | **19** | **4** | **20** | **100%** |
 
 ## Benchmark v3
 
@@ -134,4 +136,4 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | SolGuard Lab DeFi v2 | 3 | 00:08:10 | 12 | 1 | 8 | 3 | 100% |
 | SolGuard Lab DeFi v3 | 3 | 00:08:25 | 11 | 0 | 8 | 3 | 100% |
 | SolGuard Lab DeFi v4 | 2 | 00:05:17 | 10 | 5 | 3 | 2 | 100% |
-| **Total labs** | **24** | **00:52:50** | **62** | **13** | **25** | **24** | **100%** |
+| **Total labs** | **24** | **00:52:46** | **62** | **13** | **25** | **24** | **100%** |
