@@ -24,6 +24,8 @@ Actualizacion Arbitrum BoLD: Arbitrum BoLD fue reejecutado con gates globales pa
 
 Actualizacion Renzo: Renzo fue reejecutado con los gates globales actuales de actual_received sin flujo local y un gate global para claim/reward replay colapsado a interfaces self-referential, manteniendo solo el patron determinista de completeQueuedWithdrawal + receive bloqueado por nonReentrant.
 
+Actualizacion Nibiru: Nibiru fue reejecutado con gates globales para trace/accounting y ordering single-surface, mas clasificacion global de carpetas e2e como superficies no productivas, manteniendo solo el patron determinista de StateDB compartido en bank keeper.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -31,11 +33,11 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
-| Benchmark v2 | 20 | 20 | 03:55:56 | 54 | 30 | 4 | 20 | 100% |
+| Benchmark v2 | 20 | 20 | 03:55:26 | 50 | 26 | 4 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 04:33:34 | 39 | 16 | 1 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:12:53** | **538** | **65** | **61** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:05:43** | **600** | **78** | **86** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **15:12:23** | **534** | **61** | **61** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **16:05:13** | **596** | **74** | **86** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -91,9 +93,9 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Zcash | 1 | 00:13:10 | 1 | 0 | 0 | 1 | 100% |
 | Lodestar | 1 | 00:14:34 | 2 | 1 | 0 | 1 | 100% |
 | Web3.js | 1 | 00:14:49 | 5 | 2 | 2 | 1 | 100% |
-| Nibiru | 1 | 00:10:04 | 5 | 4 | 0 | 1 | 100% |
+| Nibiru | 1 | 00:09:34 | 1 | 0 | 0 | 1 | 100% |
 | Arbitrum BoLD | 1 | 00:08:14 | 1 | 0 | 0 | 1 | 100% |
-| **Total v2** | **20** | **03:55:56** | **54** | **30** | **4** | **20** | **100%** |
+| **Total v2** | **20** | **03:55:26** | **50** | **26** | **4** | **20** | **100%** |
 
 ## Benchmark v3
 
