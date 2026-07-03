@@ -16,6 +16,8 @@ Actualizacion Wise Lending: Wise Lending fue reejecutado con gates globales para
 
 Actualizacion MANTRA DEX: MANTRA DEX fue reejecutado con gate global para asset-conservation anclado solo a superficies error/enum PascalCase, manteniendo el patron determinista de CPMM multi-asset incompatible con formulas x*y=k.
 
+Actualizacion Size: Size fue reejecutado con los gates globales actuales para actual_received sin flujo local, accounting anonimo single-surface y ordering anonimo single-surface, manteniendo solo el patron determinista de fee undercharge en exact-cash-out.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -23,11 +25,11 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
-| Benchmark v2 | 20 | 20 | 04:07:40 | 120 | 54 | 46 | 20 | 100% |
+| Benchmark v2 | 20 | 20 | 04:09:07 | 105 | 49 | 36 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 04:33:34 | 39 | 16 | 1 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:24:37** | **604** | **89** | **103** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:17:27** | **666** | **102** | **128** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **15:26:04** | **589** | **84** | **93** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **16:18:54** | **651** | **97** | **118** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -70,7 +72,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Renzo | 1 | 00:25:52 | 38 | 5 | 32 | 1 | 100% |
 | Caviar | 1 | 00:04:47 | 3 | 2 | 0 | 1 | 100% |
 | Wenwin | 1 | 00:04:07 | 4 | 3 | 0 | 1 | 100% |
-| Size | 1 | 00:13:16 | 16 | 5 | 10 | 1 | 100% |
+| Size | 1 | 00:14:43 | 1 | 0 | 0 | 1 | 100% |
 | Stader Labs | 1 | 00:30:54 | 9 | 8 | 0 | 1 | 100% |
 | Papr / Backed | 1 | 00:06:57 | 3 | 1 | 1 | 1 | 100% |
 | Good Entry | 1 | 00:09:42 | 5 | 3 | 1 | 1 | 100% |
@@ -85,7 +87,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Web3.js | 1 | 00:14:49 | 5 | 2 | 2 | 1 | 100% |
 | Nibiru | 1 | 00:10:04 | 5 | 4 | 0 | 1 | 100% |
 | Arbitrum BoLD | 1 | 00:09:55 | 7 | 6 | 0 | 1 | 100% |
-| **Total v2** | **20** | **04:07:40** | **120** | **54** | **46** | **20** | **100%** |
+| **Total v2** | **20** | **04:09:07** | **105** | **49** | **36** | **20** | **100%** |
 
 ## Benchmark v3
 
