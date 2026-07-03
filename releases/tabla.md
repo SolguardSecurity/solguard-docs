@@ -18,6 +18,8 @@ Actualizacion MANTRA DEX: MANTRA DEX fue reejecutado con gate global para asset-
 
 Actualizacion Size: Size fue reejecutado con los gates globales actuales para actual_received sin flujo local, accounting anonimo single-surface y ordering anonimo single-surface, manteniendo solo el patron determinista de fee undercharge en exact-cash-out.
 
+Actualizacion Zcash: Zcash fue reejecutado con gates globales mas estrictos para ordering/accounting anonimo single-surface sin ruta material de validacion, manteniendo solo el patron determinista de malleability de scriptSig/GetTxid.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -25,11 +27,11 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
-| Benchmark v2 | 20 | 20 | 04:09:07 | 105 | 49 | 36 | 20 | 100% |
+| Benchmark v2 | 20 | 20 | 04:06:05 | 97 | 41 | 36 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 04:33:34 | 39 | 16 | 1 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:26:04** | **589** | **84** | **93** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:18:54** | **651** | **97** | **118** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **15:23:02** | **581** | **76** | **93** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **16:15:52** | **643** | **89** | **118** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -82,12 +84,12 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | AI Arena | 1 | 00:09:58 | 3 | 2 | 0 | 1 | 100% |
 | LoopFi | 1 | 00:09:48 | 1 | 0 | 0 | 1 | 100% |
 | Core Lightning | 1 | 00:15:22 | 4 | 3 | 0 | 1 | 100% |
-| Zcash | 1 | 00:16:12 | 9 | 8 | 0 | 1 | 100% |
+| Zcash | 1 | 00:13:10 | 1 | 0 | 0 | 1 | 100% |
 | Lodestar | 1 | 00:14:34 | 2 | 1 | 0 | 1 | 100% |
 | Web3.js | 1 | 00:14:49 | 5 | 2 | 2 | 1 | 100% |
 | Nibiru | 1 | 00:10:04 | 5 | 4 | 0 | 1 | 100% |
 | Arbitrum BoLD | 1 | 00:09:55 | 7 | 6 | 0 | 1 | 100% |
-| **Total v2** | **20** | **04:09:07** | **105** | **49** | **36** | **20** | **100%** |
+| **Total v2** | **20** | **04:06:05** | **97** | **41** | **36** | **20** | **100%** |
 
 ## Benchmark v3
 
