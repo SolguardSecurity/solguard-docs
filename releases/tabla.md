@@ -4,6 +4,8 @@ Fuente: resultados generados en `C:\Users\Roger G?mez Mart?nez\Documents\Solguar
 
 Actualizacion post-mejoras: Rubicon fue reejecutado con filtros globales de rutas vendorizadas/periphery y deteccion general de reembolsos ETH inline que revierten la operacion principal. Compound Finance fue reejecutado con la deteccion global de drift en indices de reward/borrow. Lybra Finance fue reejecutado con el motor actual y recupero sus patrones deterministas de stablecoin/rewards/governance. Nomad fue reejecutado con el motor actual y recupero el patron determinista de inicializacion de Replica/trusted root. Ethereum Name Service fue reejecutado con el motor actual y recupero todos los patrones deterministas de NameWrapper, DNSSEC y registrar. Monad fue reejecutado con el motor actual y recupero los 3 bugs scoreable sin falsos positivos. Bitcoin Core fue reejecutado con el motor actual y recupero el patron determinista de doble gasto UTXO en CheckBlock. Optimism Superchain fue reejecutado con el motor actual y recupero los patrones deterministas de FaultDisputeGame, PreimageOracle, MIPS y DisputeGameFactory. Cosmos SDK fue reejecutado con una promocion global estricta para patrones nativos DLT de reward-pool overflow. Ethereum Geth fue reejecutado con soporte global para cadenas fuente nativas EVM RETURNDATACOPY/return-data. Biconomy Smart Account fue reejecutado con anclaje global ERC-1271 a isValidSignature, gate global para superficies no productivas y validacion estricta de relaciones economicas actual_received. Taiko fue reejecutado con deteccion global de tags ASN.1 de validez de certificado y promocion estricta para patrones deterministas de pausa/fee payout. EigenLayer fue reejecutado con el motor actual y quedo filtrado por la validacion estricta global de relaciones economicas actual_received. Recall / IPC fue reejecutado con promocion global estricta para quorum determinista con firmantes duplicados. Reserve Protocol fue revalidado con un filtro global que mantiene en review leads deterministas de formula de rewards sin binding tipado. KUMA Protocol fue reejecutado con promocion global estricta para cadenas fuente deterministas de stale-oracle/latestRoundData. Astaria fue reejecutado con un puente global estricto para scope economico NFT-lending en reglas de private-vault liveness e identidad borrower. Asymmetry Finance fue reejecutado con una clasificacion global de peg assumptions de derivados como logic/accounting impact. Centrifuge fue reejecutado con el motor actual y recupero los bugs scoreable restantes sin cambios adicionales de codigo. Basin / Beanstalk fue reejecutado con el motor actual y recupero todos los bugs scoreable de AMM sin cambios adicionales de codigo. Maia DAO fue reejecutado con soporte global para cadenas fuente deterministas de router asset-flow, governance block-period y constructor dependency validation. DYAD fue reejecutado con un gate global para accounting generico en librerias OpenZeppelin/forge-std y contexto estricto boost-lock en staking rewards. Lodestar fue reejecutado con gates globales para weak trace single-surface, reward-claim sobre constantes y private-key forwarding explicito. Revert Lend fue reejecutado con gates globales para accounting anonimo single-surface, actual_received sin flujo local y raw calls a target realmente controlado por usuario. PoolTogether fue reejecutado con el motor actual y quedo filtrado por gates globales de actual_received sin flujo local y trace/accounting single-surface, manteniendo solo el patron determinista de partial claim. Badger eBTC fue reejecutado con gates globales para dependencias/test harness vendorizados y librerias genericas standalone sin consumidor de protocolo, manteniendo el patron determinista de batch liquidation. Connext fue reejecutado con las gates globales de actual_received sin flujo local, manteniendo solo el patron determinista de unchecked router balance underflow. Party Protocol fue reejecutado con gates globales para cache/indexer inferido en Solidity, zero-address anonimo single-surface y refunds ETH que usan helpers full-gas o excedentes evitables, manteniendo solo el patron determinista de host abdication replay. SolGuard Lab DTL v3/v4 fueron reejecutados con patrones fuente DLT deterministas para epoch context, fee debit, cache keys y replacement hints. SolGuard Lab DeFi v1 fue reejecutado con extraccion Solidity compatible con CRLF, seeds fuente globales para oracle freshness, claim ordering y zero-address sink, y validacion estricta de recipient_nonzero. El resto de protocolos mantiene el ultimo resultado real disponible.
 
+Actualizacion Superposition: Superposition fue reejecutado con gate global para ordering/replacement anonimo single-surface y filtros existentes de trace/accounting anonimo, manteniendo solo el patron determinista de reversed ERC20 transfer arguments.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -12,10 +14,10 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
 | Benchmark v2 | 20 | 20 | 04:10:26 | 126 | 60 | 46 | 20 | 100% |
-| Benchmark v3 | 19 | 22 | 04:45:48 | 70 | 40 | 8 | 22 | 100% |
+| Benchmark v3 | 19 | 22 | 04:43:37 | 65 | 35 | 8 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:39:37** | **641** | **119** | **110** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:32:27** | **703** | **132** | **135** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **15:37:26** | **636** | **114** | **110** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **16:30:16** | **698** | **127** | **135** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -92,13 +94,13 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | DittoETH | 1 | 00:13:11 | 1 | 0 | 0 | 1 | 100% |
 | zkSync Era | 1 | 00:12:26 | 6 | 5 | 0 | 1 | 100% |
 | Axelar Network | 1 | 00:14:02 | 2 | 1 | 0 | 1 | 100% |
-| Superposition | 1 | 00:13:49 | 6 | 5 | 0 | 1 | 100% |
+| Superposition | 1 | 00:11:38 | 1 | 0 | 0 | 1 | 100% |
 | Olas | 1 | 00:24:09 | 5 | 4 | 0 | 1 | 100% |
 | Vultisig | 1 | 00:07:04 | 4 | 3 | 0 | 1 | 100% |
 | Connext | 1 | 00:20:15 | 1 | 0 | 0 | 1 | 100% |
 | Party Protocol | 1 | 00:22:13 | 1 | 0 | 0 | 1 | 100% |
 | Holograph | 1 | 00:10:50 | 4 | 2 | 1 | 1 | 100% |
-| **Total v3** | **22** | **04:45:48** | **70** | **40** | **8** | **22** | **100%** |
+| **Total v3** | **22** | **04:43:37** | **65** | **35** | **8** | **22** | **100%** |
 
 ## Labs
 
