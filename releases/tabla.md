@@ -6,6 +6,8 @@ Actualizacion post-mejoras: Rubicon fue reejecutado con filtros globales de ruta
 
 Actualizacion Superposition: Superposition fue reejecutado con gate global para ordering/replacement anonimo single-surface y filtros existentes de trace/accounting anonimo, manteniendo solo el patron determinista de reversed ERC20 transfer arguments.
 
+Actualizacion zkSync Era: zkSync Era fue reejecutado con taxonomia global ampliada para test harness (`test-contracts`, `test_infra`) y gate determinista para superficies primarias no productivas, manteniendo solo el patron determinista de StateTransitionManager.unfreezeChain llamando a freezeDiamond.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -14,10 +16,10 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
 | Benchmark v2 | 20 | 20 | 04:10:26 | 126 | 60 | 46 | 20 | 100% |
-| Benchmark v3 | 19 | 22 | 04:43:37 | 65 | 35 | 8 | 22 | 100% |
+| Benchmark v3 | 19 | 22 | 04:43:12 | 60 | 30 | 8 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:37:26** | **636** | **114** | **110** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:30:16** | **698** | **127** | **135** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **15:37:01** | **631** | **109** | **110** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **16:29:51** | **693** | **122** | **135** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -92,7 +94,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Ajna | 1 | 00:13:41 | 3 | 2 | 0 | 1 | 100% |
 | Badger eBTC | 1 | 00:20:48 | 1 | 0 | 0 | 1 | 100% |
 | DittoETH | 1 | 00:13:11 | 1 | 0 | 0 | 1 | 100% |
-| zkSync Era | 1 | 00:12:26 | 6 | 5 | 0 | 1 | 100% |
+| zkSync Era | 1 | 00:12:01 | 1 | 0 | 0 | 1 | 100% |
 | Axelar Network | 1 | 00:14:02 | 2 | 1 | 0 | 1 | 100% |
 | Superposition | 1 | 00:11:38 | 1 | 0 | 0 | 1 | 100% |
 | Olas | 1 | 00:24:09 | 5 | 4 | 0 | 1 | 100% |
@@ -100,7 +102,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Connext | 1 | 00:20:15 | 1 | 0 | 0 | 1 | 100% |
 | Party Protocol | 1 | 00:22:13 | 1 | 0 | 0 | 1 | 100% |
 | Holograph | 1 | 00:10:50 | 4 | 2 | 1 | 1 | 100% |
-| **Total v3** | **22** | **04:43:37** | **65** | **35** | **8** | **22** | **100%** |
+| **Total v3** | **22** | **04:43:12** | **60** | **30** | **8** | **22** | **100%** |
 
 ## Labs
 
