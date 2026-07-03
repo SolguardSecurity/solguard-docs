@@ -11,11 +11,11 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
-| Benchmark v2 | 20 | 20 | 04:32:07 | 181 | 115 | 46 | 20 | 100% |
+| Benchmark v2 | 20 | 20 | 04:15:52 | 146 | 80 | 46 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 05:19:00 | 153 | 116 | 15 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **16:34:30** | **779** | **250** | **117** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **17:27:20** | **841** | **263** | **142** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **16:18:15** | **744** | **215** | **117** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **17:11:05** | **806** | **228** | **142** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -59,7 +59,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Caviar | 1 | 00:04:47 | 3 | 2 | 0 | 1 | 100% |
 | Wenwin | 1 | 00:04:07 | 4 | 3 | 0 | 1 | 100% |
 | Size | 1 | 00:13:16 | 16 | 5 | 10 | 1 | 100% |
-| Stader Labs | 1 | 00:47:09 | 44 | 43 | 0 | 1 | 100% |
+| Stader Labs | 1 | 00:30:54 | 9 | 8 | 0 | 1 | 100% |
 | Papr / Backed | 1 | 00:06:57 | 3 | 1 | 1 | 1 | 100% |
 | Good Entry | 1 | 00:09:42 | 5 | 3 | 1 | 1 | 100% |
 | DYAD | 1 | 00:13:33 | 11 | 10 | 0 | 1 | 100% |
