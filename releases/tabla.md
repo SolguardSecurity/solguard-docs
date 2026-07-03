@@ -14,6 +14,8 @@ Actualizacion Phi: Phi fue reejecutado con los gates globales actuales de actual
 
 Actualizacion Wise Lending: Wise Lending fue reejecutado con gates globales para claim/external-effect single-surface parcialmente resuelto y deployment-binding determinista atado solo a helpers clone/getAddress, manteniendo los patrones deterministas de liquidation dust griefing y bad-debt double-count.
 
+Actualizacion MANTRA DEX: MANTRA DEX fue reejecutado con gate global para asset-conservation anclado solo a superficies error/enum PascalCase, manteniendo el patron determinista de CPMM multi-asset incompatible con formulas x*y=k.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -21,11 +23,11 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 | Grupo | Protocolos | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
-| Benchmark v2 | 20 | 20 | 04:10:26 | 126 | 60 | 46 | 20 | 100% |
+| Benchmark v2 | 20 | 20 | 04:07:40 | 120 | 54 | 46 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 04:33:34 | 39 | 16 | 1 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:27:23** | **610** | **95** | **103** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:20:13** | **672** | **108** | **128** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **15:24:37** | **604** | **89** | **103** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **16:17:27** | **666** | **102** | **128** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -64,7 +66,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Nombre del protocolo | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Curve Finance Metapool | 1 | 00:08:37 | 1 | 0 | 0 | 1 | 100% |
-| MANTRA DEX | 1 | 00:18:38 | 7 | 6 | 0 | 1 | 100% |
+| MANTRA DEX | 1 | 00:15:52 | 1 | 0 | 0 | 1 | 100% |
 | Renzo | 1 | 00:25:52 | 38 | 5 | 32 | 1 | 100% |
 | Caviar | 1 | 00:04:47 | 3 | 2 | 0 | 1 | 100% |
 | Wenwin | 1 | 00:04:07 | 4 | 3 | 0 | 1 | 100% |
@@ -83,7 +85,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Web3.js | 1 | 00:14:49 | 5 | 2 | 2 | 1 | 100% |
 | Nibiru | 1 | 00:10:04 | 5 | 4 | 0 | 1 | 100% |
 | Arbitrum BoLD | 1 | 00:09:55 | 7 | 6 | 0 | 1 | 100% |
-| **Total v2** | **20** | **04:10:26** | **126** | **60** | **46** | **20** | **100%** |
+| **Total v2** | **20** | **04:07:40** | **120** | **54** | **46** | **20** | **100%** |
 
 ## Benchmark v3
 
