@@ -12,6 +12,8 @@ Actualizacion Wildcat: Wildcat fue reejecutado con los gates globales actuales d
 
 Actualizacion Phi: Phi fue reejecutado con los gates globales actuales de actual_received sin flujo local de valor, accounting anonimo single-surface y ordering anonimo single-surface, manteniendo solo los dos patrones deterministas de replay de firmas.
 
+Actualizacion Wise Lending: Wise Lending fue reejecutado con gates globales para claim/external-effect single-surface parcialmente resuelto y deployment-binding determinista atado solo a helpers clone/getAddress, manteniendo los patrones deterministas de liquidation dust griefing y bad-debt double-count.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -20,10 +22,10 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Benchmark v1 | 24 | 380 | 06:43:23 | 445 | 19 | 56 | 380 | 100% |
 | Benchmark v2 | 20 | 20 | 04:10:26 | 126 | 60 | 46 | 20 | 100% |
-| Benchmark v3 | 19 | 22 | 04:35:27 | 46 | 20 | 4 | 22 | 100% |
+| Benchmark v3 | 19 | 22 | 04:33:34 | 39 | 16 | 1 | 22 | 100% |
 | Labs | 8 | 24 | 00:52:50 | 62 | 13 | 25 | 24 | 100% |
-| **Benchmarks total** | **63** | **422** | **15:29:16** | **617** | **99** | **106** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **16:22:06** | **679** | **112** | **131** | **446** | **100%** |
+| **Benchmarks total** | **63** | **422** | **15:27:23** | **610** | **95** | **103** | **422** | **100%** |
+| **Total con labs** | **71** | **446** | **16:20:13** | **672** | **108** | **128** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -87,7 +89,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 
 | Nombre del protocolo | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Wise Lending | 2 | 00:14:58 | 9 | 4 | 3 | 2 | 100% |
+| Wise Lending | 2 | 00:13:05 | 2 | 0 | 0 | 2 | 100% |
 | Revert Lend | 1 | 00:14:02 | 1 | 0 | 0 | 1 | 100% |
 | Predy | 2 | 00:18:18 | 3 | 1 | 0 | 2 | 100% |
 | Wildcat | 1 | 00:16:44 | 1 | 0 | 0 | 1 | 100% |
@@ -106,7 +108,7 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Connext | 1 | 00:20:15 | 1 | 0 | 0 | 1 | 100% |
 | Party Protocol | 1 | 00:22:13 | 1 | 0 | 0 | 1 | 100% |
 | Holograph | 1 | 00:10:50 | 4 | 2 | 1 | 1 | 100% |
-| **Total v3** | **22** | **04:35:27** | **46** | **20** | **4** | **22** | **100%** |
+| **Total v3** | **22** | **04:33:34** | **39** | **16** | **1** | **22** | **100%** |
 
 ## Labs
 
