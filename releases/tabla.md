@@ -28,6 +28,8 @@ Actualizacion Nibiru: Nibiru fue reejecutado con gates globales para trace/accou
 
 Actualizacion Stader Labs: Stader Labs fue reejecutado con hardening global para placeholders deterministas de role-check, deployment clone/preemption y pause-admin no claim-like. El recall se mantiene al 100% y se conserva en validacion un claim-like de rewards para no perder cobertura global.
 
+Actualizacion SolGuard Lab DTL v2: SolGuard Lab DTL v2 fue reejecutado con hardening global para ordering/replacement anonimo single-surface y un puente estricto de validacion para rutas locales tipadas de identity/context/cross-component con evidencia estructural. El recall queda en 100% y los falsos positivos bajan a 0.
+
 Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth tras source coverage; `Findings reportados` es `supported_findings`; `Falsos positivos` son supported findings sin match exact/equivalent contra ground truth; `Duplicados` son supported findings adicionales que matchean una vulnerabilidad ya detectada; `Detectados` son vulnerabilidades unicas del ground truth detectadas con finding supported; `Recall = Detectados / Vulnerabilidades`.
 
 ## Resumen
@@ -37,9 +39,9 @@ Definiciones usadas: `Vulnerabilidades` es el total scoreable del ground truth t
 | Benchmark v1 | 24 | 380 | 06:43:10 | 445 | 19 | 56 | 380 | 100% |
 | Benchmark v2 | 20 | 20 | 03:50:07 | 43 | 19 | 4 | 20 | 100% |
 | Benchmark v3 | 19 | 22 | 04:33:34 | 39 | 16 | 1 | 22 | 100% |
-| Labs | 8 | 24 | 00:52:46 | 62 | 13 | 25 | 24 | 100% |
+| Labs | 8 | 24 | 00:51:28 | 56 | 8 | 24 | 24 | 100% |
 | **Benchmarks total** | **63** | **422** | **15:06:51** | **527** | **54** | **61** | **422** | **100%** |
-| **Total con labs** | **71** | **446** | **15:59:37** | **589** | **67** | **86** | **446** | **100%** |
+| **Total con labs** | **71** | **446** | **15:58:19** | **583** | **62** | **85** | **446** | **100%** |
 
 Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snapshot download returned HTTP 404.
 
@@ -129,11 +131,11 @@ Nota: `Tapioca-DAO` se excluye de los benchmarks porque fallo en descarga: Snaps
 | Nombre del protocolo | Vulnerabilidades | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | SolGuard Lab DTL v1 | 2 | 00:05:14 | 5 | 2 | 1 | 2 | 100% |
-| SolGuard Lab DTL v2 | 3 | 00:07:16 | 11 | 5 | 3 | 3 | 100% |
+| SolGuard Lab DTL v2 | 3 | 00:05:58 | 5 | 0 | 2 | 3 | 100% |
 | SolGuard Lab DTL v3 | 4 | 00:06:16 | 6 | 0 | 2 | 4 | 100% |
 | SolGuard Lab DTL v4 | 4 | 00:08:02 | 4 | 0 | 0 | 4 | 100% |
 | SolGuard Lab DeFi v1 | 3 | 00:04:06 | 3 | 0 | 0 | 3 | 100% |
 | SolGuard Lab DeFi v2 | 3 | 00:08:10 | 12 | 1 | 8 | 3 | 100% |
 | SolGuard Lab DeFi v3 | 3 | 00:08:25 | 11 | 0 | 8 | 3 | 100% |
 | SolGuard Lab DeFi v4 | 2 | 00:05:17 | 10 | 5 | 3 | 2 | 100% |
-| **Total labs** | **24** | **00:52:46** | **62** | **13** | **25** | **24** | **100%** |
+| **Total labs** | **24** | **00:51:28** | **56** | **8** | **24** | **24** | **100%** |
