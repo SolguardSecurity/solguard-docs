@@ -90,6 +90,12 @@ version de herramienta.
 normalizado con familia, predicado, scope y version de regla. Texto legacy o
 similitud textual se conserva como fuente omitida; no crea reglas nuevas.
 
+En el pipeline `v0.8`, el historical retrieval real se difiere hasta despues de
+VALIDATE. Por defecto, `historical_evidence.json` es un placeholder
+pre-validacion y no debe introducir propiedades nuevas. El enriquecimiento
+historico post-candidate sirve para explicar y comparar resultados ya
+validados, no para modificar `invariants.json`.
+
 ## Limites
 
 - No ejecuta codigo.

@@ -81,6 +81,15 @@ Requiere evidencia estatica positiva:
 - target externo/callback/proxy resuelto cuando aplica;
 - token semantics resuelta si afecta al path economico.
 
+VALIDATE tambien puede soportar patrones deterministas de alta precision cuando
+la fuente es local, la cadena causal esta resuelta y la familia esta
+explicitamente gateada. En `v0.8`, esto incluye el caso
+`authorization_validation.return_value_enforced`: un check de rol devuelve un
+booleano, el valor no se hace efectivo antes de una funcion privilegiada y la
+evidencia enlaza source fingerprint, superficies root/trigger/impact y pasos
+criticos resueltos. Esta ruta es general y no debe depender del nombre de un
+protocolo concreto.
+
 ## Criterio de `refuted`
 
 Requiere proteccion positiva, resuelta y en scope exacto:
