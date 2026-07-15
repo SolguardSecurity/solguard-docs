@@ -1,56 +1,35 @@
 # 01. Introduccion
 
-`solguard-backend` es el cerebro operativo local de SolGuard. Su funcion no es
-solo exponer endpoints: prepara proyectos, descarga o ubica codigo objetivo,
-ejecuta herramientas especializadas, normaliza candidatos, valida evidencias y
-publica artefactos que permiten entender por que un candidato fue soportado,
-rechazado o enviado a revision.
-
-## Responsabilidades principales
-
-- Exponer la API local que usa el cliente o los runners.
-- Levantar y autenticar el servicio interno de IA.
-- Coordinar herramientas externas: map, diff, trace, discover, economic,
-  invariant y validate.
-- Convertir salidas heterogeneas en contratos JSON estables.
-- Generar artefactos humanos: `findings.md`, `review_queue.md`,
-  `validation_plan.md`, informes tecnicos y planes de PoC.
-- Consultar la base de conocimiento para busqueda e ingesta.
-- Enriquecer findings ya validados con similitudes historicas sin contaminar la
-  decision determinista.
-
-## Modelo de confianza
-
-El backend distingue entre tres niveles:
-
-- Senal: informacion de herramientas, patrones o modelo que sugiere riesgo.
-- Candidato: hipotesis normalizada con superficies, invariantes, transiciones y
-  evidencia referenciada.
-- Finding soportado: candidato que VALIDATE clasifica como `supported_finding`.
-
-La salida publica de findings solo debe venir del tercer nivel. Los candidatos
-inconclusos permanecen visibles en `review_queue.md` o como `reviewable_lead`,
-pero no se mezclan con findings soportados.
+`solguard-backend` expone la API local usada por el cliente y los runners. Su
+responsabilidad termina en la frontera de transporte: prepara el contexto de la
+request, llama a `solguard-core` y serializa el resultado.
 
 ## Flujo de uso
 
-1. `POST /install` crea el workspace local si no existe.
-2. `POST /projects/init` crea un proyecto con `program.json`, `program.md`,
-   `tool-outputs/` y `reports/`.
-3. `POST /analyze` ejecuta el pipeline completo sobre un target local o remoto.
-4. `GET /projects/:project/validation-results` permite consultar el contrato de
-   validacion y filtrarlo.
-5. `POST /search` consulta el modelo local y, segun modo, la base de
-   conocimiento.
-6. `POST /ingest` incorpora informes externos a la base SQLite.
+1. `POST /install` prepara el workspace local.
+2. `POST /projects/init` delega la inicializacion del proyecto.
+3. `POST /analyze` valida `project`, `target`, `mode` y `run_exploit`, y delega
+   la ejecucion al core.
+4. Los endpoints de resultados leen o delegan las consultas sin recalcular
+   veredictos.
+5. `POST /search` y `POST /ingest` conservan su contrato HTTP y delegan sus
+   servicios.
 
-## Principios actuales
+## Principios de la frontera
 
-- Preferir evidencia enlazada a artefactos antes que texto libre.
-- Conservar diagnosticos de rechazo; no borrar senales solo porque no puedan
-  validarse.
-- Registrar degradaciones de fase de forma explicita.
-- Mantener el modelo fuera de decisiones autoritativas cuando el codigo ya tiene
-  una regla determinista.
-- Separar enriquecimiento historico posterior a la validacion del analisis ciego
-  previo.
+- Los controllers no conocen el orden del pipeline.
+- Ninguna ruta genera candidatos, findings o reportes.
+- Los errores del core se traducen de forma estable al contrato HTTP.
+- `audit_only` sigue siendo una politica publica de `/analyze`; su ejecucion
+  real pertenece al core.
+- El backend no modifica artefactos autoritativos despues de recibirlos.
+
+## Terminologia
+
+- Senal: evidencia o modelo producido durante el analisis.
+- Candidato: hipotesis estructurada que puede llegar a VALIDATE.
+- Finding soportado: candidato que VALIDATE clasifica como soportado.
+- Admitido: finding soportado que FILTER permite entregar a EXPLOIT.
+
+Estas distinciones pertenecen a los contratos del core y sus herramientas. El
+backend solo las presenta a traves de la API.

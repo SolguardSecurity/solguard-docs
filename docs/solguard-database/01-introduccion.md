@@ -1,6 +1,6 @@
 # Introducción
 
-`solguard-database` es la base de conocimiento local de Solguard para reportes de auditoría, patrones de findings y evidencia documental estructurada. No es un backend de usuario final ni una API conversacional. Su responsabilidad es convertir documentos de seguridad en datos indexados, persistentes y reutilizables para que otras capas del sistema, especialmente `solguard-backend`, puedan consultarlos durante búsquedas y análisis.
+`solguard-database` es la base de conocimiento local de Solguard para reportes de auditoría, patrones de findings y evidencia documental estructurada. No es un backend de usuario final ni una API conversacional. Su responsabilidad es convertir documentos de seguridad en datos indexados, persistentes y reutilizables para que otras capas del sistema, especialmente `solguard-pipeline-core`, puedan consultarlos durante búsquedas y análisis.
 
 ## Rol dentro del ecosistema
 
@@ -51,7 +51,7 @@ Ese pipeline deja dos cosas claras. Primero, la base no guarda documentos sin pr
 
 El repositorio está dividido en tres capas técnicas:
 
-- `crates/solguard-core`, que contiene la lógica Rust de ingesta, normalización, perfilado y extracción;
+- `crates/solguard-core`, denominado `solguard-database::solguard-core` en la documentación, que contiene la lógica Rust de ingesta, normalización, perfilado y extracción;
 - `apps/db-connector`, que contiene el conector TypeScript responsable de la escritura en SQLite;
 - `migrations/001_init.sqlite.sql`, que define el esquema relacional y los índices de la base.
 
@@ -59,4 +59,4 @@ La carpeta `data/` es el espacio persistente local donde se almacena la base SQL
 
 ## Por qué existe como pieza separada
 
-La razón de separar `solguard-database` de `solguard-backend` es de responsabilidad y reutilización. La lógica de parsing documental y persistencia estructurada puede evolucionar como biblioteca y dataset sin quedar acoplada a la API externa, al pipeline de auditoría o a la capa de IA. A la vez, el backend puede consumir esta base como conocimiento estable y consultable sin duplicar el trabajo de extracción documental.
+La razón de separar `solguard-database` de `solguard-pipeline-core` y `solguard-backend` es de responsabilidad y reutilización. La lógica de parsing documental y persistencia estructurada puede evolucionar como biblioteca y dataset sin quedar acoplada a la API externa, al pipeline de auditoría o a la capa de IA. A la vez, el core puede consumir esta base como conocimiento estable y consultable sin duplicar el trabajo de extracción documental.

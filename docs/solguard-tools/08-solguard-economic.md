@@ -91,7 +91,7 @@ invariantes nativas antes de emitir `invariants.json`.
 - fingerprint
 - missing evidence
 
-En el backend pueden aparecer con
+En el core pueden aparecer con
 `primary_evidence_source = economic_state_discovery`.
 
 ## Capabilities

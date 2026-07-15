@@ -1,6 +1,6 @@
 # Pipeline de Ingesta y Normalización
 
-La lógica de ingesta vive principalmente en `crates/solguard-core`, y su punto de entrada público es `ingest_document`. Esta función recibe una ruta y una configuración opcional y devuelve un `IngestPayload` estructurado listo para persistirse en SQLite.
+La lógica de ingesta vive principalmente en `crates/solguard-core`, es decir, `solguard-database::solguard-core`; no en `solguard-pipeline-core`. Su punto de entrada público es `ingest_document`. Esta función recibe una ruta y una configuración opcional y devuelve un `IngestPayload` estructurado listo para persistirse en SQLite.
 
 ## Fases del pipeline
 

@@ -1,7 +1,8 @@
 # 06. Conocimiento, Base de Datos e Ingesta
 
-El backend usa `solguard-database` como memoria historica, no como autoridad de
-veredicto para un analisis nuevo. La base SQLite sirve para buscar patrones,
+El core usa `solguard-database` como memoria historica, no como autoridad de
+veredicto para un analisis nuevo. El backend conserva los endpoints HTTP y
+delega estas operaciones. La base SQLite sirve para buscar patrones,
 responder preguntas y enriquecer resultados ya validados.
 
 ## Base SQLite
@@ -18,8 +19,9 @@ Default:
 ../solguard-database/data/solguard.sqlite
 ```
 
-`knowledge.rs` lee directamente SQLite para resumenes, busqueda y recuperacion
-historica. `ingest.rs` usa el conector de `solguard-database` para insertar
+`solguard-core/src/services/knowledge.rs` lee SQLite para resumenes, busqueda y
+recuperacion historica. `services/ingest.rs` usa el conector de
+`solguard-database` para insertar
 nuevos informes.
 
 ## Busqueda de conocimiento
@@ -56,7 +58,7 @@ todo el proceso sin diagnostico.
 El pipeline separa dos momentos:
 
 1. Antes de VALIDATE: se usan source, map, diff, trace, discover, economic,
-   invariant, seeds deterministas y model discovery acotado. La base historica no
+   value, invariant, seeds deterministas y model discovery acotado. La base historica no
    decide si algo es un finding.
 2. Despues de VALIDATE: se recupera evidencia historica para enriquecer,
    comparar familias y ayudar a redactar o priorizar.

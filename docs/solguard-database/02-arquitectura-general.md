@@ -4,7 +4,7 @@ La arquitectura de `solguard-database` está diseñada como una combinación de 
 
 ## División por capas
 
-La capa Rust se encarga de transformar documentos en conocimiento estructurado. Su núcleo es `solguard-core`, una crate reutilizable que resuelve carga de documentos, extracción de texto, normalización a Markdown, perfilado documental, selección de estrategias de findings, taxonomía y chunking.
+La capa Rust se encarga de transformar documentos en conocimiento estructurado. Su núcleo es `solguard-database::solguard-core`, una crate reutilizable que resuelve carga de documentos, extracción de texto, normalización a Markdown, perfilado documental, selección de estrategias de findings, taxonomía y chunking. No debe confundirse con `solguard-pipeline-core`.
 
 La capa TypeScript no intenta parsear documentos. Se ocupa de la persistencia SQLite. Su trabajo es validar payloads, ejecutar migraciones, abrir la base local, insertar datos de forma transaccional y mantener consistencia entre tablas derivadas, FTS, embeddings y métricas.
 
@@ -14,11 +14,11 @@ SQLite actúa como plano de persistencia local. No es una caché temporal. Es la
 
 Rust concentra la lógica semántica porque ahí vive la parte sensible del procesamiento documental. TypeScript concentra la escritura porque el conector SQLite actual está montado como herramienta de integración local y CLI técnica. Este diseño evita que el parsing y el almacenamiento queden soldados en una única implementación monolítica.
 
-Además, esta separación permite que `solguard-backend` use `solguard-core` directamente para ingesta y deje al conector la responsabilidad final de insertar el payload resultante en la base.
+Además, esta separación permite que `solguard-pipeline-core` use la crate documental directamente para ingesta y deje al conector la responsabilidad final de insertar el payload resultante en la base. El backend conserva solo el endpoint HTTP que delega la operación.
 
 ## Topología del repositorio
 
-`crates/solguard-core` es el corazón del sistema. `apps/db-connector` es el adaptador de persistencia y administración técnica de la base. `migrations` contiene el esquema inicial. `data` es el directorio de persistencia local, donde se espera encontrar `solguard.sqlite` y, opcionalmente, artefactos auxiliares como payloads o exports.
+`crates/solguard-core` es el document-ingestion core de este repositorio. `apps/db-connector` es el adaptador de persistencia y administración técnica de la base. `migrations` contiene el esquema inicial. `data` es el directorio de persistencia local, donde se espera encontrar `solguard.sqlite` y, opcionalmente, artefactos auxiliares como payloads o exports.
 
 La estructura no describe microservicios distribuidos. Describe un workspace local con piezas coordinadas pero desacopladas.
 
@@ -36,4 +36,4 @@ La persistencia local también explica por qué el sistema usa SQLite con modo `
 
 ## Relación con el resto del stack
 
-`solguard-database` está debajo del backend desde el punto de vista de orquestación. No decide cuándo consultar conocimiento ni cómo introducirlo en un prompt. Sin embargo, condiciona fuertemente la calidad del sistema completo, porque es la capa que define qué datos estructurados existen, qué taxonomías son queryables y qué evidencia textual se puede recuperar cuando el backend necesita contexto para una búsqueda o un análisis.
+`solguard-database` está debajo del pipeline core desde el punto de vista de orquestación. No decide cuándo consultar conocimiento ni cómo introducirlo en un prompt. Sin embargo, condiciona fuertemente la calidad del sistema completo, porque es la capa que define qué datos estructurados existen, qué taxonomías son queryables y qué evidencia textual se puede recuperar cuando el core necesita contexto para una búsqueda o un análisis.

@@ -1,6 +1,6 @@
 # Conector SQLite y Escritura Transaccional
 
-La escritura en la base SQLite no la hace directamente `solguard-core`. La hace el conector de `apps/db-connector`, implementado en TypeScript. Este conector es el responsable de abrir la base, ejecutar migraciones, validar payloads y persistir de forma transaccional tanto las tablas principales como los artefactos derivados.
+La escritura en la base SQLite no la hace directamente `solguard-database::solguard-core`. La hace el conector de `apps/db-connector`, implementado en TypeScript. Este conector es el responsable de abrir la base, ejecutar migraciones, validar payloads y persistir de forma transaccional tanto las tablas principales como los artefactos derivados.
 
 ## CLI técnica
 
@@ -56,4 +56,4 @@ Esta capacidad es relevante para el backend, donde una ingesta batch no debería
 
 `dbInfo.ts` agrega una capa de observabilidad sobre la base. Puede devolver conteos de PDFs, reportes, findings, snippets y chunks, además de distribuciones por severidad y por PDF. Aunque no forma parte del retrieval principal del backend, sirve para inspeccionar salud, volumen y calidad general del dataset.
 
-En conjunto, el conector SQLite convierte los payloads de `solguard-core` en una base documental transaccional, indexada y apta para búsqueda estructurada, FTS y recuperación contextual.
+En conjunto, el conector SQLite convierte los payloads de `solguard-database::solguard-core` en una base documental transaccional, indexada y apta para búsqueda estructurada, FTS y recuperación contextual.

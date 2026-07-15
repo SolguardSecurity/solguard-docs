@@ -1,12 +1,12 @@
 # 07. Motor de Analisis y Orquestacion
 
-El analisis se ejecuta desde `services/analyzer/runtime.rs`. Cada ejecucion crea
-o reutiliza el proyecto, resuelve el target, limpia directorios generados de
-fases, crea un `PipelineJournal` y avanza en orden estricto.
+El motor se ejecuta en `solguard-core/src/services/analyzer/runtime.rs`. El
+backend entra por la fachada del core y no implementa fases propias.
 
-## Orden de fases
+## Orden contractual
 
-El orden esta fijado en `services/pipeline.rs`:
+`solguard-core/src/services/pipeline.rs` conserva el orden de
+`pipeline.v0.10`:
 
 ```text
 map
@@ -14,213 +14,69 @@ diff
 trace
 discover
 economic
+value
 invariant
 candidates
 validate
+filter
 historical-enrichment
 impact
 poc-plan
+exploit
 report
 ```
 
-`PipelineJournal::begin` rechaza fases fuera de orden. Cada fase escribe un
-`phase.json` y el resumen global queda en:
+El journal rechaza fases fuera de orden. Cada herramienta conserva su receipt
+como `tool_phase.json` cuando el core escribe el `phase.json` de orquestacion.
+El manifiesto global sigue en `tool-outputs/pipeline.json`.
 
-```text
-<project>/tool-outputs/pipeline.json
-```
+## Autoridades
 
-## Estados de fase
+- MAP, DIFF, TRACE, DISCOVER, ECONOMIC, VALUE e INVARIANT producen modelos y
+  evidencia; no confirman findings.
+- CANDIDATES normaliza hipotesis, IDs, superficies y bindings.
+- VALIDATE emite `supported`, `refuted` o `inconclusive`.
+- FILTER consume solo sus inputs minimos, emite `filter.v0.1` y decide admision
+  de forma independiente y fail-closed.
+- EXPLOIT verifica el hash congelado de FILTER y emite `exploit.v0.2` solo para
+  candidatos admitidos.
+- Las fases posteriores no reescriben el veredicto de VALIDATE.
 
-Estados posibles:
+## Modos
 
-- `completed`: fase ejecutada y outputs esperados presentes.
-- `degraded`: ejecucion exitosa pero salida detectada como degradada.
-- `completed_with_errors`: ejecucion termino con error registrable.
-- `fallback`: el backend genero salida fallback para mantener trazabilidad.
-- `skipped`: fase no ejecutada o marcada como omitida.
+### `full`
 
-Estos estados son diagnostico, no finding. El veredicto de seguridad vive en
-`validation_results.json`.
+Recorre las quince fases. `run_exploit` solo puede habilitar ejecucion dentro de
+las reglas de admision e aislamiento ya existentes.
 
-## Fases
+### `audit_only`
 
-### `map`
+Recorre MAP hasta FILTER. Las cinco fases posteriores quedan en el journal con
+estado `skipped`, duracion cero y razon `skipped_by_audit_only_mode`; no se
+materializan sus artefactos. Este comportamiento es necesario para labs ciegos.
 
-Construye mapa de codigo. Usa `solguard-map` con `--graph --no-color`. Para
-repos grandes de mas de `150` archivos fuente soportados usa `--fast`; si
-`--deep` excede su ventana acotada, reintenta `--fast` y registra degradacion.
+## Estados
 
-### `diff`
+`completed`, `degraded`, `completed_with_errors`, `fallback` y `skipped` son
+diagnosticos de ejecucion, no veredictos de seguridad. Core mantiene los mismos
+fallbacks y reglas de preservacion de artefactos que existian antes del
+traslado.
 
-Construye contexto de cambios cuando aplica. Sus salidas alimentan candidatos,
-pero no son requisito suficiente para validar un finding.
+## Replays offline
 
-### `trace`
-
-Ejecuta `solguard-trace` sobre targets priorizados. Los limites se configuran con
-`SOLGUARD_TRACE_MAX_TARGETS` y `SOLGUARD_TRACE_MAX_DEPTH`.
-
-### `discover`
-
-Ejecuta `solguard-discover` y produce:
-
-```text
-tool-outputs/discover/protocol_model.json
-tool-outputs/discover/index.json
-```
-
-Modela superficies, rutas, gaps, capacidades y hipotesis blind del protocolo.
-Sus hipotesis pueden entrar en candidatos con
-`primary_evidence_source = protocol_invariant_discovery` si tienen evidencia
-estructurada suficiente.
-
-### `economic`
-
-Ejecuta `solguard-economic` y produce:
-
-```text
-tool-outputs/economic/economic_model.json
-tool-outputs/economic/synthesized_invariants.json
-tool-outputs/economic/index.json
-```
-
-Modela activos, shares, deuda, collateral, rewards, fees, oraculos y reservas.
-Puede producir hipotesis con
-`primary_evidence_source = economic_state_discovery`.
-
-### `invariant`
-
-Ejecuta `solguard-invariant` y genera invariantes runtime. Si no hay salida
-completa, el backend crea contratos fallback suficientes para que candidatos y
-VALIDATE expliquen lo que falta.
-
-### `candidates`
-
-Fusiona senales de map, trace, discover, economic, invariant, seeds
-deterministas y model discovery acotado. Escribe:
-
-```text
-tool-outputs/candidates/raw_candidates.json
-tool-outputs/candidates/validation_candidates.json
-tool-outputs/candidates/rejected_candidates.json
-tool-outputs/candidates/model_discovery_packs.json
-tool-outputs/candidates/model_discovery_diagnostics.json
-tool-outputs/candidates/candidate_lifecycle.json
-canonical_candidates.json
-analysis_funnel.json
-```
-
-Reglas importantes:
-
-- Los candidatos con binding incompleto no se borran silenciosamente.
-- Los rechazos conservan etapa, razon, requisitos faltantes y evidencias.
-- `candidate_lifecycle.json` traza la senal fuente hasta admision,
-  canonicalizacion, binding y veredicto.
-- `analysis_funnel.json` resume cobertura, senales, invariantes, candidatos,
-  rechazos y resultados.
-
-### `validate`
-
-Ejecuta `solguard-validate` o genera inconclusiones fallback cuando el runtime de
-validacion no esta disponible. Produce:
-
-```text
-tool-outputs/validate/validation_results.json
-tool-outputs/validate/validation_results.md
-```
-
-Este es el contrato autoritativo. Resultados:
-
-- `supported`
-- `refuted`
-- `inconclusive`
-
-Clases de finding:
-
-- `supported_finding`
-- `review_queue`
-- `reviewable_lead`
-- `non_finding`
-
-`findings.md` solo refleja `supported_finding`. `review_queue.md` refleja
-inconclusos y leads.
-
-### `historical-enrichment`
-
-Despues de validar, consulta la base historica con las solicitudes generadas para
-candidatos y veredictos. Escribe:
-
-```text
-tool-outputs/historical-enrichment/historical_enrichment.json
-knowledge/post_candidate_retrieval.json
-```
-
-El runtime calcula el hash de `validation_results.json` antes y comprueba que no
-cambia despues.
-
-### `impact`
-
-Analiza impacto de candidatos validados. Escribe:
-
-```text
-tool-outputs/impact/impact_escalation.json
-tool-outputs/impact/impact_escalation.md
-```
-
-Si falla, crea reporte fallback y marca la fase como `fallback`; no modifica
-veredictos.
-
-### `poc-plan`
-
-Genera planes de PoC y seleccion de harness:
-
-```text
-tool-outputs/poc-plan/poc_plan.json
-tool-outputs/poc-plan/poc_plan.md
-```
-
-Es planificacion, no ejecucion de PoC.
-
-### `report`
-
-Renderiza informes tecnicos para findings soportados:
-
-```text
-reports/<candidate_id>.md
-reports/report_manifest.json
-tool-outputs/report/phase.json
-```
-
-## Salidas raiz del proyecto
-
-Archivos principales en la raiz del proyecto:
-
-- `canonical_candidates.json`
-- `analysis_funnel.json`
-- `hypothesis.md`
-- `rejected_hypotheses.md`
-- `findings.md`
-- `review_queue.md`
-- `validation_plan.md`
-- `analysis_log.md`
-- `profile.json`
-
-## Model discovery
-
-Cuando `SOLGUARD_MODEL_DISCOVERY_BATCHES > 0`, el backend prepara paquetes
-acotados desde evidencia estructurada y llama al servicio interno. Los limites
-actuales incluyen packs compactados y quotas por tipo de evidencia. Los rechazos
-del modelo quedan en `model_discovery_diagnostics.json`; no se pierden.
-
-## Reconstruccion de candidatos
-
-Para depurar sin repetir todo el analisis:
+Las operaciones que reutilizan candidate generation y binding se ejecutan con
+el binario del core:
 
 ```powershell
-cargo run --bin solguard-backend -- rebuild-candidates "<project-dir>"
+cargo run --locked --manifest-path "../solguard-core/Cargo.toml" --bin solguard-core -- rebuild-candidates "<project-dir>"
+cargo run --locked --manifest-path "../solguard-core/Cargo.toml" --bin solguard-core -- replay-raw-candidates "<project-dir>" --base "<raw.json>" --out "<out.json>"
+cargo run --locked --manifest-path "../solguard-core/Cargo.toml" --bin solguard-core -- replay-candidates "<project-dir>" --raw-candidates "<raw.json>" --invariants "<invariants.json>" --out "<dir>"
 ```
 
-Este comando reconstruye candidatos desde artefactos existentes. Es util cuando
-se corrige logica de candidate generation, binding, canonicalizacion o
-diagnosticos.
+`replay-raw-candidates` y `replay-candidates` escriben en el destino indicado.
+`rebuild-candidates`, en cambio, actualiza los candidatos canonicos y
+`tool-outputs/candidates` dentro del proyecto recibido; debe usarse sobre una
+copia o con cambios versionados. Ninguno lanza un release completo.
+
+El detalle de cada fase y artefacto se mantiene en
+[Pipeline, fases y artefactos de core](../solguard-core/pipeline-y-fases.md).

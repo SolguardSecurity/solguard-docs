@@ -1,21 +1,31 @@
 # SolGuard Backend
 
-Esta carpeta documenta el backend actual de SolGuard. La fuente de verdad para
-estos contratos es el repositorio `solguard-backend`; esta documentacion describe
-el comportamiento que existe en codigo, no una arquitectura deseada.
+`solguard-backend` es la frontera HTTP local de SolGuard. Recibe requests,
+valida DTOs y parametros de transporte, invoca `solguard-core` y devuelve la
+respuesta publica. El pipeline, sus herramientas y toda la logica pesada viven
+en [SolGuard Pipeline Core](../solguard-core/README.md).
+
+La migracion de propiedad no cambia las rutas HTTP, los payloads de `/analyze`,
+los artefactos ni los contratos `pipeline.v0.10`, `filter.v0.1` y
+`exploit.v0.2`.
 
 ## Alcance real
 
-Esta documentacion enumera capacidades implementadas y artefactos que el backend
-genera. No afirma que SolGuard tenga recall general demostrado fuera del corpus,
-ni que pueda mandar findings a bug bounty sin humano. Cuando se habla de
-`supported_finding`, significa soporte estatico segun el contrato de
-`validation_results.json`, no explotabilidad confirmada por PoC.
+El backend posee:
 
-El backend es el orquestador local de analisis: expone una API HTTP en Rust,
-levanta un servicio interno en Node para llamadas al modelo local, coordina las
-herramientas de analisis, consulta la base de conocimiento y escribe todos los
-artefactos de cada proyecto en el workspace local de SolGuard.
+- servidor Axum, rutas, controllers y DTOs HTTP;
+- validacion de requests y traduccion de errores;
+- bootstrap de proceso y adaptadores locales para Node/Ollama;
+- construccion de dependencias e invocacion de la API Rust del core;
+- transporte de progreso y respuestas al cliente.
+
+El backend no posee:
+
+- orden ni decisiones de fases;
+- ejecucion directa de herramientas de analisis;
+- seeds, candidatos, binding o canonicalizacion;
+- reconciliacion FILTER ni admision EXPLOIT;
+- journals, impacto, planes de PoC o reportes tecnicos.
 
 ## Indice
 
@@ -30,51 +40,12 @@ artefactos de cada proyecto en el workspace local de SolGuard.
 9. [Artefactos y contratos de salida](09-artefactos-y-contratos-de-salida.md)
 10. [Depuracion y estados degradados](10-depuracion-y-estados-degradados.md)
 
-## Estado funcional actual
+## Modelo de confianza preservado
 
-- API externa local en `127.0.0.1:{EXTERNAL_PORT}` con Axum.
-- Servicio interno local en `127.0.0.1:{INTERNAL_PORT}` con Express.
-- Busqueda `general`, `knowledge` e `hybrid` contra Ollama y la base SQLite.
-- Ingesta de informes hacia `solguard-database`.
-- Gestion de proyectos en `SOLGUARD_PROJECTS_DIR`.
-- Analisis completo por fases: `map`, `diff`, `trace`, `discover`,
-  `economic`, `invariant`, `candidates`, `validate`,
-  `historical-enrichment`, `impact`, `poc-plan` y `report`.
-- Contrato autoritativo de veredictos en
-  `tool-outputs/validate/validation_results.json`.
-- Separacion explicita entre findings soportados, cola de revision, leads
-  revisables y no-findings.
+Una senal o candidato no es un finding. VALIDATE sigue siendo la autoridad para
+`supported`, `refuted` e `inconclusive`; FILTER decide admision de forma
+independiente y fail-closed; EXPLOIT solo recibe candidatos admitidos. El
+backend transporta esas salidas sin reinterpretarlas.
 
-## Contratos que no deben romperse
-
-- Un candidato no es un finding hasta que VALIDATE lo clasifica como
-  `supported_finding`.
-- `validation_results.json` es la autoridad de veredictos. Las fases posteriores
-  no pueden modificarlo.
-- La evidencia historica de la base de conocimiento no se usa antes de validar;
-  se recupera despues de tener veredictos deterministas.
-- Los estados `degraded`, `fallback`, `completed_with_errors` y `skipped` quedan
-  registrados en `tool-outputs/pipeline.json` y en cada `phase.json`.
-- Los artefactos anteriores se preservan cuando una fase escribe su propio
-  resultado.
-
-## Donde mirar al depurar
-
-- `tool-outputs/pipeline.json`: orden, estado, duracion, inputs y outputs de
-  cada fase.
-- `analysis_log.md`: log humano de la ejecucion.
-- `analysis_funnel.json`: resumen de cobertura, senales, candidatos, rechazos y
-  veredictos.
-- `tool-outputs/candidates/candidate_lifecycle.json`: trazabilidad desde senal
-  fuente hasta candidato canonico y veredicto.
-- `tool-outputs/candidates/rejected_candidates.json`: rechazos de admision,
-  binding o canonicalizacion.
-- `tool-outputs/validate/validation_results.json`: decision final por candidato.
-
-## Cobertura de esta documentacion
-
-Esta documentacion cubre el backend a nivel de arquitectura, operacion,
-contratos HTTP, servicios internos, pipeline, artefactos, IA local, conocimiento,
-validacion y depuracion. No documenta cada seed/familia de bug linea por linea;
-esas familias cambian demasiado rapido y su fuente de verdad debe seguir siendo
-el codigo bajo `src/services/analyzer/seeds/`.
+La separacion arquitectonica no demuestra mejoras de recall o rendimiento. Es
+una reasignacion de responsabilidades que debe conservar equivalencia funcional.

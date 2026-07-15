@@ -5,7 +5,7 @@ trabajo es responder que existe, donde estan las superficies importantes y que
 contexto necesita el resto del pipeline.
 
 No valida bugs. Produce un `audit_map.json` consumible por TRACE, DISCOVER,
-ECONOMIC, INVARIANT, VALIDATE y el backend.
+ECONOMIC, VALUE, INVARIANT, VALIDATE y `solguard-pipeline-core`.
 
 ## Inputs
 

@@ -91,7 +91,7 @@ El modelo puede incluir:
 
 ## Hipotesis backend-ready
 
-Las hipotesis blind se emiten con lineas/evidencia para que el backend pueda
+Las hipotesis blind se emiten con lineas/evidencia para que el core pueda
 convertirlas en candidatos:
 
 - `canonical_issue_key`
@@ -104,7 +104,7 @@ convertirlas en candidatos:
 - `fingerprint`
 - `missing_evidence`
 
-En el backend pueden aparecer con
+En el core pueden aparecer con
 `primary_evidence_source = protocol_invariant_discovery`.
 
 ## Capabilities

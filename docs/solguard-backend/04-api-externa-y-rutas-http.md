@@ -19,9 +19,29 @@ Respuesta:
 {
   "status": "ok",
   "service": "solguard-backend",
-  "version": "..."
+  "version": "...",
+  "execution_contract_sha256": "...",
+  "execution_runtime": {
+    "projects_dir": "...",
+    "database_path": "...",
+    "database_connector_dir": "...",
+    "map_dir": "...",
+    "filter_dir": "...",
+    "exploit_dir": "..."
+  }
 }
 ```
+
+`execution_contract_sha256` solo aparece cuando el proceso fue arrancado con el
+handshake de deploy. Los runners lo comparan, junto con `execution_runtime`,
+contra el backend administrado que ellos mismos acaban de crear. Incluye las
+rutas canonicalizadas de las diez herramientas y evita conectar ese proceso a
+un source distinto del que ejecuta Core.
+
+Este digest llega por entorno: no es una identidad de build calculada por el
+binario. Por eso `--no-backend` y `SOLGUARD_API_URL` estan deshabilitados hasta
+que exista esa identidad fuerte. Estos campos no conceden autoridad al backend
+sobre el pipeline.
 
 ## GET `/info`
 
@@ -169,19 +189,23 @@ Respuesta:
 
 ## POST `/analyze`
 
-Ejecuta el pipeline completo sobre un target.
+Valida la request HTTP y delega el pipeline en `solguard-core`.
 
 Body:
 
 ```json
 {
   "project": "Proyecto",
-  "target": "https://github.com/org/repo"
+  "target": "https://github.com/org/repo",
+  "mode": "full",
+  "run_exploit": false
 }
 ```
 
 `target` puede ser una ruta local o una referencia remota soportada por el
-runtime. La respuesta incluye:
+runtime. `mode` acepta `full` y `audit_only`; el segundo ejecuta hasta FILTER y
+omite de forma contractual las cinco fases posteriores. `run_exploit` no puede
+contradecir la politica del modo. La respuesta incluye:
 
 - `project`, `project_dir`, `source_dir`.
 - `status`: `completed` o `completed_with_errors`.
@@ -200,10 +224,12 @@ Artefactos destacados en `outputs`:
 - `model_discovery_diagnostics_json`
 - `validation_results_json`
 - `validation_results_md`
+- `filter_results_json`
 - `findings_md`
 - `review_queue_md`
 - `impact_escalation_json`
 - `poc_plan_json`
+- `exploit_results_json`
 - `report_manifest_json`
 - `profile_json`
 

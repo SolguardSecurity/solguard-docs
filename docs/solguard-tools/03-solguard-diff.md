@@ -84,7 +84,7 @@ DIFF combina:
 
 Las prioridades son de revision, no severidad.
 
-## Uso en el backend
+## Uso en el pipeline core
 
 DIFF aporta dimension temporal. Ayuda a preguntar:
 

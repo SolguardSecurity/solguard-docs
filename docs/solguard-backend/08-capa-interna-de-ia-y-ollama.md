@@ -2,7 +2,8 @@
 
 La capa interna vive en `node/` y se arranca con `bun start`. Su responsabilidad
 es aislar las llamadas al modelo local y dar al proceso Rust un contrato pequeno
-y autenticado.
+y autenticado. Backend aloja este adaptador; los servicios del pipeline core
+deciden cuando consumirlo y como registrar el resultado.
 
 ## Endpoints internos
 

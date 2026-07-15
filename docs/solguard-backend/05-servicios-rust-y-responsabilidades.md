@@ -1,160 +1,47 @@
 # 05. Servicios Rust y Responsabilidades
 
-La carpeta `src/services` concentra la logica de negocio. Los controladores HTTP
-deben mantenerse delgados: validan body/query/path, llaman servicios y traducen
-errores a respuestas JSON.
+La frontera Rust se divide entre el adaptador HTTP y el motor.
 
-## `projects.rs`
+## En `solguard-backend`
 
-Gestiona el workspace local:
+### Controllers
 
-- crea `SOLGUARD_PROJECTS_DIR`;
-- sanea nombres de proyecto;
-- inicializa `program.json`, `program.md`, `tool-outputs/` y `reports/`;
-- lista proyectos existentes;
-- resuelve rutas de proyecto.
+Validan body, query y path; transforman el request al tipo de entrada del core;
+invocan la libreria; y convierten el resultado o error en HTTP. No ejecutan
+herramientas ni escriben artefactos de analisis.
 
-## `internal_client.rs`
+### Routes y middleware
 
-Cliente HTTP del servicio interno Node. Usa `INTERNAL_API_KEY` como bearer o
-header interno y expone:
+Definen la superficie Axum, CORS y observabilidad HTTP. Las rutas publicadas no
+cambian por la migracion.
 
-- health interno;
-- info interno;
-- busqueda con modo `general`, `knowledge` o `hybrid`.
+### Bootstrap
 
-Los fallos aqui se convierten en error upstream (`502`) desde controladores.
+`main.rs` carga el entorno necesario para el host, construye los adaptadores y
+el contexto del core, y arranca el servidor. El servicio Node/Ollama permanece
+como dependencia local inyectada, no como autoridad de deteccion.
 
-## `knowledge.rs`
+## En `solguard-core`
 
-Lee la base SQLite de `solguard-database` para:
+- `services/analyze.rs`: fachada de analisis consumida por backend.
+- `services/analyzer/runtime.rs`: pipeline y ejecucion de herramientas.
+- `services/analyzer/types.rs`: tipos serializados de analisis.
+- `services/analyzer/seeds/**`: deteccion determinista.
+- `services/analyzer/finalizers.rs`: cierre, binding y reconciliacion.
+- `services/pipeline.rs`: orden y journal `pipeline.v0.10`.
+- `services/filter.rs`: FILTER y reconciliacion `filter.v0.1`.
+- `services/exploit.rs`: admision y provenance `exploit.v0.2`.
+- `services/impact.rs`, `poc_plan.rs` y `technical_report.rs`: salidas
+  posteriores a FILTER.
+- `services/projects.rs`, `ingest.rs`, `knowledge.rs` e `internal_client.rs`:
+  servicios no HTTP reutilizables.
 
-- resumen de conocimiento en `/info`;
-- contexto de busqueda para `/search`;
-- respuestas directas de base de datos en modo `knowledge`;
-- recuperacion historica posterior a candidatos.
+## Regla de propiedad
 
-La recuperacion historica usada por el analisis ocurre despues de VALIDATE. No
-debe alimentar la decision determinista previa.
+Si un cambio decide que fase se ejecuta, con que argumentos, que candidato se
+conserva, como se reconcilia un artefacto o que se escribe en el proyecto,
+pertenece al core. Si valida o representa una request/response HTTP, pertenece
+al backend.
 
-## `ingest.rs`
-
-Orquesta la ingesta de informes. Recorre rutas, filtra formatos soportados,
-invoca el conector de `solguard-database` con Bun y devuelve:
-
-- archivos procesados;
-- informes insertados;
-- rutas omitidas;
-- fallos parciales;
-- ruta de base de datos utilizada.
-
-## `analyze.rs`
-
-Fachada publica del analizador. Reexporta tipos (`AnalyzeOutputs`,
-`AnalyzeStatus`, `ToolRun`) y llama al runtime de `services/analyzer`.
-
-## `analyzer/runtime.rs`
-
-Orquestador principal del pipeline. Responsabilidades:
-
-- preparar proyecto y source tree;
-- clonar o resolver el target;
-- ejecutar herramientas externas;
-- registrar cada fase en `PipelineJournal`;
-- construir seeds y candidatos;
-- llamar al modelo para discovery acotado cuando procede;
-- ejecutar VALIDATE;
-- impedir que fases posteriores modifiquen `validation_results.json`;
-- escribir artefactos finales, perfil y logs.
-
-Tambien contiene guards de runtime como fast-map en repos grandes y reintento de
-`map --deep` con `--fast` cuando excede la ventana acotada.
-
-## `analyzer/types.rs`
-
-Define los contratos serializados de analisis:
-
-- `AnalyzeResult`
-- `AnalyzeStatus`
-- `AnalyzeOutputs`
-- `ToolRun`
-- `AnalysisProfile`
-- estructuras de candidatos canonicos, evidencias, superficies, transiciones,
-  protecciones y diagnosticos.
-
-Cuando se anade un artefacto nuevo que deba ver el cliente, este archivo debe
-actualizarse junto con la documentacion de API.
-
-## `analyzer/validation.rs`
-
-Construye y normaliza `validation_results.json` y su markdown. Sus clases son:
-
-- `supported_finding`: finding soportado y renderizable.
-- `review_queue`: candidato inconcluso que necesita revision.
-- `reviewable_lead`: lead que todavia no esta listo para validacion completa.
-- `non_finding`: candidato refutado o clasificado como no finding.
-
-Tambien genera mirrors seguros:
-
-- `findings.md` solo incluye `supported_finding`.
-- `review_queue.md` conserva lo inconcluso para investigacion manual.
-- `rejected_hypotheses.md` apunta al contrato autoritativo.
-
-## `analyzer/seeds/*`
-
-Familias de patrones deterministas que transforman senales de source/trace/map
-en hipotesis estructuradas. Incluye familias Solidity, Vyper, TypeScript,
-Rust/C++, NFT y patrones de protocolos reales.
-
-Estas semillas no deben emitir texto libre sin evidencia: deben producir
-invariantes, superficies, break conditions, flujo/estado y referencias que
-puedan llegar a VALIDATE.
-
-## `analyzer/bug_family_registry.rs`
-
-Registro de familias de bugs. Sirve para normalizar taxonomia, evitar llaves
-inconsistentes y mantener una relacion trazable entre senales y familias.
-
-## `analyzer/finalizers.rs`
-
-Finaliza candidatos y resultados para mantener contratos estables antes de
-renderizar o exponer salidas.
-
-## `pipeline.rs`
-
-Implementa el journal del pipeline. Enforcea el orden:
-
-```text
-map -> diff -> trace -> discover -> economic -> invariant -> candidates -> validate -> historical-enrichment -> impact -> poc-plan -> report
-```
-
-Estados posibles:
-
-- `completed`
-- `degraded`
-- `completed_with_errors`
-- `fallback`
-- `skipped`
-
-Cada fase escribe su propio `phase.json` y el manifiesto global vive en
-`tool-outputs/pipeline.json`.
-
-## `impact.rs`
-
-Analiza impacto solo despues de tener veredictos. Consume candidatos,
-`validation_results.json`, map y trace. Si falla, genera un reporte fallback sin
-alterar el veredicto determinista.
-
-## `poc_plan.rs`
-
-Genera planes de PoC para candidatos soportados o parcialmente accionables.
-Evalua idoneidad de harnesses como Foundry, Hardhat, Anchor, Rust test,
-fork test e integracion multiproceso. Es planificacion: no ejecuta exploits y no
-modifica veredictos.
-
-## `technical_report.rs`
-
-Renderiza informes tecnicos en `reports/` para findings soportados y un
-`report_manifest.json`. Puede usar texto del modelo en partes redactadas, pero
-los IDs, veredictos, severidad, evidencia y rutas provienen de contratos
-deterministas.
+El inventario completo esta en
+[Servicios y responsabilidades de core](../solguard-core/servicios-y-responsabilidades.md).

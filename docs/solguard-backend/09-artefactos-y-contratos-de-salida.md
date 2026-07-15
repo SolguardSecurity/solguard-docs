@@ -37,19 +37,28 @@ El directorio `tool-outputs/` contiene una carpeta por fase y un journal global.
 | `economic/economic_model.json` | Modelo economico. |
 | `economic/synthesized_invariants.json` | Invariantes economicas sintetizadas. |
 | `economic/index.json` | Indice/capacidades de economic. |
+| `value/value_model.json` | Modelo de activos, autoridad, estado y deltas. |
+| `value/attack_paths.json` | Rutas de ataque y value proof packs opcionales. |
 | `invariant/` | Reporte de invariantes runtime. |
 | `candidates/` | Raw candidates, rechazos, lifecycle y validacion. |
 | `validate/validation_results.json` | Contrato autoritativo de veredictos. |
 | `validate/validation_results.md` | Render humano del contrato de validacion. |
+| `filter/filter_results.json` | Decision independiente y fail-closed `filter.v0.1`. |
 | `historical-enrichment/historical_enrichment.json` | Enriquecimiento historico post-validacion. |
 | `impact/impact_escalation.json` | Analisis de impacto post-validacion. |
 | `impact/impact_escalation.md` | Render humano de impacto. |
 | `poc-plan/poc_plan.json` | Planes de PoC y harnesses recomendados. |
 | `poc-plan/poc_plan.md` | Render humano de PoC plan. |
+| `exploit/exploit_results.json` | Resultado `exploit.v0.2` para candidatos admitidos. |
 | `report/phase.json` | Registro de la fase de report. |
 
 Cada carpeta de fase debe contener `phase.json` cuando la fase ha sido
-registrada por `PipelineJournal`.
+registrada por el journal de `solguard-core`. Si una herramienta escribio su
+propio receipt, el core lo preserva como `tool_phase.json` antes de escribir el
+journal de orquestacion.
+
+En `audit_only`, FILTER debe completarse y las cinco fases posteriores deben
+figurar como `skipped_by_audit_only_mode` sin sus artefactos de resultado.
 
 ## Candidatos
 
@@ -92,6 +101,16 @@ finding soportado por contrato estatico = result supported + finding_class suppo
 ```
 
 No basta con que exista en `canonical_candidates.json`.
+
+## FILTER y EXPLOIT
+
+`validation_results.json` no se reescribe despues de VALIDATE. FILTER vuelve a
+resolver sus inputs minimos y emite una decision `pass`, `review`, `reject` o
+`duplicate`. Solo un candidato VALIDATE-supported, con FILTER `pass`,
+`exploit_eligibility=true` y dedupe compatible puede llegar a EXPLOIT.
+
+EXPLOIT debe verificar el hash congelado de FILTER. La compilacion de un harness
+no equivale a reproduccion runtime.
 
 ## Knowledge
 

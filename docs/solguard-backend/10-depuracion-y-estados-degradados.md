@@ -28,7 +28,7 @@ Si el problema es de rendimiento, empezar por `profile.json` y
 | `completed` | La fase produjo salidas esperadas. |
 | `degraded` | La fase produjo salida util, pero con degradacion detectada. |
 | `completed_with_errors` | La herramienta termino con error registrable. |
-| `fallback` | El backend genero una salida fallback para conservar trazabilidad. |
+| `fallback` | El core genero una salida fallback para conservar trazabilidad. |
 | `skipped` | La fase no se ejecuto o fue omitida. |
 
 Un pipeline con `completed_with_errors` o `fallback` puede seguir siendo util si
@@ -133,7 +133,14 @@ VALIDATE es la autoridad. Para cada candidato revisar:
 Un supported finding necesita soporte positivo, no solo ausencia de
 contradicciones.
 
-## Diagnostico de impacto, PoC o report
+## Diagnostico de FILTER
+
+Cuando VALIDATE soporta un candidato pero no llega a EXPLOIT, abrir
+`tool-outputs/filter/filter_results.json`. Verificar decision, review class,
+`exploit_eligibility`, dedupe, hashes upstream y evidence blockers. Un `review`
+es fail-closed y no puede convertirse en admision desde backend.
+
+## Diagnostico de impacto, PoC, EXPLOIT o report
 
 Estas fases son posteriores a verdictos.
 
@@ -158,7 +165,7 @@ Usarlo cuando se cambia:
 Comando:
 
 ```powershell
-cargo run --bin solguard-backend -- rebuild-candidates "<project-dir>"
+cargo run --locked --manifest-path "../solguard-core/Cargo.toml" --bin solguard-core -- rebuild-candidates "<project-dir>"
 ```
 
 No lo uses para depurar map/trace/discover/economic/invariant si esos artefactos
@@ -177,5 +184,5 @@ Una ejecucion esta lista para revision humana cuando:
 
 Una ejecucion esta lista para bug bounty sin humano solo si, ademas, el finding
 soportado tiene evidencia suficiente, impacto material, PoC o plan ejecutable y
-exclusiones revisadas. El backend actual no debe prometer ese nivel sin una
+exclusiones revisadas. El sistema no debe prometer ese nivel sin una
 validacion adicional.

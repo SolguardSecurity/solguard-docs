@@ -2,7 +2,8 @@
 
 `solguard-database` no se comunica directamente con la IA. No abre sesiones con
 Ollama, no genera prompts y no decide hipotesis. La comunicacion real con la IA
-la hace `solguard-backend`.
+la realiza el adaptador local Node/Ollama alojado por `solguard-backend`; los
+servicios que preparan el contexto viven en `solguard-pipeline-core`.
 
 La base prepara y sirve memoria historica estructurada: findings, taxonomia,
 snippets, chunks, embeddings y conteos. Esa memoria puede alimentar busquedas y
@@ -14,7 +15,8 @@ La comunicacion es indirecta:
 
 ```text
 solguard-database (SQLite + retrieval)
-        -> solguard-backend/knowledge
+        -> solguard-pipeline-core/knowledge
+        -> adaptador alojado por solguard-backend
         -> InternalSearchRequest.context
         -> servicio interno Node
         -> Ollama
@@ -36,18 +38,19 @@ respuesta estructurada.
 
 ## Papel en `analyze`
 
-En `v0.8`, la base historica no participa en la generacion previa de candidatos
+En el pipeline actual, la base historica no participa en la generacion previa de candidatos
 ni en VALIDATE. El pipeline primero ejecuta las fases deterministas:
 
 ```text
-map -> diff -> trace -> discover -> economic -> invariant -> candidates -> validate
+map -> diff -> trace -> discover -> economic -> value -> invariant
+    -> candidates -> validate -> filter
 ```
 
 Hasta ese punto, las decisiones salen de source, MAP, TRACE, DISCOVER,
-ECONOMIC, INVARIANT, candidatos canonicos y VALIDATE. La similitud historica no
+ECONOMIC, VALUE, INVARIANT, candidatos canonicos, VALIDATE y FILTER. La similitud historica no
 puede convertir una hipotesis en finding.
 
-Despues de VALIDATE, el backend ejecuta `historical-enrichment` y construye
+Despues de FILTER, el core ejecuta `historical-enrichment` y construye
 consultas por candidato validado. Los resultados se escriben en:
 
 ```text

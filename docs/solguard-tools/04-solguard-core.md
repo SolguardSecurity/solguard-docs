@@ -1,12 +1,26 @@
-# 04. SolGuard Core
+# 04. Los dos componentes llamados Core
 
-`solguard-core` es una crate Rust dentro de `solguard-database`. No es una CLI de
-analisis de protocolos. Es la biblioteca que transforma informes de auditoria en
-payloads estructurados para la base de conocimiento.
+El workspace contiene dos componentes Rust distintos. La palabra `core` sola es
+ambigua y no debe usarse para asignar responsabilidades.
 
-## API publica
+## `solguard-pipeline-core`
 
-La API principal es:
+Es el paquete del repositorio hermano `solguard-core`. Expone la libreria
+`solguard_core` y el binario `solguard-core`. Posee el pipeline de auditoria,
+los servicios de analisis, la ejecucion de herramientas, candidates, journals,
+FILTER, EXPLOIT, impacto y reportes.
+
+La descripcion completa esta en
+[SolGuard Pipeline Core](../solguard-core/README.md).
+
+## `solguard-database::solguard-core`
+
+Es la crate historica ubicada en
+`solguard-database/crates/solguard-core`. Se dedica exclusivamente a convertir
+PDF, Markdown y texto de auditorias en payloads documentales para la base de
+conocimiento. No ejecuta auditorias ni herramientas del pipeline.
+
+Su API principal conserva el identificador Rust historico:
 
 ```rust
 use solguard_core::{ingest_document, IngestConfig};
@@ -14,101 +28,14 @@ use solguard_core::{ingest_document, IngestConfig};
 let payload = ingest_document(path, &IngestConfig::default())?;
 ```
 
-`IngestConfig` permite sobreescribir metadata:
+Esa coincidencia de identificador no significa que las crates sean la misma.
+Cuando ambas dependencias aparezcan en un manifest, debe usarse un alias Cargo
+explicito para la crate documental.
 
-- `title`
-- `protocol_name`
-- `ecosystem`
-- `auditor`
-- `report_type`
-- `published_date`
+## Regla editorial
 
-## Pipeline
-
-`ingest_document` ejecuta:
-
-1. Carga del documento.
-2. Resolucion de fuente y hash.
-3. Normalizacion a Markdown.
-4. Deteccion de perfil documental.
-5. Extraccion de metadata del reporte.
-6. Seleccion de estrategia de findings.
-7. Extraccion de findings candidatos.
-8. Extraccion de snippets de codigo por finding.
-9. Chunking del documento.
-10. Construccion de `IngestPayload`.
-
-## Contrato de payload
-
-Version actual:
-
-```text
-schema_version: 2
-```
-
-Estructura:
-
-- `source`: tipo, titulo, URL, path local, sha256 y metadata.
-- `report`: titulo, protocolo, ecosistema, auditor, fechas, raw text,
-  markdown normalizado y metadata.
-- `findings`: findings estructurados.
-- `chunks`: particiones para indexacion/retrieval.
-
-## Findings
-
-Cada finding puede incluir:
-
-- fingerprint;
-- titulo;
-- severidad;
-- confidence;
-- taxonomia;
-- contratos y funciones afectadas;
-- invariant roto;
-- root cause;
-- attack steps;
-- impacto;
-- exploitability;
-- preconditions;
-- primitive;
-- impact escalation;
-- severidad/impacto aceptado;
-- tipo de PoC;
-- codigo vulnerable y fixed;
-- commits vulnerable/fixed;
-- mitigation;
-- triage result;
-- recommendation;
-- snippets de codigo.
-
-## Perfil documental
-
-`document_profile` detecta familias y estrategias. Estrategias actuales:
-
-- `SeverityIdHeadings`
-- `NumericSectionHeadings`
-- `ContestIssueHeadings`
-- `SingleFindingMarkdown`
-- `GenericHeadings`
-
-La seleccion de estrategia evita tratar cualquier heading numerico como finding
-si el formato del informe no lo justifica.
-
-## PDFs
-
-La normalizacion de PDFs conserva marcadores de pagina
-`[[solguard-pdf-page:N]]`, repara mojibake comun, recompone prosa partida y
-mantiene metadata de paginas en chunks/findings cuando aplica.
-
-## Relacion con backend/database
-
-`solguard-backend` usa esta crate en `/ingest`. Despues guarda payloads y llama
-al conector de `solguard-database` para insertar en SQLite.
-
-## Limites
-
-- No decide si un finding historico aplica al codigo actual.
-- No ejecuta auditorias.
-- No habla con Ollama.
-- Puede marcar extracciones como `needs_review` cuando la estructura no es
-  suficientemente fiable.
+- Use `solguard-pipeline-core` o "pipeline core" para el motor de auditoria.
+- Use `solguard-database::solguard-core` o "document-ingestion core" para la
+  crate de ingesta.
+- Reserve `solguard-core` como nombre del repositorio y del binario del motor,
+  nunca como descripcion no calificada de la crate documental.
