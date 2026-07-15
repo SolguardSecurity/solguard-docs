@@ -61,10 +61,11 @@ visible al oracle invalida ese registro. El matching y las metricas contra bugs
 conocidos pertenecen a `solguard-deploy` despues de congelar las salidas del
 producto.
 
-### Segunda ola E0 en deploy
+### Tercera ola E0 en deploy
 
-La segunda ola añade infraestructura para demostrar esa congelacion fuera del
-core, sin introducir capacidades de benchmark en el motor. `solguard-deploy`
+La tercera ola añade un batch scan-only diagnostico a la infraestructura que
+demuestra esa congelacion fuera del core, sin introducir capacidades de
+benchmark en el motor. `solguard-deploy`
 define cuatro payloads versionados:
 
 - `solguard-scan-contract.v1`;
@@ -80,8 +81,7 @@ a `codeload.github.com`; elimina nombres, categorias, aliases y texto libre, y
 liga su suite a la solicitada y cada locator ref a `commit`. Un ref legacy
 `main`/`master` solo se convierte en
 input fijo cuando el scan contract compromete los bytes descargados mediante el
-`source_sha256` obligatorio. Este catalogo es el unico componente de la nueva
-frontera ya integrado en las suites.
+`source_sha256` obligatorio. El runner scan-only comun consume esta proyeccion.
 
 Cada payload tiene un JSON Schema Draft 2020-12 cerrado. El modulo contractual
 usa JSON canonico y SHA-256, y solo acepta envelopes DSSE Ed25519. La
@@ -110,12 +110,27 @@ evaluator. Mantiene el wire contract `solguard-product-priority-ranking.v2` y su
 semantica actual: separar el codigo no equivale a certificar el momento ni las
 capacidades con las que se ejecuto.
 
-Tambien existe un fingerprint `solguard-scan-execution-contract.v1` que liga
-solo launcher, runner, catalogo de scan, toolchain, configuracion, runtime
-policy, recovery y modulos productivos. El constructor rechaza recursivamente
-ground truth, matcher, evaluator, splits, adjudications y source coverage. Este
-fingerprint scan-only convive de momento con el execution contract legacy usado
-por los runners actuales; no debe confundirse con una migracion ya desplegada.
+`solguard-scan-execution-contract.v2` cierra exactamente 14 componentes: su
+constructor, runner, launcher, catalogo materializado, modulo de catalogo,
+product-priority, scan-contract, scan-boundary y seis schemas. El constructor
+rechaza ground truth, matcher, evaluator, splits y adjudications. El contrato
+embebe el estado completo `solguard-toolchain-fingerprint.v2`; el worker
+rehashea los componentes y recomputa los 13 repositorios antes y despues. Esto
+detecta drift, no aislamiento de capacidades.
+
+`protocols-scan.mjs` es el runner scan-only comun y `scan-suite.mjs` su launcher
+por suite. Cada source se materializa y liga por `source_sha256`; cada target
+recibe backend y base nuevos. Los outputs sellables y el runtime mutable de
+logs/bases viven en raices frescas y fisicamente disjuntas. Targets completados, parciales y
+fallidos permanecen en el denominador declarado.
+
+El orquestador predeclara exactamente v1-v8 en
+`solguard-scan-batch-plan.v1`, fijando hash documental, hash de bytes y tamano
+de cada catalogo antes de iniciar scans. Solo crea
+`solguard-scan-batch-barrier.v1` y `solguard-scan-chain-bundle.v1` despues del
+cierre correcto de todas las suites y de validar todos los artefactos por target
+y suite. El bundle contiene plan y barrier completos, pero es crudo, no firmado
+y diagnostico: no abre ni incorpora el oracle.
 
 ## Estructura principal
 
@@ -166,9 +181,9 @@ cargo run --locked --bin solguard-core -- refresh-poc-plans "<project-dir>"
 `solguard-deploy` puede resolver el repositorio con `SOLGUARD_CORE_DIR`, cuyo
 default es `../solguard-core`. Para ejecuciones reproducibles verifica que sea
 el core enlazado por backend y canonicaliza database y las diez herramientas a
-rutas fisicas absolutas. Los runners actuales siguen ligando corpus, imports,
-policy y contenido Git al execution contract legacy usado por `--resume`; la
-nueva huella scan-only todavia no sustituye ese flujo.
+rutas fisicas absolutas. Los runners legacy siguen ligando corpus, imports,
+policy y contenido Git al execution contract usado por `--resume`; ese flow
+permanece como default. El batch scan-only es un camino diagnostico separado.
 
 ## Artefactos y compatibilidad
 
@@ -212,17 +227,21 @@ strict necesita un launcher minimo fijado por el repositorio que verifique el
 closure antes del import. Los JSON Schema son estructurales y los invariantes de
 self-hash, cronologia, igualdad y cadena pertenecen al validador JS autoritativo.
 
-Sin embargo, solo los catalogos estan integrados. Aun faltan el runner scan-only
-comun, la barrera global scan-close-seal, el bundle v1-v8 y su conexion a
-`full-run.sh` y labs. No existen inputs CAS/read-only ni un attestor OCI o VM
-real; una frontera
+`full-run.sh --flow boundary-scan --tier full` conecta el runner, plan y barrera
+para el conjunto exacto v1-v8. No admite resume, seleccion de protocolo ni tier
+release; tampoco ejecuta el evaluador. `legacy` sigue siendo el flow por defecto
+y el batch nuevo declara siempre `release_eligible=false`.
+
+Aun faltan inputs CAS/read-only, aislamiento confiable OCI/VM y una raiz de
+confianza fijada por el repositorio, el consumo multi-chain del bundle por un
+evaluador separado, una publicacion blind y la integracion de labs. La frontera
 `host_process` permanece explicitamente ineligible y no demuestra aislamiento
-de capacidades. Tampoco elimina todas las ventanas TOCTOU ni sustituye inputs
-CAS o mounts de solo lectura. Por eso `recall_at` continua `null`,
-`oracle_capability_separated=false` y `diagnostic_recall_at` es solo desarrollo.
-E0 sigue abierto y esta ola no cambia detectores, recall observado ni calidad de
-hallazgos; tampoco autoriza un claim de ejecucion blind. No se han ejecutado
-scans reales ni medido una mejora de benchmark o recall como parte de esta ola.
+de capacidades ni elimina todas las ventanas TOCTOU. Por eso `recall_at`
+continua `null`, `oracle_capability_separated=false` y
+`diagnostic_recall_at` es solo desarrollo. E0 sigue abierto y esta ola no cambia
+detectores, recall observado ni calidad de hallazgos; tampoco autoriza un claim
+de ejecucion blind. No se han ejecutado scans reales ni medido una mejora de
+benchmark o recall como parte de esta ola.
 
 ## Publicacion y dependencias privadas
 

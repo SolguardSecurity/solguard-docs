@@ -46,7 +46,7 @@ SolGuard, por ejemplo:
 
 ## Estado de la frontera de evaluacion E0+M1
 
-### Segunda ola E0: infraestructura disponible
+### Tercera ola E0: scan-only diagnostico disponible
 
 `solguard-deploy` ya contiene una cadena contractual separada para construir una
 futura evaluacion pre-oracle:
@@ -61,9 +61,9 @@ futura evaluacion pre-oracle:
 - `solguard-evaluation-contract.v1` liga la cadena exacta de documentos, el batch
   barrier, el precommit, los inputs del oracle y la politica de output.
 
-El unico paso ya integrado en v1-v8 es el catalogo de scan. Cada suite tiene un
-`protocols-scan.json` oracle-free bajo `solguard-scan-catalog.v1`: v1 contiene
-24 targets y v2-v8 contienen 20 cada una. Cada target contiene unicamente
+Cada suite v1-v8 tiene un `protocols-scan.json` oracle-free bajo
+`solguard-scan-catalog.v1`: v1 contiene 24 targets y v2-v8 contienen 20 cada
+una. Cada target contiene unicamente
 `project`, `commit`, `source_locator` y `source_mirrors`; nombres, categorias,
 aliases y cualquier narrativa libre quedan fuera del contrato. La suite debe
 coincidir con la solicitada, las URLs se limitan a archives de
@@ -95,11 +95,14 @@ completitud estructural, mientras `oracle_capability_separated_claimed` es una
 afirmacion del proveedor. Ninguno significa aislamiento verificado ni confianza
 de release.
 
-Existe ademas `solguard-scan-execution-contract.v1`. Su fingerprint es
-scan-only: incluye launcher, runner, catalogo de targets, toolchain, configuracion,
-runtime policy, recovery, modulo product-priority y modulo contractual. Ground
-truth, evaluator, matcher, splits, adjudications y source coverage no forman
-parte de esa huella y sus nombres/rutas se rechazan de forma recursiva.
+Existe ademas `solguard-scan-execution-contract.v2`. Su fingerprint scan-only
+cierra exactamente 14 componentes: su constructor, runner, launcher, catalogo
+materializado, modulo de catalogo, product-priority, scan-contract,
+scan-boundary y seis schemas. Ground truth, evaluator, matcher, splits y
+adjudications no forman parte de esa huella y sus nombres/rutas se rechazan. El
+contrato embebe tambien `solguard-toolchain-fingerprint.v2`: el worker rehashea
+los 14 componentes y recomputa los 13 repositorios antes y despues. Detectar
+drift no demuestra aislamiento de capacidades.
 
 El ranking productivo vive ahora en el modulo independiente
 `benchmarks/product-priority.mjs`. No importa el matcher ni el evaluador y
@@ -121,6 +124,23 @@ registra separacion de proceso y cierre observado del
 arbol, pero la attestation resultante es deliberadamente `host_process` y
 mantiene `oracle_capability_separated=false`. Un proceso hijo en el mismo host no
 prueba aislamiento de filesystem, red, database o capacidades.
+
+`protocols-scan.mjs` implementa el runner scan-only comun y `scan-suite.mjs` su
+launcher por suite. El launcher materializa cada source y fija
+`source_sha256`, crea un backend y una base nuevos por target, y mantiene
+separados el arbol sellable de outputs y el runtime mutable de logs y bases. El
+reporte conserva en el denominador targets completados, parciales y fallidos;
+tambien escribe ranking productivo y manifest completo de outputs.
+
+Antes de ejecutar, `scan-release-batch.mjs` prepara exactamente v1-v8 y escribe
+`solguard-scan-batch-plan.v1`, que fija hash documental, hash de bytes y tamano
+de cada catalogo. Solo despues del cierre correcto de todas las suites crea
+`solguard-scan-batch-barrier.v1`; la barrera exige los artefactos de cada target
+y los agregados de suite. `solguard-scan-chain-bundle.v1` contiene el plan y la
+barrera completos. Un proceso scanner fallido, receipt no completado, target
+ausente o artefacto obligatorio vacio impide crear ambos. Un target terminal
+`failed` con sus artefactos completos permanece sellado en el denominador. Es
+un bundle crudo, diagnostico y no firmado: no contiene ni abre ground truth.
 
 Cuando se suministra una cadena al evaluator, su preflight verifica primero las
 cuatro firmas DSSE y todos los enlaces contract/receipt/attestation/evaluation.
@@ -147,22 +167,32 @@ una frontera diagnostica, no una prueba de aislamiento.
 
 ### Estado de integracion y claims permitidos
 
-De esta infraestructura, v1-v8 solo integra los nuevos catálogos. Todavia faltan
-un runner scan-only comun, el flujo global `scan-all -> wait/close -> seal ->
-evaluate-all`, el bundle firmado de v1-v8 y su conexion a `full-run.sh` y a los
-runners de 90 labs. Scanner/evaluator siguen compartiendo el flujo legacy con
-capacidad de oracle. Tampoco existen inputs CAS/read-only, un proveedor OCI o VM
-real que emita una attestation de capacidades confiable ni una raiz de attestors
-fijada por el repositorio con roles de firma separados.
+`full-run.sh` mantiene `legacy` como flow por defecto. El camino scan-only se
+invoca de forma explicita:
 
-Por tanto, el snapshot actual declara `oracle_capability_separated=false`,
-`scan_attestation=null` y una `recall_at_eligibility` negativa. La frontera host
-no puede cambiar esos valores. `recall_at` sigue siendo `null` y
+```bash
+./scripts/benchmarks/full-run.sh --flow boundary-scan --tier full
+```
+
+`boundary-scan` exige exactamente v1-v8 y no admite `--resume`, `--protocol` ni
+el tier `release`. Tampoco ejecuta evaluadores. `--preflight-only` prepara el
+plan sin iniciar scans. El batch espera todos los procesos, falla cerrado antes
+de sellar si alguno no completa y siempre declara `release_eligible=false`.
+Los runners y evaluadores legacy no han cambiado y siguen siendo el camino por
+defecto.
+
+Todavia faltan inputs CAS/read-only, un proveedor OCI o VM real que emita una
+attestation de capacidades confiable, una raiz de attestors fijada por el
+repositorio y roles de firma separados. Tambien falta que el evaluador consuma
+el bundle multi-chain en una fase fisicamente separada y publique una cadena
+blind, asi como integrar labs. Por tanto, el snapshot actual conserva
+`oracle_capability_separated=false`, `scan_attestation=null` y una
+`recall_at_eligibility` negativa. `recall_at` sigue siendo `null` y
 `diagnostic_recall_at` sigue siendo una metrica exclusivamente diagnostica. E0
 permanece abierto: no existe todavia un run blind certificado, una mejora medida
 de deteccion ni evidencia nueva de generalizacion. Esta ola no cambia detectores
 ni resultados de benchmark y no se han ejecutado scans reales para sostener un
-claim de mejora o una mejora de recall.
+claim de mejora o de recall.
 
 Cada runner v1-v8 escribe
 `tool-outputs/benchmark/product_priority_ranking.json` despues del analisis del
@@ -186,7 +216,7 @@ En todos los runners actuales, `recall_at` es `null` y no elegible.
 diagnosticar el orden product-derived, pero es solo una metrica de desarrollo:
 no demuestra Recall@K ciego, generalizacion ni calidad de release.
 
-En tier `release`, `full-run.sh` ejecuta obligatoriamente
+En el flow legacy y tier `release`, `full-run.sh` ejecuta obligatoriamente
 `solguard-pre-release-check.v2` despues de cerrar las suites y escribir el
 summary agregado. El release no usa `--soft-fail`: un error bloqueante impide
 declarar exito. `--soft-fail` solo sirve para informes diagnosticos manuales.
