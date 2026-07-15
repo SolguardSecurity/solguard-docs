@@ -59,7 +59,12 @@ sin reemplazar el modelo inicial cuando ese pase falla.
 
 Construye `value_model.json`, `attack_paths.json` y evidencia de rutas de valor.
 Sus proofs pueden reforzar causalidad economica, pero no confirmar por si solos
-un finding.
+un finding. VALUE no consume ground truth ni calcula overlap. El productor y
+los fallbacks v1 de core siguen serializando
+`top20_ground_truth_overlap=0` solo como placeholder deprecated de
+compatibilidad. Core no lo consume, no lo usa como metrica y lo excluye de
+`analysis_funnel.json`; se eliminara en v2. Las metricas reales del evaluator
+permanecen fuera del pipeline de producto.
 
 ### INVARIANT
 
@@ -124,7 +129,9 @@ fallback conserva diagnostico sin elevar un candidato ni alterar su veredicto.
 ### POC-PLAN
 
 Escribe el plan reproducible y la seleccion de harness en
-`tool-outputs/poc-plan/`. No ejecuta el exploit.
+`tool-outputs/poc-plan/`. No ejecuta el exploit y solo puede usar fixtures
+source/test-linked presentes en el proyecto, nunca fixtures sintetizadas desde
+ground truth.
 
 ### EXPLOIT
 

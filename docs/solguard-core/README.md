@@ -45,6 +45,22 @@ En `audit_only`, core ejecuta hasta FILTER y registra
 `skipped_by_audit_only_mode`, sin materializar sus artefactos. El endpoint y su
 payload HTTP permanecen en backend.
 
+## Frontera ciega de producto
+
+El core no carga, matchea ni puntua ground truth de benchmarks. Tampoco
+sintetiza fixtures runtime a partir de bugs esperados. Las antiguas opciones
+CLI `--ground-truth`, `--synthesize-runtime-fixtures` y
+`--allow-unmatched-runtime-fixtures` no forman parte de la superficie actual.
+Los planes de PoC solo pueden seleccionar fixtures enlazadas a source o tests
+que existan en el proyecto auditado.
+
+La prevalidacion historica conservada durante la transicion es fail-closed: un
+registro guardado solo se acepta cuando declara el booleano exacto
+`contamination_guard.oracle_visible=false`. Un guard ausente, mal tipado o
+visible al oracle invalida ese registro. El matching y las metricas contra bugs
+conocidos pertenecen a `solguard-deploy` despues de congelar las salidas del
+producto.
+
 ## Estructura principal
 
 ```text
@@ -107,12 +123,16 @@ La migracion cambia el propietario del codigo, no los contratos observables:
 - `analysis_funnel.json`, candidatos canonicos, VALIDATE, FILTER, EXPLOIT y
   reportes mantienen rutas y esquemas;
 - `/analyze`, `audit_only` y las respuestas HTTP siguen siendo compatibles;
-- los benchmarks continuan enlazando ground truth solo despues de congelar las
-  salidas del producto.
+- deploy deriva `solguard-product-priority-ranking.v2` solo desde artefactos de
+  producto y anota despues `solguard-audit-ranking.v3`; el core no participa en
+  ese matching ni recibe sus labels.
 
 Esta separacion no implica una afirmacion de rendimiento o recall. Su objetivo
 es asignar una unica propiedad arquitectonica al pipeline sin cambiar la
-deteccion.
+deteccion. El runner y el evaluador actuales todavia comparten capacidad de
+oracle y no existe una scan attestation verificada: `recall_at` permanece
+`null` y no elegible, mientras `diagnostic_recall_at` es solo desarrollo. La
+separacion fisica pre-oracle pertenece a E0 y sigue pendiente.
 
 ## Publicacion y dependencias privadas
 

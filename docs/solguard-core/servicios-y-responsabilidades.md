@@ -106,7 +106,9 @@ solo para findings soportados. Su fallback no reescribe VALIDATE.
 
 Construyen planes reproducibles y seleccionan harnesses Foundry, Hardhat,
 Anchor, Rust o multiproceso. Planificar no equivale a reproducir ni a admitir
-un exploit.
+un exploit. La seleccion solo usa fixtures vinculadas a source o tests reales
+del proyecto; core no carga ground truth ni sintetiza fixtures desde bugs
+esperados.
 
 ### `technical_report.rs`
 
