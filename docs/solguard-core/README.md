@@ -45,6 +45,31 @@ En `audit_only`, core ejecuta hasta FILTER y registra
 `skipped_by_audit_only_mode`, sin materializar sus artefactos. El endpoint y su
 payload HTTP permanecen en backend.
 
+### Refuerzo DISCOVER v2 y `candidate_value`
+
+Dentro de CANDIDATES, core construye `model_discovery_packs.v2` target-scoped.
+Cada capsula conserva source aunque no existan aristas o invariantes previos,
+marca `OPEN_WORLD=true` y `VALIDATION_AUTHORITY=false`, y solicita la salida
+compacta `model_discovery_candidate.v2`. El modelo solo propone semantica e IDs
+de superficies; core reconstruye ubicaciones, ruta y evidence IDs. Los leads
+exploratorios se conservan para diagnostico, pero nunca entran en VALIDATE.
+
+Las doce aristas preservan presupuesto para conexiones entrantes root-cause y
+salientes impact antes de expandir el grafo conectado. Si TRACE no aporta
+targets source-backed utilizables, core usa un fallback MAP acotado de simbolos
+function-like productivos, prioriza superficies externas/de valor y excluye
+tests, mocks, fixtures y dependencias vendorizadas. Ese camino queda marcado
+como `trace.model_discovery_map_fallback.v1`, degradado y open-world; no gana
+autoridad de validacion.
+
+Despues de crear candidatos canonicos, core puede ejecutar VALUE de nuevo como
+`candidate_value`. Las requests `solguard-value-proof-requests.v1` son
+`query_only`, estan limitadas a 128 y parten de evidencia independiente
+MAP/TRACE. Solo una respuesta `solguard-value-proof-responses.v1` completa,
+`map_trace_reverified`, sin autocorroboracion, con binding exacto y proof
+`validate_consumable` se aplica a la vista efectiva. Una respuesta partial no
+promueve el candidato.
+
 ## Frontera ciega de producto
 
 El core no carga, matchea ni puntua ground truth de benchmarks. Tampoco
@@ -145,6 +170,7 @@ src/
     analyzer/
       runtime.rs          coordinacion de fases y herramientas
       types.rs            tipos serializados del analisis
+      evidence_requests.rs requests y cierre candidate-directed VALUE
       seeds/              deteccion determinista
       finalizers.rs       cierre y reconciliacion de candidatos
     filter.rs             invocacion y reconciliacion filter.v0.1
@@ -165,6 +191,7 @@ Documentacion detallada:
 
 - [Servicios y responsabilidades](./servicios-y-responsabilidades.md)
 - [Pipeline, fases y artefactos](./pipeline-y-fases.md)
+- [DISCOVER v2 y cierre candidate-directed VALUE](./discovery-v2-y-candidate-value.md)
 
 ## API y CLI
 
@@ -187,21 +214,30 @@ permanece como default. El batch scan-only es un camino diagnostico separado.
 
 ## Artefactos y compatibilidad
 
-La migracion cambia el propietario del codigo, no los contratos observables:
+La migracion original cambio el propietario del codigo sin romper los
+contratos autoritativos. El endurecimiento posterior anade contratos de
+discovery y evidencia:
 
 - `pipeline.v0.10` y el orden de fases permanecen estables;
 - cada receipt de herramienta se conserva como `tool_phase.json` cuando el
   journal del core escribe `phase.json`;
 - `analysis_funnel.json`, candidatos canonicos, VALIDATE, FILTER, EXPLOIT y
-  reportes mantienen rutas y esquemas;
-- `/analyze`, `audit_only` y las respuestas HTTP siguen siendo compatibles;
+  reportes mantienen sus autoridades y rutas principales;
+- `model_discovery_packs.v2` y `model_discovery_candidate.v2` sustituyen el
+  contrato v1 de la frontera model-assisted;
+- se anaden `value_proof_requests.json` y el directorio
+  `candidates/value-evidence/` sin sobrescribir `value/attack_paths.json`;
+- `AnalyzeOutputs` anade `candidate_value_dir` y las cuatro rutas JSON de esta
+  segunda pasada; `/analyze` y `audit_only` siguen siendo compatibles para
+  consumidores que aceptan campos aditivos;
 - deploy deriva `solguard-product-priority-ranking.v2` solo desde artefactos de
   producto y anota despues `solguard-audit-ranking.v3`; el core no participa en
   ese matching ni recibe sus labels.
 
-Esta separacion no implica una afirmacion de rendimiento o recall. Su objetivo
-es asignar una unica propiedad arquitectonica al pipeline sin cambiar la
-deteccion.
+Estos cambios endurecen el contexto y el cierre de evidencia, pero todavia no
+demuestran una mejora de rendimiento o recall. No se debe publicar esa
+afirmacion hasta repetir los 90 labs y los holdouts independientes, congelar los
+nuevos artefactos y compararlos con la baseline anterior.
 
 La frontera host de prueba en deploy puede lanzar un proceso con un environment
 exacto sin herencia y allowlist positiva de variables de aplicacion

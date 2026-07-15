@@ -105,12 +105,38 @@ Mirar:
 - `batches_completed`
 - `candidates_proposed`
 - `candidates_accepted`
+- `candidates_grounded`
+- `candidates_exploratory`
+- `authoritative_paths_reconstructed`
 - `candidates_rejected`
 - `invalid_candidate_schema`
 - `rejections`
 
 Si `SOLGUARD_MODEL_DISCOVERY_BATCHES=0`, no debe esperarse ningun aporte del
 modelo en discovery.
+
+Un aumento de `candidates_exploratory` no es una promocion fallida: esos leads
+estan excluidos de VALIDATE por contrato hasta cerrar invariant, ruta y
+evidencia.
+
+## Diagnostico de `candidate_value`
+
+Archivos:
+
+- `tool-outputs/candidates/value_proof_requests.json`
+- `tool-outputs/candidates/value-evidence/proof_responses.json`
+- `tool-outputs/candidates/value-evidence/effective_attack_paths.json`
+- `tool-outputs/candidates/value-evidence/proof_closure_diagnostics.json`
+
+Revisar `requests_total`, `responses_total`, `responses_applied`,
+`responses_rejected` y `rejection_reasons`. En `analysis_funnel.json` aparecen
+tambien `candidate_value_requests`, `candidate_value_responses`,
+`candidate_value_responses_applied`, `candidate_value_responses_rejected` y
+`candidate_value_rejection_reasons`.
+
+Una respuesta partial, una autoridad distinta de `map_trace_reverified`,
+`self_corroboration=true`, una superficie discordante o un proof no
+`validate_consumable` deben contarse como rechazo y quedar fuera de VALIDATE.
 
 ## Diagnostico de VALIDATE
 

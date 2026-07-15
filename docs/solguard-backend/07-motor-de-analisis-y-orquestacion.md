@@ -35,6 +35,9 @@ El manifiesto global sigue en `tool-outputs/pipeline.json`.
 - MAP, DIFF, TRACE, DISCOVER, ECONOMIC, VALUE e INVARIANT producen modelos y
   evidencia; no confirman findings.
 - CANDIDATES normaliza hipotesis, IDs, superficies y bindings.
+- Dentro de CANDIDATES, core puede preparar model packs v2 y ejecutar
+  `candidate_value`; ambas son subpasadas de evidencia y no nuevas fases del
+  journal `pipeline.v0.10`.
 - VALIDATE emite `supported`, `refuted` o `inconclusive`.
 - FILTER consume solo sus inputs minimos, emite `filter.v0.1` y decide admision
   de forma independiente y fail-closed.
@@ -80,3 +83,5 @@ copia o con cambios versionados. Ninguno lanza un release completo.
 
 El detalle de cada fase y artefacto se mantiene en
 [Pipeline, fases y artefactos de core](../solguard-core/pipeline-y-fases.md).
+Los contratos open-world y candidate-directed se detallan en
+[DISCOVER v2 y cierre candidate-directed VALUE](../solguard-core/discovery-v2-y-candidate-value.md).

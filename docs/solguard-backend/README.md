@@ -5,9 +5,10 @@ valida DTOs y parametros de transporte, invoca `solguard-core` y devuelve la
 respuesta publica. El pipeline, sus herramientas y toda la logica pesada viven
 en [SolGuard Pipeline Core](../solguard-core/README.md).
 
-La migracion de propiedad no cambia las rutas HTTP, los payloads de `/analyze`,
-los artefactos ni los contratos `pipeline.v0.10`, `filter.v0.1` y
-`exploit.v0.2`.
+La migracion de propiedad no cambia las rutas HTTP ni el request de `/analyze`,
+y conserva los contratos `pipeline.v0.10`, `filter.v0.1` y `exploit.v0.2`.
+Core anade de forma backward-compatible rutas `candidate_value` dentro de
+`AnalyzeOutputs`; backend las transporta sin interpretarlas.
 
 ## Alcance real
 

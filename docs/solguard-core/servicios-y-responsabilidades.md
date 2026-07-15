@@ -44,12 +44,46 @@ journal, construye candidatos y coordina VALIDATE, FILTER y las fases
 posteriores. Tambien conserva degradaciones como fast MAP, fallbacks tipados,
 timeouts y preservacion de receipts de herramienta.
 
+Dentro de CANDIDATES tambien construye los packs target-scoped
+`model_discovery_packs.v2`, ejecuta el model discovery acotado y coordina la
+segunda pasada VALUE `candidate_value`. Esta pasada no sustituye la fase VALUE
+inicial ni autoriza findings: produce requests, responses, vista efectiva y
+diagnosticos de cierre antes de materializar los candidatos para VALIDATE.
+
 ### `analyzer/types.rs`
 
 Define los contratos serializados: opciones y resultado del analisis, tool
 runs, perfil, candidatos canonicos, evidencias, superficies, transiciones,
 protecciones y diagnosticos. Cambiar un campo observable exige una migracion de
 contrato y documentacion coordinada.
+
+`AnalyzeOutputs` incluye de forma aditiva:
+
+- `candidate_value_dir`;
+- `value_proof_requests_json`;
+- `value_proof_responses_json`;
+- `effective_attack_paths_json`;
+- `value_proof_closure_diagnostics_json`.
+
+Backend puede transportar estas rutas, pero su semantica y autoridad siguen
+perteneciendo al core.
+
+### `analyzer/evidence_requests.rs`
+
+Construye hasta 128 consultas `solguard-value-proof-requests.v1` desde
+candidatos cuyas tres superficies estan grounded en MAP/TRACE. Cada evidence ID
+se resuelve al origin, fichero y linea reales antes de serializar; las refs
+imposibles se eliminan y una request sin ninguna referencia exacta o sin una
+unica ruta VALUE base con el mismo triple causal se omite.
+Aplica `solguard-value-proof-responses.v1` solo tras comprobar schema,
+igualdad completa de IDs request/response, identidades, obligaciones, path
+base, superficies, refs independientes, readiness e invariant binding.
+
+El modulo rechaza autocorroboracion, exige
+`evidence_authority=map_trace_reverified` y mantiene fuera de VALIDATE toda
+respuesta que no sea `complete` y `validate_consumable`. Tambien escribe
+`effective_attack_paths.json` sin mutar el output VALUE original y genera
+`solguard-value-proof-closure-diagnostics.v1`.
 
 ### `analyzer/seeds/**`
 
@@ -68,6 +102,12 @@ identidades coherentes.
 Canonicaliza, agrupa, enlaza invariantes, preserva leads y genera diagnosticos
 antes de entregar candidatos a VALIDATE. IDs, bindings y source evidence son
 contratos de compatibilidad.
+
+Para `model_discovery_candidate.v2`, resuelve los IDs exactos de
+`SYMBOL_LOCATION` y reconstruye de forma autoritativa la ruta y la evidencia
+desde `RESOLVED_EDGE` y `TYPED_INVARIANT`. El modelo no controla file/line,
+chain ni evidence IDs. Una hipotesis sin grounding suficiente se marca
+`model_exploratory_source` y nunca se incluye en la entrada de VALIDATE.
 
 ### `analyzer/validation.rs`
 

@@ -39,6 +39,10 @@ El directorio `tool-outputs/` contiene una carpeta por fase y un journal global.
 | `economic/index.json` | Indice/capacidades de economic. |
 | `value/value_model.json` | Modelo de activos, autoridad, estado y deltas. |
 | `value/attack_paths.json` | Rutas de ataque y value proof packs opcionales. |
+| `candidates/value_proof_requests.json` | Consultas `query_only` candidate-directed VALUE. |
+| `candidates/value-evidence/proof_responses.json` | Respuestas revalidadas por VALUE contra MAP/TRACE. |
+| `candidates/value-evidence/effective_attack_paths.json` | Vista aditiva con solo los cierres aceptados por core. |
+| `candidates/value-evidence/proof_closure_diagnostics.json` | Conteos y razones del cierre candidate-directed. |
 | `invariant/` | Reporte de invariantes runtime. |
 | `candidates/` | Raw candidates, rechazos, lifecycle y validacion. |
 | `validate/validation_results.json` | Contrato autoritativo de veredictos. |
@@ -69,13 +73,27 @@ Archivos principales:
 | `tool-outputs/candidates/raw_candidates.json` | Candidatos antes de canonicalizacion final. |
 | `tool-outputs/candidates/validation_candidates.json` | Candidatos emitidos a VALIDATE. |
 | `tool-outputs/candidates/rejected_candidates.json` | Rechazos con etapa, razon y requisitos faltantes. |
-| `tool-outputs/candidates/model_discovery_packs.json` | Packs enviados al modelo para discovery acotado. |
+| `tool-outputs/candidates/model_discovery_packs.json` | Packs target-scoped `model_discovery_packs.v2` enviados al modelo. |
 | `tool-outputs/candidates/model_discovery_diagnostics.json` | Aceptaciones, rechazos, reparaciones y deduplicacion del modelo. |
+| `tool-outputs/candidates/value_proof_requests.json` | Requests `solguard-value-proof-requests.v1`, `query_only` y acotadas a 128. |
+| `tool-outputs/candidates/value-evidence/proof_responses.json` | Responses `solguard-value-proof-responses.v1`. |
+| `tool-outputs/candidates/value-evidence/effective_attack_paths.json` | Copia efectiva sin mutar el `attack_paths.json` base. |
+| `tool-outputs/candidates/value-evidence/proof_closure_diagnostics.json` | Requests, responses, aplicaciones, rechazos y razones. |
 | `tool-outputs/candidates/candidate_lifecycle.json` | Trazabilidad desde senal fuente hasta candidato y verdict. |
 | `canonical_candidates.json` | Vista canonica estable en raiz de proyecto. |
 
 Un candidato puede ser util aunque no sea finding. Si no tiene binding completo,
 debe quedar como `reviewable_lead` o `review_queue`, no desaparecer.
+
+Los packs v2 declaran `OPEN_WORLD=true` y `VALIDATION_AUTHORITY=false`. Core
+reconstruye file/line, ruta y evidence IDs; una hipotesis exploratoria nunca se
+emite a VALIDATE. Del mismo modo, solo una respuesta VALUE `complete`,
+`map_trace_reverified`, sin autocorroboracion y `validate_consumable` puede
+aplicarse. Las respuestas partial permanecen fuera.
+
+Vease
+[DISCOVER v2 y cierre candidate-directed VALUE](../solguard-core/discovery-v2-y-candidate-value.md)
+para el contrato completo.
 
 ## Validacion
 

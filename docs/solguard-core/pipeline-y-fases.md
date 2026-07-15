@@ -45,8 +45,26 @@ Prioriza flujos de estado desde MAP. Sus limites publicos son
 ### DISCOVER
 
 Genera `protocol_model.json` e `index.json` con superficies, capacidades,
-rutas, gaps e hipotesis estructuradas. Una hipotesis no llega a VALIDATE sin la
-evidencia y el binding exigidos por candidatos.
+rutas, gaps e hipotesis estructuradas. Durante CANDIDATES, core construye
+ademas `model_discovery_packs.v2`: capsulas source-grounded, open-world y
+target-scoped con hasta doce aristas resueltas conectadas al target. El modelo
+responde con `model_discovery_candidate.v2`, que solo contiene semantica e IDs
+de superficies.
+
+El presupuesto de aristas preserva ambos lados causales: intercala relaciones
+directas entrantes hacia el root/target y salientes hacia el impact antes de
+expandir el resto del grafo conectado. Si TRACE no ofrece ningun target
+source-backed utilizable, core crea un pool acotado desde simbolos function-like
+de MAP, prioriza entrypoints externos/de valor y excluye tests, mocks, fixtures,
+vendor y `node_modules`. Este fallback se identifica como
+`trace.model_discovery_map_fallback.v1` con
+`coverage_gap=trace_targets_unavailable`.
+
+Core reconstruye ubicaciones, ruta y evidencia desde el pack; el modelo no es
+autoridad para esos campos. Una hipotesis sin invariant tipado y ruta
+autoritativa con evidencia permanece como lead exploratorio y no llega a
+VALIDATE. La misma regla se aplica a toda capsula MAP-fallback: es degradada y
+open-world, nunca autoridad de validacion.
 
 ### ECONOMIC
 
@@ -65,6 +83,14 @@ los fallbacks v1 de core siguen serializando
 compatibilidad. Core no lo consume, no lo usa como metrica y lo excluye de
 `analysis_funnel.json`; se eliminara en v2. Las metricas reales del evaluator
 permanecen fuera del pipeline de producto.
+
+VALUE puede ejecutarse una segunda vez dentro del cierre de candidatos como
+`candidate_value`. Esa pasada consume `solguard-value-proof-requests.v1`
+`query_only`, con un maximo de 128 consultas y referencias independientes
+MAP/TRACE, y produce `solguard-value-proof-responses.v1`. Solo una respuesta
+`complete`, `map_trace_reverified`, sin autocorroboracion, con todas las
+identidades y obligaciones exactas y proof `validate_consumable` puede aplicarse
+a la vista efectiva. Las respuestas parciales permanecen fuera de VALIDATE.
 
 ### INVARIANT
 
@@ -86,6 +112,10 @@ tool-outputs/candidates/validation_candidates.json
 tool-outputs/candidates/rejected_candidates.json
 tool-outputs/candidates/model_discovery_packs.json
 tool-outputs/candidates/model_discovery_diagnostics.json
+tool-outputs/candidates/value_proof_requests.json
+tool-outputs/candidates/value-evidence/proof_responses.json
+tool-outputs/candidates/value-evidence/effective_attack_paths.json
+tool-outputs/candidates/value-evidence/proof_closure_diagnostics.json
 tool-outputs/candidates/candidate_lifecycle.json
 canonical_candidates.json
 analysis_funnel.json
@@ -93,6 +123,20 @@ analysis_funnel.json
 
 Los candidatos incompletos se conservan como leads con etapa, razon, requisitos
 faltantes y evidencia; no se eliminan silenciosamente.
+
+`effective_attack_paths.json` no sustituye ni modifica el
+`tool-outputs/value/attack_paths.json` original. Es una copia efectiva que solo
+reemplaza paths cuya respuesta supero el cierre exacto. Los diagnosticos
+`solguard-value-proof-closure-diagnostics.v1` conservan requests, responses,
+aplicaciones, rechazos y sus razones.
+
+El resultado Rust `AnalyzeOutputs` expone `candidate_value_dir`,
+`value_proof_requests_json`, `value_proof_responses_json`,
+`effective_attack_paths_json` y
+`value_proof_closure_diagnostics_json` como campos aditivos.
+
+La especificacion detallada de ambas fronteras esta en
+[DISCOVER v2 y cierre candidate-directed VALUE](./discovery-v2-y-candidate-value.md).
 
 ### VALIDATE
 
@@ -169,3 +213,7 @@ cargo run --locked --manifest-path "../solguard-core/Cargo.toml" --bin solguard-
 Los replays deben usar artefactos congelados y compararse por contenido, IDs,
 bindings y hashes. La compilacion y los tests por si solos no prueban paridad de
 deteccion.
+
+Del mismo modo, los contratos v2 y `candidate_value` no prueban una mejora de
+recall. Esa conclusion requiere un nuevo rerun congelado de los 90 labs y de los
+holdouts independientes frente a la baseline anterior.

@@ -35,6 +35,8 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 ## Contracts
 
 - `documentation truthfulness`
+- `DISCOVER model packs v2 and candidate_value technical contract coverage`
+- `no recall or generalization claim without measured 90-lab and independent holdout reruns`
 
 ## Quick Checks
 

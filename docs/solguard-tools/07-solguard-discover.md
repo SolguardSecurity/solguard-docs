@@ -107,6 +107,42 @@ convertirlas en candidatos:
 En el core pueden aparecer con
 `primary_evidence_source = protocol_invariant_discovery`.
 
+## Integracion con model discovery v2 de core
+
+El `protocol_model.json` de esta herramienta y los model packs construidos por
+core son contratos distintos. `solguard-discover` posee el modelo de protocolo;
+`solguard-pipeline-core` posee
+`tool-outputs/candidates/model_discovery_packs.json` con
+`model_discovery_packs.v2`.
+
+Para cada target seleccionado, core forma una capsula source-grounded y
+open-world. Incluye como maximo doce aristas resueltas conectadas al target y no
+permite que aristas globales no relacionadas consuman ese cupo. Un target no se
+descarta solo por carecer de aristas o invariantes previos. Cada pack declara
+`OPEN_WORLD=true`, `VALIDATION_AUTHORITY=false` y exige la salida compacta
+`model_discovery_candidate.v2`.
+
+Dentro de esas doce aristas, core intercala primero las conexiones directas
+entrantes del lado root-cause y las salientes del lado impact; asi un fan-out
+grande no elimina la otra mitad causal. Si TRACE no entrega ningun target
+source-backed utilizable, core usa un fallback MAP acotado: selecciona simbolos
+function-like, prioriza superficies `public`/`external` y de valor, y excluye
+tests, mocks, fixtures, vendor y `node_modules`. El contexto declara
+`trace.model_discovery_map_fallback.v1` y
+`coverage_gap=trace_targets_unavailable`.
+
+El modelo solo propone semantica y los IDs exactos de las tres superficies.
+Core resuelve file/line, invariantes, ruta y evidencia desde el propio pack. No
+confia en `chain` ni `evidence_ids` aportados por el modelo. Si no puede
+reconstruir invariant tipado y ruta con evidencia, conserva la hipotesis como
+lead exploratorio y la excluye de VALIDATE.
+
+El fallback MAP no cambia esa regla: su capsula es degradada, open-world y sin
+autoridad de validacion.
+
+El contrato completo se describe en
+[DISCOVER v2 y cierre candidate-directed VALUE](../solguard-core/discovery-v2-y-candidate-value.md).
+
 ## Capabilities
 
 `protocol_model.json` e `index.json` registran:
@@ -131,3 +167,5 @@ vez de ejecutar sin limite. La degradacion queda visible en metadata,
 - Las reglas implicitas son hipotesis hasta pasar por INVARIANT/VALIDATE.
 - El source opcional ayuda a minar intenciones, pero no sustituye evidencia
   estructurada.
+- Los packs v2 mejoran la disciplina de grounding; no prueban por si solos una
+  mejora de recall ni de generalizacion.

@@ -13,6 +13,7 @@ Documentacion tecnica de las herramientas deterministas coordinadas por
 6. [SolGuard Validate](06-solguard-validate.md)
 7. [SolGuard Discover](07-solguard-discover.md)
 8. [SolGuard Economic](08-solguard-economic.md)
+9. [SolGuard Value](09-solguard-value.md)
 
 ## Pipeline actual
 
@@ -29,7 +30,8 @@ solo invoca el core desde HTTP.
 
 ## Autoridad por fase
 
-- MAP, TRACE, DIFF, DISCOVER, ECONOMIC y VALUE producen senales o modelos.
+- MAP, TRACE, DIFF, DISCOVER, ECONOMIC y VALUE producen senales, modelos o
+  evidencia candidata.
 - INVARIANT produce propiedades tipadas.
 - VALIDATE emite `supported`, `refuted` o `inconclusive`.
 - FILTER conserva una admision independiente y fail-closed en `filter.v0.1`.
@@ -38,3 +40,8 @@ solo invoca el core desde HTTP.
 
 Ninguna afirmacion de rendimiento, recall o pagabilidad se deriva de esta
 topologia. Esos resultados requieren medicion y revision separadas.
+
+En particular, los packs open-world de DISCOVER v2 y la segunda pasada
+`candidate_value` endurecen el grounding y el cierre de evidencia, pero no
+constituyen una mejora de recall medida hasta repetir los 90 labs y los
+holdouts independientes.

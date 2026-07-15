@@ -222,6 +222,11 @@ Artefactos destacados en `outputs`:
 - `rejected_candidates_json`
 - `candidate_lifecycle_json`
 - `model_discovery_diagnostics_json`
+- `candidate_value_dir`
+- `value_proof_requests_json`
+- `value_proof_responses_json`
+- `effective_attack_paths_json`
+- `value_proof_closure_diagnostics_json`
 - `validation_results_json`
 - `validation_results_md`
 - `filter_results_json`
@@ -236,3 +241,8 @@ Artefactos destacados en `outputs`:
 El campo `status = completed` no significa que haya findings; significa que el
 pipeline completo produjo sus artefactos sin degradaciones relevantes. Los
 findings reales se determinan leyendo `validation_results_json`.
+
+Los cinco campos `candidate_value` son aditivos. Backend no decide si una
+respuesta VALUE puede aplicarse: core exige cierre completo, autoridad
+`map_trace_reverified`, ausencia de autocorroboracion y binding exacto antes de
+emitir la vista efectiva.
