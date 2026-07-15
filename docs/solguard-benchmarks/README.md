@@ -38,13 +38,131 @@ SolGuard, por ejemplo:
 
 ## Resumen del corpus
 
-| Benchmark | Ruta | Protocolos | Expected declarados | Enfoque |
-| --- | --- | ---: | ---: | --- |
-| 1 | `solguard-deploy/benchmarks/v1` | 24 | 397 | Corpus amplio DeFi/DLT. |
-| 2 | `solguard-deploy/benchmarks/v2` | 20 | 20 | Corpus multi-lenguaje de un bug por protocolo. |
-| 3 | `solguard-deploy/benchmarks/v3` | 20 | 23 | Corpus DeFi/cross-chain mas reciente. |
+| Benchmark | Ruta                            | Protocolos | Expected declarados | Enfoque                                        |
+| --------- | ------------------------------- | ---------: | ------------------: | ---------------------------------------------- |
+| 1         | `solguard-deploy/benchmarks/v1` |         24 |                 397 | Corpus amplio DeFi/DLT.                        |
+| 2         | `solguard-deploy/benchmarks/v2` |         20 |                  20 | Corpus multi-lenguaje de un bug por protocolo. |
+| 3         | `solguard-deploy/benchmarks/v3` |         20 |                  23 | Corpus DeFi/cross-chain mas reciente.          |
 
 ## Estado de la frontera de evaluacion E0+M1
+
+### Segunda ola E0: infraestructura disponible
+
+`solguard-deploy` ya contiene una cadena contractual separada para construir una
+futura evaluacion pre-oracle:
+
+- `solguard-scan-contract.v1` congela targets, inputs productivos, budgets,
+  runtime policy y modulo de ranking, y rechaza recursivamente ground truth,
+  matcher, evaluator, splits, expected bugs y rutas de oracle;
+- `solguard-scan-receipt.v1` liga el contrato al estado terminal del proceso, al
+  manifest completo de outputs, a su tree hash y al orden de candidatos;
+- `solguard-scan-attestation.v1` separa la evidencia del proveedor de aislamiento
+  de las afirmaciones del receipt;
+- `solguard-evaluation-contract.v1` liga la cadena exacta de documentos, el batch
+  barrier, el precommit, los inputs del oracle y la politica de output.
+
+El unico paso ya integrado en v1-v8 es el catalogo de scan. Cada suite tiene un
+`protocols-scan.json` oracle-free bajo `solguard-scan-catalog.v1`: v1 contiene
+24 targets y v2-v8 contienen 20 cada una. Cada target contiene unicamente
+`project`, `commit`, `source_locator` y `source_mirrors`; nombres, categorias,
+aliases y cualquier narrativa libre quedan fuera del contrato. La suite debe
+coincidir con la solicitada, las URLs se limitan a archives de
+`codeload.github.com` sin credenciales/query/fragment y su ref final debe
+coincidir con `commit`. El modo check exige los
+bytes generados exactos ademas de paridad project+commit con el catalogo legacy.
+Los refs `main`/`master` no fijan contenido: antes del scan los bytes descargados
+deben quedar ligados por el `source_sha256` obligatorio del scan contract.
+
+Los cuatro payloads tienen JSON Schemas Draft 2020-12 cerrados bajo
+`solguard-deploy/schemas/`. Los documentos usan JSON canonico, SHA-256 y solo
+admiten envelopes DSSE Ed25519. El verificador no acepta otro algoritmo, una firma
+valida sobre un documento diferente, un hash recompuesto que contradiga el
+manifest, una referencia a otro contrato o una elegibilidad relabelled.
+
+Los project IDs no admiten traversal, los descriptores obligatorios deben
+enlazar contenido presente y el digest de product-priority debe coincidir con
+su descriptor de input. La clave publica Ed25519 indicada por el caller solo
+permite probar integridad respecto al firmante que ese caller ha elegido; no
+demuestra que sea un attestor autorizado para release. Por eso
+`--require-scan-boundary` falla cerrado hasta que el repositorio fije una raiz
+de confianza y una politica de firma con roles separados. Una cadena aportada
+puede verificarse para diagnostico y resultar estructuralmente elegible, pero
+debe conservar `recall_at_eligible=false`.
+
+Los nombres de la cadena describen exactamente su alcance:
+`structurally_eligible` y `scan_attestation_structurally_valid` prueban
+completitud estructural, mientras `oracle_capability_separated_claimed` es una
+afirmacion del proveedor. Ninguno significa aislamiento verificado ni confianza
+de release.
+
+Existe ademas `solguard-scan-execution-contract.v1`. Su fingerprint es
+scan-only: incluye launcher, runner, catalogo de targets, toolchain, configuracion,
+runtime policy, recovery, modulo product-priority y modulo contractual. Ground
+truth, evaluator, matcher, splits, adjudications y source coverage no forman
+parte de esa huella y sus nombres/rutas se rechazan de forma recursiva.
+
+El ranking productivo vive ahora en el modulo independiente
+`benchmarks/product-priority.mjs`. No importa el matcher ni el evaluador y
+conserva byte a byte el wire object `solguard-product-priority-ranking.v2` que
+consumen v1-v8. Este traslado reduce la superficie de dependencia; no convierte
+el objeto v2 en una attestation ni cambia su semantica ineligible.
+
+`scan-boundary.mjs` implementa una frontera host de prueba: inicia otro proceso
+con un environment exacto, sin heredar variables del padre y rechazando
+por allowlist positiva cualquier nombre que no sea una variable de aplicacion
+`SOLGUARD_*` libre de oracle; esto incluye controles no enumerados como
+`LD_AUDIT`. Limita argumentos y entrypoint, recoge
+solo artefactos declarados y rechaza traversal/symlinks. Cada target exige
+`source_sha256`; scanner, toolchain, product-priority, configuracion y todos los
+sources se suministran como `inputPaths` exactos y se rehashean antes y despues
+de ejecutar. Esos checkpoints no demuestran todavia que el child consumiera las
+rutas declaradas ni impiden swap-and-restore durante la ejecucion. El receipt
+registra separacion de proceso y cierre observado del
+arbol, pero la attestation resultante es deliberadamente `host_process` y
+mantiene `oracle_capability_separated=false`. Un proceso hijo en el mismo host no
+prueba aislamiento de filesystem, red, database o capacidades.
+
+Cuando se suministra una cadena al evaluator, su preflight verifica primero las
+cuatro firmas DSSE y todos los enlaces contract/receipt/attestation/evaluation.
+Solo despues verifica y congela los bytes de ground truth, catalogo, splits,
+matcher y run; la evaluacion consume esos mismos bytes en vez de reabrir sus
+rutas. Tambien exige que `--projects-dir` sea exactamente el
+`--scan-output-root` sellado, reconstituye el output manifest y el ranking, y
+comprueba que `--run` sea el `scan_report` ligado por el receipt. La misma
+verificacion de hashes se repite antes de escribir resultados y el directorio
+de evaluacion debe quedar fuera del arbol de scan. El TCB firmado del evaluator
+incluye `evaluate.mjs`, `scan-contract.mjs` y `scan-boundary.mjs`. La ruta de
+output debe ser nueva y no existir; cada escritura de boundary se crea de forma
+exclusiva para no sobrescribir ni seguir hardlinks preexistentes.
+Este inventario no es aun bootstrap-trusted: Node importa los verificadores
+locales antes de comprobar sus hashes. Strict necesita un launcher minimo fijado
+por el repositorio que verifique el closure antes del import. Los JSON Schema
+son estructurales; self-hash, cronologia, igualdades y cadena se validan con el
+modulo JavaScript autoritativo.
+
+Este endurecimiento reduce la exposicion a mutaciones entre verificacion y uso,
+pero una frontera host sigue teniendo ventanas TOCTOU. No sustituye un almacen
+content-addressed ni mounts inmutables de solo lectura, y por ello sigue siendo
+una frontera diagnostica, no una prueba de aislamiento.
+
+### Estado de integracion y claims permitidos
+
+De esta infraestructura, v1-v8 solo integra los nuevos catálogos. Todavia faltan
+un runner scan-only comun, el flujo global `scan-all -> wait/close -> seal ->
+evaluate-all`, el bundle firmado de v1-v8 y su conexion a `full-run.sh` y a los
+runners de 90 labs. Scanner/evaluator siguen compartiendo el flujo legacy con
+capacidad de oracle. Tampoco existen inputs CAS/read-only, un proveedor OCI o VM
+real que emita una attestation de capacidades confiable ni una raiz de attestors
+fijada por el repositorio con roles de firma separados.
+
+Por tanto, el snapshot actual declara `oracle_capability_separated=false`,
+`scan_attestation=null` y una `recall_at_eligibility` negativa. La frontera host
+no puede cambiar esos valores. `recall_at` sigue siendo `null` y
+`diagnostic_recall_at` sigue siendo una metrica exclusivamente diagnostica. E0
+permanece abierto: no existe todavia un run blind certificado, una mejora medida
+de deteccion ni evidencia nueva de generalizacion. Esta ola no cambia detectores
+ni resultados de benchmark y no se han ejecutado scans reales para sostener un
+claim de mejora o una mejora de recall.
 
 Cada runner v1-v8 escribe
 `tool-outputs/benchmark/product_priority_ranking.json` despues del analisis del
@@ -53,13 +171,6 @@ canonicos, VALIDATE y diagnosticos de modelo, con
 `ranking_basis=product_artifacts_only`. El evaluador recalcula el objeto
 canonico completo desde esos artefactos, rechaza cualquier campo cambiado o
 extra y devuelve su recomputacion verificada.
-
-Ese snapshot demuestra integridad del orden derivado de artefactos, no una
-ejecucion pre-oracle o blind. Scanner y evaluator siguen compartiendo runner,
-proceso, workspace y capacidad de leer el oracle; el execution contract actual
-tambien conoce el descriptor de ground truth antes del scan. Por eso el snapshot
-declara `oracle_capability_separated=false`, `scan_attestation=null` y una
-`recall_at_eligibility` negativa.
 
 `solguard-audit-ranking.v3` conserva el orden product-derived y agrega finding
 ID, match status y severidad como anotaciones de evaluacion. El agregado usa
@@ -73,9 +184,7 @@ ID, match status y severidad como anotaciones de evaluacion. El agregado usa
 En todos los runners actuales, `recall_at` es `null` y no elegible.
 `diagnostic_recall_at` usa `ground_truth_status.product_priority_rank` para
 diagnosticar el orden product-derived, pero es solo una metrica de desarrollo:
-no demuestra Recall@K ciego, generalizacion ni calidad de release. La separacion
-fisica de proceso, archivos y capacidades, seguida de una attestation verificable
-del scan, sigue pendiente; E0 permanece abierto.
+no demuestra Recall@K ciego, generalizacion ni calidad de release.
 
 En tier `release`, `full-run.sh` ejecuta obligatoriamente
 `solguard-pre-release-check.v2` despues de cerrar las suites y escribir el
@@ -98,12 +207,12 @@ El cierre benchmark de `v0.8.0` se calcula sobre 63 protocolos scoreables. El
 protocolo `Tapioca-DAO` de v3 queda excluido por el fallo conocido de descarga
 HTTP 404.
 
-| Grupo | Protocolos scoreables | Vulnerabilidades scoreables | Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Match recall historico |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Benchmark v1 | 24 | 380 | 06:06:34 | 432 | 15 | 49 | 380 | 100% |
-| Benchmark v2 | 20 | 20 | 03:23:31 | 40 | 20 | 0 | 20 | 100% |
-| Benchmark v3 | 19 | 22 | 04:26:35 | 31 | 7 | 2 | 22 | 100% |
-| **Total benchmarks** | **63** | **422** | **13:56:40** | **503** | **42** | **51** | **422** | **100%** |
+| Grupo                | Protocolos scoreables | Vulnerabilidades scoreables |       Tiempo | Findings reportados | Falsos positivos | Duplicados | Detectados | Match recall historico |
+| -------------------- | --------------------: | --------------------------: | -----------: | ------------------: | ---------------: | ---------: | ---------: | ---------------------: |
+| Benchmark v1         |                    24 |                         380 |     06:06:34 |                 432 |               15 |         49 |        380 |                   100% |
+| Benchmark v2         |                    20 |                          20 |     03:23:31 |                  40 |               20 |          0 |         20 |                   100% |
+| Benchmark v3         |                    19 |                          22 |     04:26:35 |                  31 |                7 |          2 |         22 |                   100% |
+| **Total benchmarks** |                **63** |                     **422** | **13:56:40** |             **503** |           **42** |     **51** |    **422** |               **100%** |
 
 La ultima columna es recall de matching sobre un corpus conocido; no es
 `recall_at`, Recall@K ciego ni evidencia de generalizacion. La prueba de cierre

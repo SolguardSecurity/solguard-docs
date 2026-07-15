@@ -61,6 +61,62 @@ visible al oracle invalida ese registro. El matching y las metricas contra bugs
 conocidos pertenecen a `solguard-deploy` despues de congelar las salidas del
 producto.
 
+### Segunda ola E0 en deploy
+
+La segunda ola añade infraestructura para demostrar esa congelacion fuera del
+core, sin introducir capacidades de benchmark en el motor. `solguard-deploy`
+define cuatro payloads versionados:
+
+- `solguard-scan-contract.v1`;
+- `solguard-scan-receipt.v1`;
+- `solguard-scan-attestation.v1`;
+- `solguard-evaluation-contract.v1`.
+
+V1-v8 tambien tienen ahora catalogos oracle-free `protocols-scan.json` bajo
+`solguard-scan-catalog.v1`: 24 targets en v1 y 20 en cada suite v2-v8. El
+generador/check mantiene paridad exacta de project+commit y bytes materializados
+exactos. Cada target contiene solo project, commit y locators/mirrors limitados
+a `codeload.github.com`; elimina nombres, categorias, aliases y texto libre, y
+liga su suite a la solicitada y cada locator ref a `commit`. Un ref legacy
+`main`/`master` solo se convierte en
+input fijo cuando el scan contract compromete los bytes descargados mediante el
+`source_sha256` obligatorio. Este catalogo es el unico componente de la nueva
+frontera ya integrado en las suites.
+
+Cada payload tiene un JSON Schema Draft 2020-12 cerrado. El modulo contractual
+usa JSON canonico y SHA-256, y solo acepta envelopes DSSE Ed25519. La
+validacion de cadena comprueba referencias exactas entre contrato, receipt,
+attestation y evaluation contract; no permite recomponer hashes para cambiar
+status, barrera, outputs o elegibilidad. Ademas, los project IDs rechazan
+traversal, los descriptores obligatorios deben ligar contenido presente y el
+digest de product-priority debe coincidir con su descriptor de input.
+
+Una clave publica Ed25519 suministrada por el caller prueba integridad respecto
+a ese firmante, no que el firmante sea un attestor autorizado. En consecuencia,
+`--require-scan-boundary` falla cerrado hasta que exista una raiz de confianza
+fijada por el repositorio y una politica de firma con roles separados. Las
+cadenas suministradas son diagnosticas: aunque cumplan la estructura elegible,
+mantienen `recall_at_eligible=false`.
+
+Los nombres `structurally_eligible` y
+`scan_attestation_structurally_valid` significan completitud estructural;
+`oracle_capability_separated_claimed` sigue siendo una afirmacion del proveedor.
+No representan aislamiento verificado ni autorizacion de release.
+
+El ranking productivo se ha extraido a
+`solguard-deploy/benchmarks/product-priority.mjs`. Es un modulo puro que solo
+consume candidatos, VALIDATE y diagnosticos productivos, sin importar matcher o
+evaluator. Mantiene el wire contract `solguard-product-priority-ranking.v2` y su
+semantica actual: separar el codigo no equivale a certificar el momento ni las
+capacidades con las que se ejecuto.
+
+Tambien existe un fingerprint `solguard-scan-execution-contract.v1` que liga
+solo launcher, runner, catalogo de scan, toolchain, configuracion, runtime
+policy, recovery y modulos productivos. El constructor rechaza recursivamente
+ground truth, matcher, evaluator, splits, adjudications y source coverage. Este
+fingerprint scan-only convive de momento con el execution contract legacy usado
+por los runners actuales; no debe confundirse con una migracion ya desplegada.
+
 ## Estructura principal
 
 ```text
@@ -109,9 +165,10 @@ cargo run --locked --bin solguard-core -- refresh-poc-plans "<project-dir>"
 
 `solguard-deploy` puede resolver el repositorio con `SOLGUARD_CORE_DIR`, cuyo
 default es `../solguard-core`. Para ejecuciones reproducibles verifica que sea
-el core enlazado por backend, canonicaliza database y las diez herramientas a
-rutas fisicas absolutas, y liga corpus, imports, policy y contenido Git al
-execution contract usado por `--resume`.
+el core enlazado por backend y canonicaliza database y las diez herramientas a
+rutas fisicas absolutas. Los runners actuales siguen ligando corpus, imports,
+policy y contenido Git al execution contract legacy usado por `--resume`; la
+nueva huella scan-only todavia no sustituye ese flujo.
 
 ## Artefactos y compatibilidad
 
@@ -129,10 +186,43 @@ La migracion cambia el propietario del codigo, no los contratos observables:
 
 Esta separacion no implica una afirmacion de rendimiento o recall. Su objetivo
 es asignar una unica propiedad arquitectonica al pipeline sin cambiar la
-deteccion. El runner y el evaluador actuales todavia comparten capacidad de
-oracle y no existe una scan attestation verificada: `recall_at` permanece
-`null` y no elegible, mientras `diagnostic_recall_at` es solo desarrollo. La
-separacion fisica pre-oracle pertenece a E0 y sigue pendiente.
+deteccion.
+
+La frontera host de prueba en deploy puede lanzar un proceso con un environment
+exacto sin herencia y allowlist positiva de variables de aplicacion
+`SOLGUARD_*`, bloqueando tambien loaders no enumerados como `LD_AUDIT`;
+filesystem, argumentos y
+ejecutables allowlisted. `source_sha256` es obligatorio y los `inputPaths` de
+scanner, toolchain, product-priority, configuracion y todos los sources se
+rehashan antes y despues de ejecutar. Esto prueba identidad en dos checkpoints,
+no consumo mecanico por el child ni ausencia de swap-and-restore. Despues recoge
+un output manifest cerrado,
+liga ranking y receipt, y detecta traversal, symlinks o artefactos modificados.
+El evaluator puede verificar envelopes DSSE, la cadena
+exacta, los hashes de ground truth/catalogo/splits/matcher, el
+`scan_report` sellado y el manifest completo antes de evaluar. Repite esos
+hashes antes de publicar y obliga a escribir la evaluacion fuera del arbol de
+scan. La evaluacion consume los bytes verificados y congelados de matcher,
+catalogo, splits, ground truth y run, en lugar de reabrir esos inputs semanticos
+por ruta tras verificarlos. Su TCB liga `evaluate.mjs`, `scan-contract.mjs` y
+`scan-boundary.mjs`; el output debe ser una ruta fresca, separada y escrita de
+forma exclusiva.
+Ese inventario TCB aun se comprueba desde modulos importados antes del preflight;
+strict necesita un launcher minimo fijado por el repositorio que verifique el
+closure antes del import. Los JSON Schema son estructurales y los invariantes de
+self-hash, cronologia, igualdad y cadena pertenecen al validador JS autoritativo.
+
+Sin embargo, solo los catalogos estan integrados. Aun faltan el runner scan-only
+comun, la barrera global scan-close-seal, el bundle v1-v8 y su conexion a
+`full-run.sh` y labs. No existen inputs CAS/read-only ni un attestor OCI o VM
+real; una frontera
+`host_process` permanece explicitamente ineligible y no demuestra aislamiento
+de capacidades. Tampoco elimina todas las ventanas TOCTOU ni sustituye inputs
+CAS o mounts de solo lectura. Por eso `recall_at` continua `null`,
+`oracle_capability_separated=false` y `diagnostic_recall_at` es solo desarrollo.
+E0 sigue abierto y esta ola no cambia detectores, recall observado ni calidad de
+hallazgos; tampoco autoriza un claim de ejecucion blind. No se han ejecutado
+scans reales ni medido una mejora de benchmark o recall como parte de esta ola.
 
 ## Publicacion y dependencias privadas
 
