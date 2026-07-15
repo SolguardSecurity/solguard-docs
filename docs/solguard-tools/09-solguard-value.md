@@ -93,6 +93,10 @@ evidence_authority=map_trace_reverified
 self_corroboration=false
 ```
 
+El attack path devuelto conserva íntegros la ruta y el claim económico del path
+base. Solo se recomputa el cierre permitido del proof, y el campo `proof` debe
+ser idéntico a `attack_path.value_proof`.
+
 La declaracion de autoridad no basta por si sola. Core vuelve a comprobar
 schema, identidades, path base, superficies, obligaciones, referencias
 independientes, readiness e invariant binding antes de aplicar una respuesta.

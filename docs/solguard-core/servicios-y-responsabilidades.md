@@ -82,8 +82,10 @@ base, superficies, refs independientes, readiness e invariant binding.
 El modulo rechaza autocorroboracion, exige
 `evidence_authority=map_trace_reverified` y mantiene fuera de VALIDATE toda
 respuesta que no sea `complete` y `validate_consumable`. Tambien escribe
-`effective_attack_paths.json` sin mutar el output VALUE original y genera
-`solguard-value-proof-closure-diagnostics.v1`.
+`effective_attack_paths.json` sin mutar el output VALUE original y
+`solguard-value-proof-closure-diagnostics.v1`. Durante el cierre genera un
+índice MAP/TRACE propio para rechazar refs falsificados, divergencia entre el
+proof suelto y el embebido o cualquier mutación de la ruta/claim VALUE original.
 
 ### `analyzer/seeds/**`
 

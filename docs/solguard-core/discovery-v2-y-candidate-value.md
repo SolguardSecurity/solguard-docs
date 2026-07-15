@@ -198,6 +198,12 @@ Core solo aplica una respuesta cuando se cumplen todas estas condiciones:
 8. referencias independientes MAP/TRACE, nunca derivadas del request;
 9. binding valido al invariant y al candidato canonico.
 
+Además, Core reconstruye de nuevo el índice MAP/TRACE durante el cierre: todos
+los refs del proof deben existir con el origin, evidence id, fichero y línea
+exactos. El proof suelto debe ser idéntico al embebido y el path debe conservar
+la ruta y el claim económico VALUE originales; solo pueden cambiar identidad,
+readiness, blockers y refs mediante el cierre determinista permitido.
+
 Una respuesta partial, unmatched, ambiguous, autocorroborada o con cualquier
 mismatch se registra como rechazada y permanece fuera de VALIDATE. Un error al
 ejecutar `candidate_value` tampoco promueve candidatos: las obligaciones quedan
