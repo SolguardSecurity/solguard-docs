@@ -82,7 +82,8 @@ adquieren autoridad branch-aware: MAP conserva la ruta como `partial` con un
 diagnóstico explícito y TRACE no publica para ella un binding exacto.
 
 Una ruta solo queda `resolved` cuando no fue cortada por ciclo, profundidad o
-presupuesto y sus operaciones y aristas están resueltas. `missing_stages`
+presupuesto y sus operaciones, aristas, links y legs están resueltos.
+`missing_stages`
 describe deuda de completitud económica para el proof; no vuelve incierta una
 ruta causal cuyos pasos sí están identificados. Un ID v2 no convierte una ruta
 topológicamente parcial en resuelta.
@@ -113,7 +114,7 @@ fallar en ese vector antes de llegar a una auditoría.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | MAP        | Construye la ruta, calcula ID/digest y publica operaciones, aristas, links, legs y steps autoritativos.                                                                                               |
 | TRACE      | Selecciona contexto sin mutar la ruta. En `economic_checks[].evidence` correlaciona ID/digest mediante un singleton explícito, conserva operations observadas y la copia MAP canónica.                |
-| ECONOMIC   | Liga transitions e invariantes mediante ID/digest exactos. Si una equation nombra flows, no usa fallback fuzzy; una ruta MAP parcial puede quedar `flow_bound`, nunca `concrete` por el mero binding. |
+| ECONOMIC   | Liga transitions e invariantes mediante ID/digest exactos. Si una equation nombra flows, no usa fallback fuzzy. `flow_bound` exige una ruta MAP v2 exacta y `resolved`, pero conserva deuda de estado u observaciones; una ruta MAP `partial` permanece diagnóstica y sin binding autoritativo. |
 | VALUE      | Indexa la autoridad MAP, conserva el upstream ID y fusiona fragments solo por identidad exacta sin conflictos.                                                                                        |
 | CORE       | Solo enruta requests tras revalidar el binding TRACE completo; al cerrar reabre refs, exige una identidad de ruta singleton, rechaza respuestas repetidas y preserva ruta/claim.                      |
 
@@ -121,6 +122,10 @@ TRACE no puede podar steps y mantener el mismo ID. ECONOMIC y VALUE pueden
 añadir facts o evidence, pero no cambiar source, sink, asset, sequence ni
 digest. Cuando dos fragments con el mismo ID discrepan, el conflicto se
 conserva para diagnóstico y la ruta queda fuera de consumo estricto.
+
+Un objeto TRACE o ECONOMIC que declare claves de identidad/binding con tipos
+JSON incorrectos es un envelope invalido. No se descarta como si estuviera
+ausente y hace fallar el contrato estricto aunque exista otro binding valido.
 
 Los arrays TRACE legacy `flow_ids[]` y `flow_route_digests[]` no expresan una
 correlación cuando contienen más de un elemento. Un consumidor estricto solo

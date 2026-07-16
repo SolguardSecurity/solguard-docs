@@ -97,6 +97,9 @@ MAP/TRACE, y produce `solguard-value-proof-responses.v1`. Solo una respuesta
 `complete`, `map_trace_reverified`, sin autocorroboracion, con todas las
 identidades y obligaciones exactas y proof `validate_consumable` puede aplicarse
 a la vista efectiva. Las respuestas parciales permanecen fuera de VALIDATE.
+La independencia excluye cualquier evidence ID MAP relabelado por TRACE, y la
+obligacion de invariante exige un ID exacto cuyo scope autoritativo este ligado
+al mismo flow ID y route digest.
 
 El ensamblado `economic_flow_identity.v2` conserva el ID content-addressed
 creado por MAP y une TRACE/ECONOMIC mediante ID y digest exactos. Una request

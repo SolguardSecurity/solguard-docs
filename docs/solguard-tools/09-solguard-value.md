@@ -67,8 +67,10 @@ fabrica before/after state, delta o relación de invariante desde el propio path
 Esos campos solo aparecen cuando proceden de valores o attachments exactos.
 Cuando una request exige `invariant_relation`, VALUE conserva el
 `invariant_id` upstream y solo satisface la obligación si ese ID aparece
-exactamente en `request.invariant_ids`; una expresión equivalente o un hash
-local de relación no sustituyen al invariant solicitado.
+exactamente en `request.invariant_ids` y existe una única autoridad sintetizada
+cuyo scope liga ese invariant al mismo `{flow_id,route_digest}` del path; una
+expresión equivalente, substring, ID concatenado, invariant de otra ruta o un
+hash local de relación no sustituyen al invariant solicitado.
 
 La compatibilidad es aditiva: los schemas `solguard-value-*.v1` no cambian de
 nombre y los lectores legacy pueden ignorar las nuevas source refs y
@@ -77,6 +79,11 @@ capabilities. Los consumidores v2 deben exigir
 La herramienta anuncia soporte para esta semántica mediante
 `economic_flow_identity.v2`, `exact_flow_assembly` y
 `candidate_directed_pre_ranking_search`.
+
+Una observacion economica MAP `partial` no cambia el ID/digest de una ruta
+estructuralmente exacta. VALUE conserva esa identidad, pero anade
+`economic_value_unresolved:<id>` a `missing_evidence`; por ello la ruta sigue
+siendo trazable y ensamblable, pero no puede cerrar una prueba `complete`.
 
 ## Modo candidate-directed
 
@@ -148,6 +155,9 @@ referencias independientes, readiness e invariant binding antes de aplicar una r
 Solo `complete` con `validation_readiness.validate_consumable=true` y binding
 exacto puede actualizar la vista efectiva de attack paths. Los estados
 `partial`, `unmatched` y `ambiguous` permanecen fuera de VALIDATE.
+Un `evidence_id` que exista en MAP conserva origen MAP aunque TRACE lo copie a
+otra superficie o línea, y no puede aportar la mitad TRACE-native de
+`map_trace_reverified`.
 
 La integracion completa, sus artefactos y los campos de `AnalyzeOutputs` se
 documentan en

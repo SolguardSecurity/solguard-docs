@@ -146,6 +146,12 @@ secuencia completa y exactamente ordenada de `operation_ids` y la copia canónic
 en `solguard_map_context.economic_flows`. Los checks multi-flow pueden conservar
 valor diagnóstico, pero no generan una flow hint autoritativa.
 
+Los evidence IDs heredados de MAP son provenance de origen, no corroboración
+TRACE independiente. TRACE debe separar esa procedencia de cualquier evidencia
+realmente nativa; mientras no exista provenance explícita suficiente, un ID que
+ya aparece en MAP no puede cerrar `map_trace_reverified`, aunque se copie a otra
+superficie o línea TRACE.
+
 TRACE no amplía la cobertura estructural de MAP. En esta fase, los bindings de
 rama exactos proceden solo de Solidity con llaves y Vyper por indentación
 `if/elif/else`; una ruta de otro lenguaje o con sintaxis ambigua permanece

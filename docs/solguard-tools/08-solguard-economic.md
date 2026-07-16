@@ -118,8 +118,10 @@ Además, cada equation y cada scope de invariante sintetizado que declara una
 ruta publica exactamente un
 `flow_route_bindings[{flow_id,route_digest}]`. El par, `flows[]` y cualquier
 campo singular deben designar la misma ruta singleton. ECONOMIC recomputa el
-framing fuerte y los hechos derivados de MAP antes de emitir ese binding; una
-lista parcial, duplicada o contradictoria queda no autoritativa.
+framing fuerte, `missing_stages`, confidence/evidence y la metadata de
+entrypoint/lineage contra la función MAP seleccionada por `symbol_id` antes de
+emitir ese binding; una lista parcial, duplicada o contradictoria queda no
+autoritativa.
 
 Si una equation declara `flows`, esos IDs son una restricción autoritativa: la
 transición solo se liga a una coincidencia exacta. Un ID explícito ausente no
@@ -127,10 +129,11 @@ puede recuperarse mediante componente, substring del entrypoint o similitud de
 asset. Esto evita atribuir a una ruta hechos económicos observados en otra.
 
 Una transición solo puede representar un binding `concrete` de ruta cuando la
-identidad es v2, el digest existe, la ruta MAP está topológicamente `resolved` y
-también están resueltos sus bindings de estado. Una identidad v2 exacta cuya
-ruta MAP continúa `partial` se conserva como `flow_bound`: el enlace es exacto,
-pero no falsea la resolución causal. La lectura compatible de una ruta antigua queda marcada
+identidad es v2, el digest existe, la ruta MAP está topológicamente `resolved`,
+sus observaciones económicas están resueltas y también existen bindings de
+estado. `flow_bound` conserva una identidad v2 exacta y `resolved` cuando aún
+falta estado u observaciones resueltas; una ruta MAP `partial` permanece como
+diagnóstico sin binding autoritativo. La lectura compatible de una ruta antigua queda marcada
 `legacy_flow_bound`; sirve para diagnóstico, pero no para cerrar una prueba
 exacta. Una identidad que declara v2 pero cuyo ID/digest no es autoconsistente
 queda `invalid_flow_identity` y nunca `concrete`. Los outputs anuncian

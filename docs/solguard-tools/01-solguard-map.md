@@ -188,8 +188,12 @@ La expansión es determinista y acotada. Un ciclo, límite de profundidad,
 truncado de rutas, operación no resuelta o arista no resuelta evita que la ruta
 se declare `resolved`. `missing_stages` describe deuda de completitud económica
 para un proof, pero no vuelve parcial una ruta causal cuyos pasos y aristas sí
-están identificados. Los consumidores deben usar los IDs autoritativos y no
-recomponer la identidad desde nombres humanos.
+están identificados. Los consumidores lo rederivan desde los stages y facts de
+la ruta. También revalidan entrypoint, component, file, line y
+`economic-lineage-v1` contra la única función con el mismo `symbol_id`, en vez
+de confiar en metadata superior no incluida en el digest. Los consumidores
+deben usar los IDs autoritativos y no recomponer la identidad desde nombres
+humanos.
 
 La migración es compatible por adición: `audit_map.v0.10` conserva sus campos
 anteriores y los nuevos campos tienen defaults de deserialización. Un artefacto

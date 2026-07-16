@@ -151,6 +151,8 @@ El contrato es fail-closed:
   origin, fichero y linea autoritativos, no la tupla derivada del candidato;
 - las referencias no resolubles se eliminan y debe quedar al menos una
   referencia independiente MAP/TRACE situada en una de las tres superficies;
+- un `evidence_id` presente en MAP no se convierte en TRACE-native si TRACE lo
+  copia, incluso cuando lo proyecta sobre otra localización;
 - debe existir exactamente un attack path VALUE base con el mismo triple
   root/trigger/impact, o una única ruta `economic_flow_identity.v2` de MAP que
   coincide con las superficies y posee un binding TRACE autoritativo;
@@ -211,8 +213,10 @@ Core solo aplica una respuesta cuando se cumplen todas estas condiciones:
 7. coincidencia exacta de símbolo, fichero y línea en root, trigger e impact y,
    para un path nuevo, de la ordered sequence autoritativa;
 8. proof `complete` y `validation_readiness.validate_consumable=true`;
-9. referencias independientes MAP/TRACE, nunca derivadas del request;
-10. binding válido al invariant y al candidato canónico.
+9. referencias independientes MAP/TRACE, nunca derivadas del request ni
+   relabeladas desde MAP;
+10. un único `invariant_id` exacto con scope autoritativo al mismo flow ID y
+    route digest, además del enlace al candidato canónico.
 
 Además, Core reconstruye de nuevo el índice MAP/TRACE durante el cierre: todos
 los refs del proof deben existir con el origin, evidence id, fichero y línea
