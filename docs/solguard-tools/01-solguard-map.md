@@ -169,6 +169,13 @@ Solidity con bloques delimitados por llaves y para Vyper mediante indentación
 soportada o jerarquías ambiguas deben emitir rutas `partial` y un diagnóstico
 explícito, nunca elecciones de rama inventadas como exactas.
 
+En Solidity también se reconocen los cuerpos compactos `if (...) statement;`
+y `else statement;`. MAP solo elimina una alternativa cuando el propio cuerpo
+demuestra una terminación incondicional mediante `return` o `revert`, incluido
+`revert CustomError(...)`; no deduce imposibilidad por el nombre de un guard.
+Las rutas equivalentes se deduplican antes de aplicar el presupuesto para que
+duplicados de expansión no consuman el espacio reservado a rutas distintas.
+
 Los campos aditivos incluyen:
 
 - `operation_ids` y `causal_edge_ids` en el flujo;
@@ -194,6 +201,19 @@ la ruta. También revalidan entrypoint, component, file, line y
 de confiar en metadata superior no incluida en el digest. Los consumidores
 deben usar los IDs autoritativos y no recomponer la identidad desde nombres
 humanos.
+
+Una asignación contable exige un operador de asignación real. Comparaciones
+como `==`, `!=`, `<=` o `>=`, y el operador TypeScript `=>`, no se presentan
+como mutaciones de estado. Cuando una llamada ocupa varias líneas, MAP conserva
+una ventana source-backed alrededor del callsite en vez de resolverla mediante
+una coincidencia global de nombre.
+
+Una resta genérica tampoco demuestra recepción de activos. MAP solo emite
+`actual_balance_delta` para semántica fuerte (`actualBalance`, `balanceDelta`,
+`actualDelta`, `received`) o para un par before/after respaldado por snapshots
+`balanceOf` tipados. `actual_received_amount` exige `received` explícito o ese
+par tipado; fee growth, `balance - excluded` y offsets temporales permanecen
+aritmética, no receipts.
 
 La migración es compatible por adición: `audit_map.v0.10` conserva sus campos
 anteriores y los nuevos campos tienen defaults de deserialización. Un artefacto

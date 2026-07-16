@@ -40,7 +40,12 @@ historia puede omitir la fase sin invalidar el resto del analisis.
 ### TRACE
 
 Prioriza flujos de estado desde MAP. Sus limites publicos son
-`SOLGUARD_TRACE_MAX_TARGETS` y `SOLGUARD_TRACE_MAX_DEPTH`.
+`SOLGUARD_TRACE_MAX_TARGETS`, `SOLGUARD_TRACE_MAX_DEPTH`,
+`SOLGUARD_TRACE_MAX_PATH_EXPANSIONS` y `SOLGUARD_TRACE_MAX_DEEP_PATHS`.
+Core pasa los cuatro límites a TRACE y conserva su configuración efectiva en
+los artefactos. Una ejecución sin metadata válida, con valores contradictorios
+entre targets o con truncado se refleja como deuda explícita en
+`analysis_funnel.json`; no se interpreta como cobertura completa.
 
 ### DISCOVER
 
@@ -78,6 +83,13 @@ ID, route digest, operaciones, aristas y asset legs en sus transitions, y
 publica el mismo par singleton en `flow_route_bindings` de equations y scopes
 de invariantes. Un flow ID explícito solo se resuelve por coincidencia exacta;
 una ruta legacy o un binding fuzzy no se presenta como transition concreta.
+La relación `actual_received_covers_credited_amount` exige una recepción o
+transferencia aplicable además del target acreditado. Una ruta solo contable no
+se eleva a concreta. La inferencia nativa queda limitada a una función payable
+única con evidencia localizada de `msg.value` (o `value` Vyper no sombreado).
+Para receipts no nativos, el consumidor exige transferencia y productor
+source-backed en la misma ruta; `internal_token`, metadata declarativa y stage
+debt no autorizan una transición concreta.
 
 ### VALUE
 

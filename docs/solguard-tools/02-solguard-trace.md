@@ -35,16 +35,18 @@ cargo run -- <repo> --from-map solguard-output/audit_map.json --top 20 --out sol
 
 Opciones:
 
-| Opcion              | Funcion                                                 |
-| ------------------- | ------------------------------------------------------- |
-| `--target <name>`   | Target individual.                                      |
-| `--out <dir>`       | Directorio de salida. Default: `solguard-trace-output`. |
-| `--from-map <path>` | Contexto de `audit_map.json`.                           |
-| `--max-depth <n>`   | Profundidad de llamadas internas. Default: `2`.         |
-| `--top <n>`         | Batch budget de targets.                                |
-| `--levels S,A,...`  | Filtra batch por nivel SolGuard.                        |
-| `--include-tests`   | Incluye tests/mocks Solidity omitidos por defecto.      |
-| `--no-color`        | Desactiva colores ANSI.                                 |
+| Opcion                      | Funcion                                                         |
+| --------------------------- | --------------------------------------------------------------- |
+| `--target <name>`           | Target individual.                                              |
+| `--out <dir>`               | Directorio de salida. Default: `solguard-trace-output`.         |
+| `--from-map <path>`         | Contexto de `audit_map.json`.                                   |
+| `--max-depth <n>`           | Profundidad de llamadas internas. Default: `2`.                 |
+| `--max-path-expansions <n>` | Presupuesto de expansiones causales por target. Default: `192`. |
+| `--max-deep-paths <n>`      | Máximo de deep paths retenidos por target. Default: `64`.       |
+| `--top <n>`                 | Batch budget de targets.                                        |
+| `--levels S,A,...`          | Filtra batch por nivel SolGuard.                                |
+| `--include-tests`           | Incluye tests/mocks Solidity omitidos por defecto.              |
+| `--no-color`                | Desactiva colores ANSI.                                         |
 
 Reglas:
 
@@ -102,6 +104,19 @@ TRACE puede incluir:
 diversidad por lenguaje, componente y cluster para que una superficie con mucha
 senal no expulse otras rutas relevantes.
 
+El recorrido profundo reparte el presupuesto de expansión entre los hermanos
+pendientes antes de profundizar. Así, una primera cadena extensa no puede
+agotar toda la cuota y ocultar una rama crítica posterior; la cuota no usada se
+recupera de forma determinista. TRACE deduplica paths antes de aplicar el límite
+de retención.
+
+Todo `trace.json` y `index.json` declara en `metadata` los valores efectivos de
+`max_depth`, `max_path_expansions` y `max_deep_paths`. Si un límite corta
+contexto o rutas, el artefacto lo conserva mediante
+`target_context_budget_truncated`, `deep_path_budget_truncated` o la
+terminación `path_expansion_budget`. La ausencia, invalidez o contradicción de
+esa metadata es deuda de integridad, no una ejecución ilimitada implícita.
+
 ## Relacion con MAP
 
 TRACE consume `audit_map.json` como fuente estructural. Usa:
@@ -114,6 +129,10 @@ TRACE consume `audit_map.json` como fuente estructural. Usa:
 - `identity_schemas`;
 - `atomicity_boundaries`;
 - state/economic/build context.
+
+En batch, el MAP se deserializa una sola vez y se proyecta después al contexto
+source-backed de cada target. Esto evita que el coste de lectura crezca como
+`targets × tamaño del MAP` sin cambiar el contrato semántico.
 
 Las relaciones `partial` o `unresolved` se conservan como preguntas de revision,
 no como llamadas confirmadas.

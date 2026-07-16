@@ -85,6 +85,21 @@ estructuralmente exacta. VALUE conserva esa identidad, pero anade
 `economic_value_unresolved:<id>` a `missing_evidence`; por ello la ruta sigue
 siendo trazable y ensamblable, pero no puede cerrar una prueba `complete`.
 
+La única elevación conservadora de esa observación es una ruta v2 exacta con
+una función `payable` única, step resuelto, evidencia localizada y un valor
+nativo compatible único (`msg.value`; en Vyper, `value` solo si no está
+sombreado por un parámetro). En ese caso VALUE puede retirar exclusivamente la
+deuda `economic_value_unresolved` y fijar el amount nativo. La deuda de
+invariante, protección, superficie o estado no desaparece y el proof no se
+convierte automáticamente en `complete`.
+
+En rutas no nativas, VALUE solo confía en un receipt ligado a una transferencia
+source-backed y a su productor compatible dentro de la misma ruta. Una
+declaración no corroborada añade
+`actual_received_observation_untrusted:<id>` y no puede recuperarse mediante un
+fallback textual; `internal_token` queda excluido porque describe movimiento
+del ledger propio, no recepción externa.
+
 ## Modo candidate-directed
 
 La opcion aditiva `--proof-requests` ejecuta una segunda consulta sobre

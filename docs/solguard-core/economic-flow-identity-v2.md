@@ -81,6 +81,12 @@ con bloques delimitados por llaves y a Vyper con indentación estructural
 adquieren autoridad branch-aware: MAP conserva la ruta como `partial` con un
 diagnóstico explícito y TRACE no publica para ella un binding exacto.
 
+Solidity incluye también cuerpos compactos `if (...) statement;` y
+`else statement;`. Solo un `return` o `revert` incondicional demostrado por el
+cuerpo permite podar la alternativa; `revert CustomError(...)` cuenta como
+terminación. Las comparaciones y el operador TypeScript `=>` no son mutaciones
+contables.
+
 Una ruta solo queda `resolved` cuando no fue cortada por ciclo, profundidad o
 presupuesto y sus operaciones, aristas, links y legs están resueltos.
 `missing_stages`
@@ -96,6 +102,20 @@ actual-received amount. Del mismo modo, debe existir una única función MAP con
 `symbol_id == entrypoint_symbol_id`; entrypoint, component, file y line se
 contrastan con esa función y `lineage_id` se recalcula con el framing fuerte
 `economic-lineage-v1`.
+
+`actual_received_covers_credited_amount` requiere un target acreditado y una
+transferencia o recepción real; no nace de una ruta solo contable. La única
+resolución nativa conservadora exige función `payable` única, step y evidencia
+localizados en esa función y una observación exacta `msg.value`. Vyper `value`
+solo es nativo cuando no existe un parámetro homónimo. VALUE puede retirar en
+ese caso únicamente `economic_value_unresolved`; el resto de obligaciones del
+proof se conserva.
+
+Una resta genérica no crea autoridad de receipt. MAP exige semántica fuerte o
+snapshots `balanceOf` before/after tipados; ECONOMIC y VALUE vuelven a exigir
+una transferencia no nativa source-backed y un productor compatible dentro de
+la misma ruta. `internal_token`, arrays declarativos sin productor y cualquier
+`missing_stages` permanecen deuda fail-closed.
 
 La compatibilidad entre repos no se demuestra con fixtures independientes. MAP,
 TRACE, ECONOMIC, VALUE, CORE y el gate de deploy prueban el mismo vector

@@ -140,6 +140,24 @@ queda `invalid_flow_identity` y nunca `concrete`. Los outputs anuncian
 `economic_flow_identity.v2` y
 `exact_economic_route_binding` cuando existe al menos un binding v2.
 
+La ecuación `actual_received_covers_credited_amount` solo es aplicable cuando
+la ruta contiene un target acreditado y una transferencia o recepción real.
+Una actualización contable aislada no crea por sí sola una observación de
+recepción ni un binding `concrete`.
+
+Para valor no nativo, ECONOMIC reabre la ruta y exige una operación de
+transferencia resuelta, localizada y un productor de receipt compatible en la
+misma identidad exacta. El array `actual_received_amounts` no es autoridad por
+sí mismo, `internal_token` representa movimiento del ledger propio y no ingreso
+externo, y cualquier `missing_stages` mantiene la transición `flow_bound`.
+
+ECONOMIC únicamente puede usar valor nativo como ancla conservadora cuando hay
+una sola función `payable`, el step resuelto pertenece exactamente a esa
+función y la observación localizada identifica `msg.value`. Para Vyper se
+admite `value` solo en su forma nativa y se rechaza si existe un parámetro local
+homónimo. Coincidencias por fichero ajeno, símbolo distinto, nombre genérico o
+línea fuera de la función permanecen no autoritativas.
+
 ## Limites
 
 - No ejecuta simulaciones economicas.
