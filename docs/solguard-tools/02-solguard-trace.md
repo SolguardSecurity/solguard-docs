@@ -35,16 +35,16 @@ cargo run -- <repo> --from-map solguard-output/audit_map.json --top 20 --out sol
 
 Opciones:
 
-| Opcion | Funcion |
-| --- | --- |
-| `--target <name>` | Target individual. |
-| `--out <dir>` | Directorio de salida. Default: `solguard-trace-output`. |
-| `--from-map <path>` | Contexto de `audit_map.json`. |
-| `--max-depth <n>` | Profundidad de llamadas internas. Default: `2`. |
-| `--top <n>` | Batch budget de targets. |
-| `--levels S,A,...` | Filtra batch por nivel SolGuard. |
-| `--include-tests` | Incluye tests/mocks Solidity omitidos por defecto. |
-| `--no-color` | Desactiva colores ANSI. |
+| Opcion              | Funcion                                                 |
+| ------------------- | ------------------------------------------------------- |
+| `--target <name>`   | Target individual.                                      |
+| `--out <dir>`       | Directorio de salida. Default: `solguard-trace-output`. |
+| `--from-map <path>` | Contexto de `audit_map.json`.                           |
+| `--max-depth <n>`   | Profundidad de llamadas internas. Default: `2`.         |
+| `--top <n>`         | Batch budget de targets.                                |
+| `--levels S,A,...`  | Filtra batch por nivel SolGuard.                        |
+| `--include-tests`   | Incluye tests/mocks Solidity omitidos por defecto.      |
+| `--no-color`        | Desactiva colores ANSI.                                 |
 
 Reglas:
 
@@ -117,6 +117,43 @@ TRACE consume `audit_map.json` como fuente estructural. Usa:
 
 Las relaciones `partial` o `unresolved` se conservan como preguntas de revision,
 no como llamadas confirmadas.
+
+### Preservación de `economic_flow_identity.v2`
+
+Cuando MAP declara `economic_flow_identity.v2`, TRACE consume y vuelve a emitir
+la misma identidad content-addressed. Conserva el `id`, `route_digest`,
+`lineage_id`, la lista completa y ordenada de steps, `operation_ids`,
+`causal_edge_ids`, `branch_choices` y `asset_legs`. Cada step mantiene también
+`source_ordinal` y `branch_path`; TRACE no puede colapsar dos operaciones de la
+misma línea ni eliminar la procedencia de rama.
+
+Un slice de TRACE puede seleccionar una ruta, pero no podar sus steps y mantener
+el mismo ID: eso convertiría la identidad en una afirmación falsa. La selección
+de operaciones del slice se amplía para incluir las operaciones de los flujos
+seleccionados, mientras la ruta canónica permanece intacta.
+
+La evidencia económica conserva los arrays compatibles `flow_ids` y
+`flow_route_digests`, pero publica la correlación autoritativa en
+`flow_route_bindings[{flow_id,route_digest}]`. Un set legacy con varias rutas no
+permite inferir qué digest pertenece a cada ID y permanece ambiguo. TRACE solo
+emite pares para rutas v2 coherentes y topológicamente `resolved`, y publica las
+capabilities `economic_flow_identity.v2` y `route_digest_preservation` cuando
+aplica esta semántica.
+
+Para que Core use un check como autoridad candidate-directed, su `evidence`
+debe contener un único binding y arrays singleton con el mismo ID/digest, una
+subsecuencia ordenada no vacía de `operation_ids` y la copia canónica `resolved`
+en `solguard_map_context.economic_flows`. Los checks multi-flow pueden conservar
+valor diagnóstico, pero no generan una flow hint autoritativa.
+
+TRACE no amplía la cobertura estructural de MAP. En esta fase, los bindings de
+rama exactos proceden solo de Solidity con llaves y Vyper por indentación
+`if/elif/else`; una ruta de otro lenguaje o con sintaxis ambigua permanece
+`partial` y no recibe `flow_route_bindings` autoritativos.
+
+Los artefactos MAP legacy siguen siendo aceptados por compatibilidad, pero un
+flow sin identidad v2 no puede adquirir autoridad exacta por el mero hecho de
+haber pasado por TRACE.
 
 ## Limites
 

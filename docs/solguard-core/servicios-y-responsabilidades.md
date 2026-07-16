@@ -73,8 +73,14 @@ perteneciendo al core.
 Construye hasta 128 consultas `solguard-value-proof-requests.v1` desde
 candidatos cuyas tres superficies estan grounded en MAP/TRACE. Cada evidence ID
 se resuelve al origin, fichero y linea reales antes de serializar; las refs
-imposibles se eliminan y una request sin ninguna referencia exacta o sin una
-unica ruta VALUE base con el mismo triple causal se omite.
+imposibles se eliminan y una request sin ninguna referencia exacta se omite. La
+ruta de búsqueda debe ser única por uno de dos caminos: un VALUE path base con
+el mismo triple causal, o una ruta `economic_flow_identity.v2` que coincide con
+las superficies y posee en `economic_checks[].evidence` un binding TRACE
+singleton exacto. Core revalida el mismo par en `flow_ids`/digests, una
+subsecuencia no vacía de operations y la copia canónica `resolved` de
+`solguard_map_context`. El segundo camino fija el flow ID exacto en `flow_hints`
+y permite búsqueda pre-ranking sin relajar autoridad.
 Aplica `solguard-value-proof-responses.v1` solo tras comprobar schema,
 igualdad completa de IDs request/response, identidades, obligaciones, path
 base, superficies, refs independientes, readiness e invariant binding.
@@ -84,8 +90,14 @@ El modulo rechaza autocorroboracion, exige
 respuesta que no sea `complete` y `validate_consumable`. Tambien escribe
 `effective_attack_paths.json` sin mutar el output VALUE original y
 `solguard-value-proof-closure-diagnostics.v1`. Durante el cierre genera un
-índice MAP/TRACE propio para rechazar refs falsificados, divergencia entre el
-proof suelto y el embebido o cualquier mutación de la ruta/claim VALUE original.
+índice MAP/TRACE propio para rechazar refs falsificados, respuestas repetidas,
+refs de identidad de ruta repetidas, divergencia entre el proof suelto y el
+embebido o cualquier mutación de la ruta/claim VALUE original. Las refs
+probatorias idénticas de proof/delta se normalizan hoy en Core; el gate estricto
+de ensamblaje rechaza su repetición y trasladar esa condición al runtime queda
+registrado como deuda P1.
+Una respuesta fuera de los paths base solo se añade si revalida el ID v2,
+route digest, superficies y secuencia ordenada de la ruta MAP/TRACE única.
 
 ### `analyzer/seeds/**`
 

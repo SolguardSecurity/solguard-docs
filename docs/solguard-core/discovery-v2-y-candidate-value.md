@@ -9,6 +9,10 @@ busqueda sin rebajar la autoridad de VALIDATE:
 Ambos contratos producen hipotesis o evidencia. Ninguno emite por si mismo un
 finding `supported`.
 
+La identidad compartida que habilita la búsqueda exacta fuera del top-50 se
+documenta en
+[Identidad económica de flujo v2](./economic-flow-identity-v2.md).
+
 ## Model discovery packs v2
 
 Core construye `tool-outputs/candidates/model_discovery_packs.json` con schema
@@ -65,8 +69,8 @@ El contexto sintetico declara:
 
 ```json
 {
-  "schema_version": "trace.model_discovery_map_fallback.v1",
-  "coverage_gap": "trace_targets_unavailable"
+    "schema_version": "trace.model_discovery_map_fallback.v1",
+    "coverage_gap": "trace_targets_unavailable"
 }
 ```
 
@@ -85,20 +89,20 @@ solo semantica y referencias a IDs exactos de `SYMBOL_LOCATION`:
 
 ```json
 {
-  "candidates": [
-    {
-      "title": "...",
-      "semantic_rule_id": "regla exacta del pack o vacio",
-      "family": "...",
-      "condition": "...",
-      "broken_invariant": "...",
-      "exploit_sketch": "...",
-      "validation_test": "...",
-      "root": { "symbol": "id exacto" },
-      "trigger": { "symbol": "id exacto" },
-      "impact": { "symbol": "id exacto" }
-    }
-  ]
+    "candidates": [
+        {
+            "title": "...",
+            "semantic_rule_id": "regla exacta del pack o vacio",
+            "family": "...",
+            "condition": "...",
+            "broken_invariant": "...",
+            "exploit_sketch": "...",
+            "validation_test": "...",
+            "root": { "symbol": "id exacto" },
+            "trigger": { "symbol": "id exacto" },
+            "impact": { "symbol": "id exacto" }
+        }
+    ]
 }
 ```
 
@@ -148,7 +152,15 @@ El contrato es fail-closed:
 - las referencias no resolubles se eliminan y debe quedar al menos una
   referencia independiente MAP/TRACE situada en una de las tres superficies;
 - debe existir exactamente un attack path VALUE base con el mismo triple
-  root/trigger/impact; ausencia o ambiguedad evita emitir la request;
+  root/trigger/impact, o una única ruta `economic_flow_identity.v2` de MAP que
+  coincide con las superficies y posee un binding TRACE autoritativo;
+- el binding TRACE debe proceder de `economic_checks[].evidence`, contener
+  exactamente un `flow_route_bindings[{flow_id,route_digest}]`, arrays singleton
+  `flow_ids[]`/`flow_route_digests[]` con el mismo par, una subsecuencia no vacía
+  de `operation_ids[]` y una copia completa `resolved` de la ruta en
+  `solguard_map_context.economic_flows[]`;
+- el segundo camino añade ese ID exacto a `flow_hints`; ausencia, identidad
+  legacy o ambigüedad en ambos caminos evita emitir la request;
 - un candidato cuyo origen primario ya es `value_proof` no se consulta de
   nuevo;
 - cada request fija `request_id`, `candidate_id`, `canonical_issue_key`, las
@@ -192,15 +204,23 @@ Core solo aplica una respuesta cuando se cumplen todas estas condiciones:
 2. request conocido y una sola respuesta por `request_id`;
 3. estado `complete` y todas las obligaciones satisfechas;
 4. coincidencia exacta de `candidate_id` y `canonical_issue_key`;
-5. `matched_attack_path_id` presente en el `attack_paths.json` base;
-6. coincidencia exacta de simbolo, fichero y linea en root, trigger e impact;
-7. proof `complete` y `validation_readiness.validate_consumable=true`;
-8. referencias independientes MAP/TRACE, nunca derivadas del request;
-9. binding valido al invariant y al candidato canonico.
+5. si `matched_attack_path_id` está en `attack_paths.json`, preservación exacta
+   de su ruta y claim económico;
+6. si no está en el base, un único `flow_hint` v2 y exactamente una source ref
+   directa, un upstream flow ID y un route digest exactos;
+7. coincidencia exacta de símbolo, fichero y línea en root, trigger e impact y,
+   para un path nuevo, de la ordered sequence autoritativa;
+8. proof `complete` y `validation_readiness.validate_consumable=true`;
+9. referencias independientes MAP/TRACE, nunca derivadas del request;
+10. binding válido al invariant y al candidato canónico.
 
 Además, Core reconstruye de nuevo el índice MAP/TRACE durante el cierre: todos
 los refs del proof deben existir con el origin, evidence id, fichero y línea
-exactos. El proof suelto debe ser idéntico al embebido y el path debe conservar
+exactos. Core rechaza respuestas repetidas y refs de identidad de ruta
+repetidas, pero actualmente normaliza las refs probatorias de proof/delta en vez
+de rechazar una repetición idéntica. El gate estricto de ensamblaje sí exige su
+unicidad; trasladar esa misma condición al runtime es una deuda P1. El proof
+suelto debe ser idéntico al embebido y el path debe conservar
 la ruta y el claim económico VALUE originales; solo pueden cambiar identidad,
 readiness, blockers y refs mediante el cierre determinista permitido.
 
@@ -223,8 +243,10 @@ tool-outputs/candidates/value-evidence/effective_attack_paths.json
 tool-outputs/candidates/value-evidence/proof_closure_diagnostics.json
 ```
 
-`effective_attack_paths.json` parte del output VALUE original y reemplaza solo
-los paths cuyas respuestas superaron el cierre. Los diagnosticos usan
+`effective_attack_paths.json` parte del output VALUE original. Reemplaza un
+path base revalidado o añade un path v2 encontrado en la búsqueda pre-ranking
+solo cuando la respuesta supera el cierre; después conserva orden determinista.
+Los diagnosticos usan
 `solguard-value-proof-closure-diagnostics.v1` y cuentan requests, responses,
 aplicaciones, rechazos y razones de rechazo.
 
@@ -243,9 +265,10 @@ no interpreta ni cambia su autoridad.
 
 ## Limite de la mejora
 
-Los tests actuales verifican schemas, limites, reconstruccion autoritativa,
-ausencia de autocorroboracion y exclusion de respuestas parciales. No prueban
-una mejora de recall ni de generalizacion.
+Los tests de contrato de esta frontera deben verificar schemas, límites,
+reconstrucción autoritativa, ausencia de autocorroboración, exclusión de
+respuestas parciales y rutas v2 candidate-directed fuera del top-50. Incluso
+cuando esos tests pasen, no prueban una mejora de recall ni de generalización.
 
 No debe afirmarse que esta ola mejora la deteccion hasta ejecutar de nuevo los
 90 labs y los holdouts independientes, congelar los artefactos de producto y

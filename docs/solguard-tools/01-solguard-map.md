@@ -25,18 +25,18 @@ cargo run -- <input> --out solguard-output
 
 Opciones principales:
 
-| Opcion | Funcion |
-| --- | --- |
-| `--out <dir>` | Directorio de salida. Default: `solguard-output`. |
-| `--branch <name>` | Rama remota al clonar una URL Git. |
-| `--langs solidity,vyper,rust,go,node,c,config` | Filtra lenguajes. |
-| `--exclude a,b,c` | Excluye fragmentos de ruta adicionales. |
-| `--fast` | Modo heuristico rapido. |
-| `--deep` | Anade enlaces aproximados sobre el modo base. |
-| `--graph` | Exporta Graphviz. |
-| `--build-probe` | Ejecuta probes de build/toolchain best-effort. |
-| `--build-probe-timeout-ms <ms>` | Timeout por probe. Default: `2500`. |
-| `--no-color` | Desactiva colores ANSI. |
+| Opcion                                         | Funcion                                           |
+| ---------------------------------------------- | ------------------------------------------------- |
+| `--out <dir>`                                  | Directorio de salida. Default: `solguard-output`. |
+| `--branch <name>`                              | Rama remota al clonar una URL Git.                |
+| `--langs solidity,vyper,rust,go,node,c,config` | Filtra lenguajes.                                 |
+| `--exclude a,b,c`                              | Excluye fragmentos de ruta adicionales.           |
+| `--fast`                                       | Modo heuristico rapido.                           |
+| `--deep`                                       | Anade enlaces aproximados sobre el modo base.     |
+| `--graph`                                      | Exporta Graphviz.                                 |
+| `--build-probe`                                | Ejecuta probes de build/toolchain best-effort.    |
+| `--build-probe-timeout-ms <ms>`                | Timeout por probe. Default: `2500`.               |
+| `--no-color`                                   | Desactiva colores ANSI.                           |
 
 ## Contrato de salida
 
@@ -141,6 +141,56 @@ Los niveles `S`, `A`, `B`, `C`, `D` son prioridad de revision, no severidad:
 - External dependency contracts y assumptions.
 - Cross-component links/paths.
 - Semantic context tracking, identity schemas y atomicity boundaries.
+
+### Identidad de flujo económico v2
+
+MAP puede declarar de forma aditiva las capabilities
+`economic_flow_identity.v2` y `content_addressed_economic_routes`. Bajo este
+contrato, cada elemento de `economic_flows` representa una ruta ordenada, no un
+resumen mutable del entrypoint:
+
+```text
+id = economic-flow-v2-{route_digest}
+identity_version = economic_flow_identity.v2
+```
+
+`route_digest` es content-addressed y liga el entrypoint con la secuencia de
+operaciones, aristas causales, decisiones de rama, value links y asset legs de
+la ruta. `branch_choices` usa strings `<branch_id>=true|false` ordenados por ID
+y forma parte del payload exacto `operations=[...];edges=[...];branches=[...]`.
+Dos ramas alternativas deben producir identidades distintas. `lineage_id`
+permite reconocer su procedencia común sin convertirlas en la misma ruta.
+
+La pertenencia estructural exacta de ramas se implementa en esta fase para
+Solidity con bloques delimitados por llaves y para Vyper mediante indentación
+`if/elif/else`. No es una capability universal: otros lenguajes, sintaxis no
+soportada o jerarquías ambiguas deben emitir rutas `partial` y un diagnóstico
+explícito, nunca elecciones de rama inventadas como exactas.
+
+Los campos aditivos incluyen:
+
+- `operation_ids` y `causal_edge_ids` en el flujo;
+- `branch_choices` canónicas en el flujo;
+- `asset_legs` para conservar rutas multi-activo sin forzar un único `asset`;
+- source/sink symbol, fichero y línea del entrypoint;
+- por step, `operation_id`, symbol/component/asset, value IDs de entrada y
+  salida, `source_ordinal`, `branch_path`, resolución, confianza y evidence IDs.
+
+Cada `asset_leg` usa un ID content-addressed sobre asset, dirección y secuencia
+ordenada de operation IDs. Ese ID, y no una etiqueta mutable, es el que participa
+en el digest de ruta.
+
+La expansión es determinista y acotada. Un ciclo, límite de profundidad,
+truncado de rutas, operación no resuelta o arista no resuelta evita que la ruta
+se declare `resolved`. `missing_stages` describe deuda de completitud económica
+para un proof, pero no vuelve parcial una ruta causal cuyos pasos y aristas sí
+están identificados. Los consumidores deben usar los IDs autoritativos y no
+recomponer la identidad desde nombres humanos.
+
+La migración es compatible por adición: `audit_map.v0.10` conserva sus campos
+anteriores y los nuevos campos tienen defaults de deserialización. Un artefacto
+sin `identity_version=economic_flow_identity.v2` es legacy; sigue siendo
+legible, pero no posee autoridad de identidad exacta para cerrar una prueba.
 
 ## Limites
 

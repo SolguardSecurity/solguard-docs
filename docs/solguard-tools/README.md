@@ -45,3 +45,8 @@ En particular, los packs open-world de DISCOVER v2 y la segunda pasada
 `candidate_value` endurecen el grounding y el cierre de evidencia, pero no
 constituyen una mejora de recall medida hasta repetir los 90 labs y los
 holdouts independientes.
+
+MAP, TRACE, ECONOMIC, VALUE y core comparten además la identidad aditiva
+`economic_flow_identity.v2`: una ruta content-addressed se conserva y se une por
+ID/digest exactos hasta el proof candidate-directed. El contrato completo está
+en [Identidad económica de flujo v2](../solguard-core/economic-flow-identity-v2.md).

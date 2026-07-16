@@ -65,10 +65,14 @@ autoridad de validacion.
 Despues de crear candidatos canonicos, core puede ejecutar VALUE de nuevo como
 `candidate_value`. Las requests `solguard-value-proof-requests.v1` son
 `query_only`, estan limitadas a 128 y parten de evidencia independiente
-MAP/TRACE. Solo una respuesta `solguard-value-proof-responses.v1` completa,
+MAP/TRACE. Con `economic_flow_identity.v2`, una request puede dirigirse a una
+ruta content-addressed única compartida por MAP y TRACE aunque el path no esté
+en el top-50 base. VALUE busca esa identidad antes del ranking; core exige ID,
+digest, superficies, secuencia y refs exactos antes de añadir el path a la vista
+efectiva. Solo una respuesta `solguard-value-proof-responses.v1` completa,
 `map_trace_reverified`, sin autocorroboracion, con binding exacto y proof
-`validate_consumable` se aplica a la vista efectiva. Una respuesta partial no
-promueve el candidato.
+`validate_consumable` se aplica. Una respuesta partial o legacy no promueve el
+candidato.
 
 ## Frontera ciega de producto
 
@@ -192,6 +196,7 @@ Documentacion detallada:
 - [Servicios y responsabilidades](./servicios-y-responsabilidades.md)
 - [Pipeline, fases y artefactos](./pipeline-y-fases.md)
 - [DISCOVER v2 y cierre candidate-directed VALUE](./discovery-v2-y-candidate-value.md)
+- [Identidad económica de flujo v2](./economic-flow-identity-v2.md)
 
 ## API y CLI
 
@@ -225,6 +230,11 @@ discovery y evidencia:
   reportes mantienen sus autoridades y rutas principales;
 - `model_discovery_packs.v2` y `model_discovery_candidate.v2` sustituyen el
   contrato v1 de la frontera model-assisted;
+- MAP, TRACE, ECONOMIC y VALUE añaden `economic_flow_identity.v2` a sus schemas
+  actuales: los lectores legacy pueden ignorar los campos nuevos, mientras los
+  consumidores estrictos exigen ID/digest y joins exactos;
+- los flows legacy siguen siendo legibles, pero no pueden cerrar same-flow ni
+  proofs `validate_consumable`;
 - se anaden `value_proof_requests.json` y el directorio
   `candidates/value-evidence/` sin sobrescribir `value/attack_paths.json`;
 - `AnalyzeOutputs` anade `candidate_value_dir` y las cuatro rutas JSON de esta

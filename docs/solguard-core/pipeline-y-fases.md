@@ -73,6 +73,11 @@ Produce `economic_model.json`, `synthesized_invariants.json` e `index.json`.
 Tras candidatos puede ejecutar el pase aditivo y acotado de evidencia economica
 sin reemplazar el modelo inicial cuando ese pase falla.
 
+Cuando MAP/TRACE declaran `economic_flow_identity.v2`, ECONOMIC conserva flow
+ID, route digest, operaciones, aristas y asset legs en sus transitions. Un flow
+ID explícito solo se resuelve por coincidencia exacta; una ruta legacy o un
+binding fuzzy no se presenta como transition concreta.
+
 ### VALUE
 
 Construye `value_model.json`, `attack_paths.json` y evidencia de rutas de valor.
@@ -91,6 +96,13 @@ MAP/TRACE, y produce `solguard-value-proof-responses.v1`. Solo una respuesta
 `complete`, `map_trace_reverified`, sin autocorroboracion, con todas las
 identidades y obligaciones exactas y proof `validate_consumable` puede aplicarse
 a la vista efectiva. Las respuestas parciales permanecen fuera de VALIDATE.
+
+El ensamblado `economic_flow_identity.v2` conserva el ID content-addressed
+creado por MAP y une TRACE/ECONOMIC mediante ID y digest exactos. Una request
+puede señalar una ruta v2 única MAP+TRACE aunque no exista en el top-50 base;
+VALUE busca sobre sus paths pre-ranking. Core solo acepta el path nuevo si
+revalida flow ID, digest, ordered sequence, superficies y evidence refs. Los
+flows legacy y los conflictos de ensamblado permanecen no consumibles.
 
 ### INVARIANT
 
@@ -125,8 +137,9 @@ Los candidatos incompletos se conservan como leads con etapa, razon, requisitos
 faltantes y evidencia; no se eliminan silenciosamente.
 
 `effective_attack_paths.json` no sustituye ni modifica el
-`tool-outputs/value/attack_paths.json` original. Es una copia efectiva que solo
-reemplaza paths cuya respuesta supero el cierre exacto. Los diagnosticos
+`tool-outputs/value/attack_paths.json` original. Es una copia efectiva que
+reemplaza un path base revalidado o añade un path v2 exacto encontrado antes del
+ranking, siempre que su respuesta supere el cierre. Los diagnosticos
 `solguard-value-proof-closure-diagnostics.v1` conservan requests, responses,
 aplicaciones, rechazos y sus razones.
 
