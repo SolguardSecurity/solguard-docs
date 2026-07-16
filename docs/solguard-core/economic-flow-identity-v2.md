@@ -19,20 +19,32 @@ identity_version = economic_flow_identity.v2
 id = economic-flow-v2-{route_digest}
 ```
 
-`route_digest` es un SHA-256 content-addressed con framing de longitud. Liga el
-entrypoint y la secuencia ordenada de operaciones y aristas causales, las
-decisiones de rama canónicas, los value links y los asset legs resultantes. MAP
-serializa las decisiones como `branch_choices["<branch_id>=true|false"]` en
-orden lexicográfico por branch ID y usa exactamente este payload:
+`route_digest` es un SHA-256 content-addressed con framing fuerte. El namespace
+y cada parte se codifican por separado como longitud `u64` big-endian seguida
+de los bytes UTF-8; los arrays tienen un namespace propio y un elemento
+enmarcado por posición. No existe serialización por delimitadores.
 
-```text
-operations=[id|...];edges=[id|...];branches=[branch_id=true|...]
-```
+El digest `economic-route-v2` firma, en orden: entrypoint/source/sink/asset y
+los compromisos ordenados de steps completos, operation IDs, contenido de
+causal edges, decisiones de rama, asset-leg IDs, requested/transferred/actual
+amounts, accounting targets y contenido de value links. Cada step firma su
+secuencia, operación, stage, símbolos, componente, expresión, asset, amount,
+input/output value IDs, fichero, línea, `source_ordinal` y `branch_path`. Cada
+edge y link firma también todos sus campos causales y de resolución relevantes.
 
-No se calcula desde un título, nombre de componente o descripción libre.
-Cada asset leg posee además un ID content-addressed propio, calculado con el
-mismo framing desde asset, dirección y secuencia ordenada de operation IDs. Un
-leg cuyo contenido ya no corresponde a su ID invalida el ensamblado exacto.
+No se calcula desde un título, nombre de componente o descripción libre. Cada
+asset leg usa `economic-asset-leg-v2-{digest}` y firma asset, dirección,
+source/sink symbol IDs, operation IDs y amount expressions ordenados. Los
+hechos superiores se vuelven a derivar de los `economic_values` y operaciones
+autoritativos: rehashear un amount o accounting target inventado no lo hace
+válido.
+
+`operation_ids`, `causal_edge_ids` y los operation IDs de cada leg son
+secuencias de ocurrencias: un mismo objeto autoritativo puede aparecer más de
+una vez y su multiplicidad/orden quedan firmados. En cambio, branch IDs,
+value-link IDs y las identidades de assets/legs son sets canónicos únicos. La
+ruta incluye todos los links aplicables y todos los legs derivados, no solo un
+subconjunto válido.
 
 La ruta conserva como mínimo:
 
@@ -57,6 +69,12 @@ conserva las decisiones que alcanzan ese paso. `lineage_id` agrupa procedencia
 común; no permite sustituir el `id` de ruta. Dos ramas alternativas comparten
 lineage si corresponde, pero tienen route digests e IDs distintos.
 
+Aunque confidence y evidence IDs no forman parte del SHA de ruta, un consumidor
+exacto los deriva de nuevo: confidence del flow es el mínimo de operaciones y
+aristas; evidence del flow es la unión canónica de operaciones, aristas y links;
+cada leg deriva ambos campos de sus operaciones. Todos los confidence de flow,
+steps, operaciones, edges, links y legs deben ser enteros en `0..=100`.
+
 La pertenencia estructural exacta a ramas en esta fase está limitada a Solidity
 con bloques delimitados por llaves y a Vyper con indentación estructural
 `if/elif/else`. Otros lenguajes, sintaxis no soportada o una jerarquía ambigua no
@@ -68,6 +86,26 @@ presupuesto y sus operaciones y aristas están resueltas. `missing_stages`
 describe deuda de completitud económica para el proof; no vuelve incierta una
 ruta causal cuyos pasos sí están identificados. Un ID v2 no convierte una ruta
 topológicamente parcial en resuelta.
+
+`missing_stages` no se confía como metadata libre: cada consumidor lo exige y
+lo vuelve a derivar. Se declara `balance_snapshot` cuando existe
+`actual_balance_delta` sin snapshot, y `actual_balance_delta` cuando una ruta de
+transfer + accounting tiene requested amounts y accounting targets pero no
+actual-received amount. Del mismo modo, debe existir una única función MAP con
+`symbol_id == entrypoint_symbol_id`; entrypoint, component, file y line se
+contrastan con esa función y `lineage_id` se recalcula con el framing fuerte
+`economic-lineage-v1`.
+
+La compatibilidad entre repos no se demuestra con fixtures independientes. MAP,
+TRACE, ECONOMIC, VALUE, CORE y el gate de deploy prueban el mismo vector
+canónico, cuyo `route_digest` esperado es:
+
+```text
+63f77b661ae44424accebbad5922a0730d80af2c8b7a6a43742f0a2295ec6b69
+```
+
+Un cambio de framing que no actualice deliberadamente todo el contrato debe
+fallar en ese vector antes de llegar a una auditoría.
 
 ## Responsabilidad por productor y consumidor
 
@@ -93,7 +131,7 @@ Para que Core considere un flow ID como referenciado por TRACE no basta una
 aparición textual. Debe existir un `economic_checks[].evidence` con exactamente
 un `flow_route_bindings[{flow_id,route_digest}]`; `flow_ids[]` y
 `flow_route_digests[]` deben ser singleton y contener el mismo par;
-`operation_ids[]` debe ser una subsecuencia no vacía de la ruta; y
+`operation_ids[]` debe ser exactamente la secuencia completa de la ruta; y
 `solguard_map_context.economic_flows[]` debe contener una copia canónica,
 completa y `resolved` de esa identidad. Cualquier duplicado, drift o ausencia
 convierte el binding en no autoritativo.
@@ -142,11 +180,24 @@ Una respuesta fuera del conjunto base solo se acepta cuando:
 - el proof es `complete`, `validate_consumable`, no se autocorrobora y satisface
   todas las obligaciones.
 
-Core reabre las refs probatorias de proof y delta contra MAP/TRACE, pero el
-runtime actual las normaliza al comparar y no rechaza por sí solo la repetición
-de una ref autoritativa idéntica. El gate estricto de ensamblaje sí la rechaza;
-hasta que esa condición se aplique también en Core, es una deuda P1 y no una
-garantía runtime.
+Core cierra la respuesta de forma atómica: primero revalida identidad MAP,
+binding TRACE, request, envelope, path, claim, superficies, secuencia,
+obligaciones y todas las refs; solo después materializa el path efectivo. Un
+duplicado en responses, source refs, evidence refs, flow hints o cualquier
+array que represente identidad invalida el cierre completo. No existe una
+aceptación parcial que pueda sobrevivir al fallo de una comprobación posterior.
+
+La autoridad `map_trace_reverified` requiere al menos una referencia MAP y una
+referencia TRACE-native. Los IDs copiados dentro de `solguard_map_context`
+siguen siendo contexto MAP y no cuentan como corroboración TRACE independiente.
+Tampoco cuenta como TRACE-native ningún `evidence_id` que ya exista en MAP,
+aunque TRACE lo copie a otra superficie o localización: sin provenance explícita
+continúa siendo evidencia MAP.
+
+La obligación de invariante requiere igualdad exacta con un `invariant_id`
+solicitado y una única autoridad sintetizada cuyo scope contenga el mismo par
+`{flow_id,route_digest}` que el path. Substrings, IDs concatenados, autoridad
+duplicada o un invariante conocido pero ligado a otra ruta fallan cerrados.
 
 Core añade un path nuevo aceptado a `effective_attack_paths.json`; no modifica
 `tool-outputs/value/attack_paths.json`. Si la respuesta corresponde a un path

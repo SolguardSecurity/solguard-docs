@@ -74,9 +74,10 @@ Tras candidatos puede ejecutar el pase aditivo y acotado de evidencia economica
 sin reemplazar el modelo inicial cuando ese pase falla.
 
 Cuando MAP/TRACE declaran `economic_flow_identity.v2`, ECONOMIC conserva flow
-ID, route digest, operaciones, aristas y asset legs en sus transitions. Un flow
-ID explícito solo se resuelve por coincidencia exacta; una ruta legacy o un
-binding fuzzy no se presenta como transition concreta.
+ID, route digest, operaciones, aristas y asset legs en sus transitions, y
+publica el mismo par singleton en `flow_route_bindings` de equations y scopes
+de invariantes. Un flow ID explícito solo se resuelve por coincidencia exacta;
+una ruta legacy o un binding fuzzy no se presenta como transition concreta.
 
 ### VALUE
 
@@ -101,8 +102,9 @@ El ensamblado `economic_flow_identity.v2` conserva el ID content-addressed
 creado por MAP y une TRACE/ECONOMIC mediante ID y digest exactos. Una request
 puede señalar una ruta v2 única MAP+TRACE aunque no exista en el top-50 base;
 VALUE busca sobre sus paths pre-ranking. Core solo acepta el path nuevo si
-revalida flow ID, digest, ordered sequence, superficies y evidence refs. Los
-flows legacy y los conflictos de ensamblado permanecen no consumibles.
+revalida atómicamente flow ID, digest, ordered sequence, superficies, claims y
+evidence refs sin duplicados. Los flows legacy y los conflictos de ensamblado
+permanecen no consumibles.
 
 ### INVARIANT
 

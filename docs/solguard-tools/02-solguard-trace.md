@@ -142,7 +142,7 @@ aplica esta semántica.
 
 Para que Core use un check como autoridad candidate-directed, su `evidence`
 debe contener un único binding y arrays singleton con el mismo ID/digest, una
-subsecuencia ordenada no vacía de `operation_ids` y la copia canónica `resolved`
+secuencia completa y exactamente ordenada de `operation_ids` y la copia canónica `resolved`
 en `solguard_map_context.economic_flows`. Los checks multi-flow pueden conservar
 valor diagnóstico, pero no generan una flow hint autoritativa.
 

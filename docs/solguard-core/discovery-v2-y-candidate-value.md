@@ -156,8 +156,8 @@ El contrato es fail-closed:
   coincide con las superficies y posee un binding TRACE autoritativo;
 - el binding TRACE debe proceder de `economic_checks[].evidence`, contener
   exactamente un `flow_route_bindings[{flow_id,route_digest}]`, arrays singleton
-  `flow_ids[]`/`flow_route_digests[]` con el mismo par, una subsecuencia no vacía
-  de `operation_ids[]` y una copia completa `resolved` de la ruta en
+  `flow_ids[]`/`flow_route_digests[]` con el mismo par, la secuencia completa y
+  exacta de `operation_ids[]` y una copia completa `resolved` de la ruta en
   `solguard_map_context.economic_flows[]`;
 - el segundo camino añade ese ID exacto a `flow_hints`; ausencia, identidad
   legacy o ambigüedad en ambos caminos evita emitir la request;

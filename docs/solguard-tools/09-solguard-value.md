@@ -44,6 +44,8 @@ VALUE construye un índice de autoridad sobre MAP antes de combinar fragmentos.
 El índice exige unicidad de flow, operación, value, value link y graph edge. Si
 MAP declara `economic_flow_identity.v2`, VALUE:
 
+- recomputa el framing fuerte de MAP y deriva de nuevo amounts y accounting
+  targets desde las autoridades MAP, en vez de confiar en arrays autocontenidos;
 - conserva el `value_flow_id` upstream en vez de rehashearlo;
 - conserva referencias `upstream_flow_id:{id}` y
   `route_digest:{route_digest}`;
@@ -63,6 +65,10 @@ same-flow ni un proof completo.
 VALUE no rellena huecos con semejanza de nombre, componente o asset. Tampoco
 fabrica before/after state, delta o relación de invariante desde el propio path.
 Esos campos solo aparecen cuando proceden de valores o attachments exactos.
+Cuando una request exige `invariant_relation`, VALUE conserva el
+`invariant_id` upstream y solo satisface la obligación si ese ID aparece
+exactamente en `request.invariant_ids`; una expresión equivalente o un hash
+local de relación no sustituyen al invariant solicitado.
 
 La compatibilidad es aditiva: los schemas `solguard-value-*.v1` no cambian de
 nombre y los lectores legacy pueden ignorar las nuevas source refs y

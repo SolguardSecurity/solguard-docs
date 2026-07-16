@@ -114,6 +114,13 @@ transición ligada:
 - source/sink symbol IDs;
 - `operation_ids`, `causal_edge_ids` y `asset_leg_ids`.
 
+Además, cada equation y cada scope de invariante sintetizado que declara una
+ruta publica exactamente un
+`flow_route_bindings[{flow_id,route_digest}]`. El par, `flows[]` y cualquier
+campo singular deben designar la misma ruta singleton. ECONOMIC recomputa el
+framing fuerte y los hechos derivados de MAP antes de emitir ese binding; una
+lista parcial, duplicada o contradictoria queda no autoritativa.
+
 Si una equation declara `flows`, esos IDs son una restricción autoritativa: la
 transición solo se liga a una coincidencia exacta. Un ID explícito ausente no
 puede recuperarse mediante componente, substring del entrypoint o similitud de

@@ -154,12 +154,14 @@ id = economic-flow-v2-{route_digest}
 identity_version = economic_flow_identity.v2
 ```
 
-`route_digest` es content-addressed y liga el entrypoint con la secuencia de
-operaciones, aristas causales, decisiones de rama, value links y asset legs de
-la ruta. `branch_choices` usa strings `<branch_id>=true|false` ordenados por ID
-y forma parte del payload exacto `operations=[...];edges=[...];branches=[...]`.
-Dos ramas alternativas deben producir identidades distintas. `lineage_id`
-permite reconocer su procedencia común sin convertirlas en la misma ruta.
+`route_digest` es content-addressed y usa framing binario fuerte: el namespace
+y cada parte se enmarcan por separado con longitud `u64` big-endian y bytes
+UTF-8. Firma steps completos, contenido autoritativo de aristas y value links,
+operation IDs, decisiones de rama, asset legs y todos los hechos económicos
+superiores; no concatena listas con delimitadores. `branch_choices` usa strings
+`<branch_id>=true|false` ordenados por ID. Dos ramas alternativas deben producir
+identidades distintas. `lineage_id` permite reconocer su procedencia común sin
+convertirlas en la misma ruta.
 
 La pertenencia estructural exacta de ramas se implementa en esta fase para
 Solidity con bloques delimitados por llaves y para Vyper mediante indentación
@@ -176,9 +178,11 @@ Los campos aditivos incluyen:
 - por step, `operation_id`, symbol/component/asset, value IDs de entrada y
   salida, `source_ordinal`, `branch_path`, resolución, confianza y evidence IDs.
 
-Cada `asset_leg` usa un ID content-addressed sobre asset, dirección y secuencia
-ordenada de operation IDs. Ese ID, y no una etiqueta mutable, es el que participa
-en el digest de ruta.
+Cada `asset_leg` usa `economic-asset-leg-v2-{digest}` sobre asset, dirección,
+source/sink symbol IDs, operation IDs y amount expressions ordenados. Ese ID, y
+no una etiqueta mutable, es el que participa en el digest de ruta. Los arrays
+requested/transferred/actual se derivan de los `economic_values` alcanzados y
+`accounting_targets` de las operaciones `accounting_update`.
 
 La expansión es determinista y acotada. Un ciclo, límite de profundidad,
 truncado de rutas, operación no resuelta o arista no resuelta evita que la ruta
