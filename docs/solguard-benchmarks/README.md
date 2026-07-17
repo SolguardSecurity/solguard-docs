@@ -11,6 +11,7 @@ runner ni de los contratos de evaluacion actuales.
 1. [Benchmark 1: 24 protocolos v1](01-benchmark-1.md)
 2. [Benchmark 2: 20 protocolos v2](02-benchmark-2.md)
 3. [Benchmark 3: 20 protocolos v3](03-benchmark-3.md)
+4. [Medicion completa, loss ledger y futuro holdout](04-medicion-pipeline-y-holdout.md)
 
 ## Rutas actuales
 
@@ -230,6 +231,24 @@ colecciones como `legacy_backend_bound`, declara
 missing/mismatch. Es evidencia historica congelada, no una demostracion de
 paridad tras la migracion a core. Esa afirmacion exige una nueva ejecucion
 core-bound y un manifest que pase el modo estricto.
+
+La medicion completa de fase 1 se implementa de forma aditiva bajo
+`solguard-deploy/scripts/measurement/`. Precompromete identidades byte-exactas
+antes del scan y verifica drift antes/despues de cada comando, sin afirmar
+inmutabilidad fisica. Ejecuta con entorno explicito, lease exclusivo y recibos
+Ed25519 encadenados sin resume sobre un scope canonico de evidencia declarado;
+los artefactos listados se verifican aparte. Instrumenta memoria del arbol de
+procesos, normaliza v1-v8 y labs, crea un ledger por finding, compara
+disponibilidad metrica por metrica y firma una baseline nueva cuyo binding al
+commit/tree exacto de core se recomputa para las nueve colecciones. Un missing
+de precision, FILTER, recall o memoria permanece `null`/no disponible, nunca
+cero; el macro recall tambien queda `null` con cobertura parcial. Ningun
+resultado de estos corpus conocidos cambia su clase: siguen siendo regresion,
+nunca una demostracion blind. La politica y el mecanismo del holdout futuro
+estan definidos, pero la politica no queda congelada para una cohorte real hasta
+que un custodio externo publique el commitment firmado; no se abre ni se
+ejecuta en esta fase. Los replays canonicos y la baseline actual siguen
+pendientes hasta completar los comandos de operador documentados.
 
 ## Resultado historico de cierre v0.8.0
 
