@@ -45,6 +45,7 @@ Opciones:
 | `--max-deep-paths <n>`      | Máximo de deep paths retenidos por target. Default: `64`.       |
 | `--top <n>`                 | Batch budget de targets.                                        |
 | `--levels S,A,...`          | Filtra batch por nivel SolGuard.                                |
+| `--allow-empty-batch-targets` | Permite al orquestador registrar seleccion batch vacia como coverage gap. |
 | `--include-tests`           | Incluye tests/mocks Solidity omitidos por defecto.              |
 | `--no-color`                | Desactiva colores ANSI.                                         |
 
@@ -53,6 +54,9 @@ Reglas:
 - Si se usa batch (`--top` o `--levels`), `--from-map` es obligatorio.
 - `--target` no puede combinarse con batch.
 - Si no hay batch, `--target` es obligatorio.
+- Una seleccion batch vacia falla por defecto. El flag
+  `--allow-empty-batch-targets` solo es valido en batch orquestado y produce un
+  indice explicito; no fabrica traces ni evidencia.
 
 ## Contrato de salida
 
@@ -116,6 +120,27 @@ contexto o rutas, el artefacto lo conserva mediante
 `target_context_budget_truncated`, `deep_path_budget_truncated` o la
 terminación `path_expansion_budget`. La ausencia, invalidez o contradicción de
 esa metadata es deuda de integridad, no una ejecución ilimitada implícita.
+
+Cuando el modo orquestado permite una seleccion vacia, `index.json` declara
+`selection.status=empty_allowed` y
+`selection.coverage_gap=no_targets_matched_requested_batch_filters`. Esa salida
+permite continuar con un fallback tipado y observable, pero sigue siendo deuda
+de cobertura y nunca demuestra ausencia de vulnerabilidad.
+
+## Binding de autorizacion por actor
+
+TRACE puede emitir `trace.actor_authorization_binding.v1` cuando reconstruye
+una ruta source-backed completa que enlaza el caller, el subject seleccionado,
+el owner y spender de allowance, el amount, el recipient y los efectos finales
+sobre subject y valor. La regla semantica estable es
+`authorization.caller_must_match_subject_or_allowance_spender`.
+
+El binding conserva superficies, pasos ordenados, expresiones resueltas,
+evidence IDs y una resolucion `satisfied` o `violated`. Solo una relacion
+`violated` y `resolved` puede abrir una hipotesis posterior. Una ruta
+incompleta, un guard que liga caller y subject, o un allowance cuyo spender es
+el caller no se presenta como violacion. TRACE sigue aportando evidencia: no
+emite por si mismo un finding soportado.
 
 ## Relacion con MAP
 

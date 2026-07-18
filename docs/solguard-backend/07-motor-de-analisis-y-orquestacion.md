@@ -39,8 +39,9 @@ El manifiesto global sigue en `tool-outputs/pipeline.json`.
   `candidate_value`; ambas son subpasadas de evidencia y no nuevas fases del
   journal `pipeline.v0.10`.
 - VALIDATE emite `supported`, `refuted` o `inconclusive`.
-- FILTER consume solo sus inputs minimos, emite `filter.v0.1` y decide admision
-  de forma independiente y fail-closed.
+- FILTER consume solo sus inputs minimos, incluido el conjunto TRACE exacto que
+  VALIDATE uso; lo religa por ruta relativa normalizada y SHA-256, emite
+  `filter.v0.1` y decide admision de forma independiente y fail-closed.
 - EXPLOIT verifica el hash congelado de FILTER y emite `exploit.v0.2` solo para
   candidatos admitidos.
 - Las fases posteriores no reescriben el veredicto de VALIDATE.

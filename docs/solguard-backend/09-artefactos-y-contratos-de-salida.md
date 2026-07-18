@@ -127,6 +127,12 @@ resolver sus inputs minimos y emite una decision `pass`, `review`, `reject` o
 `duplicate`. Solo un candidato VALIDATE-supported, con FILTER `pass`,
 `exploit_eligibility=true` y dedupe compatible puede llegar a EXPLOIT.
 
+Los inputs minimos incluyen el conjunto TRACE exacto consumido por VALIDATE.
+Cada miembro queda identificado como `trace:<ruta-relativa-normalizada>` y por
+el SHA-256 de sus bytes. Un subset, un miembro adicional, una sustitucion de
+ruta, bytes stale, un symlink o una resolucion de componente ambigua hacen que
+FILTER falle cerrado.
+
 EXPLOIT debe verificar el hash congelado de FILTER. La compilacion de un harness
 no equivale a reproduccion runtime.
 

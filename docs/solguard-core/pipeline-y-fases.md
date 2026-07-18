@@ -32,6 +32,21 @@ Ejecuta `solguard-map` y genera el mapa del codigo. A partir de 150 archivos
 fuente soportados usa el modo rapido; si el modo profundo excede su ventana,
 reintenta de forma acotada y registra la degradacion.
 
+MAP publica `economic_flow_coverage.v1` y `map_collection_coverage.v1` dentro
+de `audit_map.json`. Los recibos separan identidades semanticas unicas de
+duplicados colapsados y registran limites de rutas, steps, flows, dependencias y
+grafos. Un duplicado exacto no crea deuda; una identidad unica omitida, una ruta
+incompleta o un limite alcanzado si. Core trata un recibo ausente, malformado o
+con `coverage_debt` como degradacion bloqueante, no como evidencia negativa.
+
+Las rutas economicas deduplican identidades antes del presupuesto. Cada
+entrypoint prueba primero 64 rutas y recupera de forma adaptativa hasta el hard
+cap 256 solo si existe una identidad adicional; los limites de 128 steps por
+ruta, 4096 flows y 32768 steps globales permanecen fail-closed. El dispatch
+generico respeta el componente de receivers tipados y acota `self.metodo(...)`
+de Vyper al caller. Un destino tipado ausente queda externo/dinamico, no se
+expande por homonimos globales.
+
 ### DIFF
 
 Obtiene contexto de cambios cuando el target conserva historia Git. Un ZIP sin
@@ -46,6 +61,19 @@ Core pasa los cuatro límites a TRACE y conserva su configuración efectiva en
 los artefactos. Una ejecución sin metadata válida, con valores contradictorios
 entre targets o con truncado se refleja como deuda explícita en
 `analysis_funnel.json`; no se interpreta como cobertura completa.
+
+La seleccion batch vacia permanece fail-closed por defecto. Solo la invocacion
+orquestada con `--allow-empty-batch-targets` puede escribir un `index.json`
+valido con `selection.status=empty_allowed` y el coverage gap
+`no_targets_matched_requested_batch_filters`. Ese contrato preserva el fallo de
+cobertura; no afirma que no exista un bug.
+
+TRACE puede publicar `trace.actor_authorization_binding.v1` para una ruta
+source-backed completa que relaciona caller, subject, allowance owner/spender,
+amount, recipient y efectos de estado/valor. Solo un binding `resolved` y
+`violated` con la regla
+`authorization.caller_must_match_subject_or_allowance_spender` entra en la
+cadena tipada posterior; bindings satisfechos o incompletos no son candidatos.
 
 ### DISCOVER
 
@@ -70,6 +98,23 @@ autoridad para esos campos. Una hipotesis sin invariant tipado y ruta
 autoritativa con evidencia permanece como lead exploratorio y no llega a
 VALIDATE. La misma regla se aplica a toda capsula MAP-fallback: es degradada y
 open-world, nunca autoridad de validacion.
+
+DISCOVER prioriza bindings TRACE tipados antes del cap final de hipotesis y
+excluye de la mineria de intent tanto documentos de issues/vulnerabilidades
+conocidas como las lineas que los citan. Para la regla de autorizacion por actor
+emite una ruta, regla, gap e hipotesis exactas; INVARIANT la materializa como
+`permission_freshness` con predicado `actor_authorization_binding`, y VALIDATE
+solo la soporta si regla, scope, superficies y procedencia TRACE reconcilian de
+forma exacta.
+
+DISCOVER consume el MAP requerido mediante `map.semantic_projection.v1`: lee y
+hashea el archivo completo, retiene solo sus 34 campos semanticos y conserva las
+deudas `map_collection_coverage.v1` y `economic_flow_coverage.v1` en
+`metadata.resource_usage` y diagnosticos. El hard cap raw es 256 MiB y la
+estimacion estructural por defecto 1 GiB; esta ultima no es un cap RSS. Un MAP
+invalido, inestable o fuera de presupuesto falla cerrado. El deadline
+cooperativo, la omision demostrada despues de 700 rutas TRACE intermedias y el
+recorte de trust boundaries por encima de 2000 producen degradacion explicita.
 
 ### ECONOMIC
 
@@ -121,12 +166,25 @@ revalida atómicamente flow ID, digest, ordered sequence, superficies, claims y
 evidence refs sin duplicados. Los flows legacy y los conflictos de ensamblado
 permanecen no consumibles.
 
+Los cuatro outputs base repiten el mismo ledger
+`solguard-value-budget.v1`. Debe ser semanticamente identico y declarar
+limites, cardinalidades observadas/retenidas y deuda agregada. Un ledger
+ausente, divergente o malformado es error; `status=coverage_debt` degrada la
+fase y bloquea release. Una ruta v2 completa se materializa entera o se difiere
+entera con secuencia vacia, `route_complete=false` y sin digest verificado;
+VALUE nunca publica un prefijo con la identidad autoritativa original.
+
 ### INVARIANT
 
 Combina MAP, TRACE, modelos economicos y VALUE para producir
 `tool-outputs/invariant/invariants.json`. Si la herramienta no completa un
 contrato valido, core conserva un fallback explicito para que las fases
 siguientes expliquen la carencia.
+
+Los bindings de autorizacion por actor conservan dimensiones separadas para
+caller, subject, allowance owner/spender, amount y recipient. Solo un contrato
+TRACE completo, resuelto y violado crea una invariante resuelta; la satisfaccion
+o falta de evidencia permanece fail-closed.
 
 ## Candidatos y autoridades
 
@@ -180,12 +238,21 @@ Emite `validation_results.json` y Markdown con tres veredictos:
 inconclusos y leads. Ninguna fase posterior puede mutar el hash de este
 artefacto autoritativo.
 
+Las protecciones se aplican por familia de invariante. Una revalidacion de
+secuencia o invalidacion de objeto puede refutar familias temporales/lifecycle
+compatibles, pero no una invariante distinta de autorizacion, permiso,
+contabilidad, identidad o estructura. La procedencia TRACE consumida se liga a
+`trace:<ruta-relativa-normalizada>` y al SHA-256 exacto de sus bytes.
+
 ### FILTER
 
-Consume source, VALIDATE, candidatos exactos, invariantes, MAP, policy y output.
-Verifica `filter.v0.1` de forma fail-closed. TRACE, DISCOVER, ECONOMIC y VALUE no
-se anaden como inputs suplementarios sin un contrato de consumo semantico nuevo
-y medido.
+Consume source, VALIDATE, candidatos exactos, invariantes, MAP, policy, output y
+el conjunto TRACE exacto que VALIDATE uso. Verifica `filter.v0.1` de forma
+fail-closed y vuelve a ligar cada miembro TRACE por ruta relativa normalizada y
+SHA-256. Subsets, miembros extra, sustituciones de path, bytes stale, symlinks,
+rutas inseguras o componentes ambiguos fallan cerrados. DISCOVER, ECONOMIC y
+VALUE no se anaden como inputs suplementarios sin un contrato de consumo
+semantico nuevo y medido.
 
 ## Fases posteriores
 

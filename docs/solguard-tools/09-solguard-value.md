@@ -38,6 +38,29 @@ La ejecucion base escribe:
 Un `value_proof` completo sigue siendo evidencia para VALIDATE, no un finding
 `supported`.
 
+## Materializacion acotada y ledger de cobertura
+
+Los cuatro JSON base contienen una copia semanticamente identica de
+`solguard-value-budget.v1`. El ledger registra limites, cardinalidades
+observadas/retenidas, conteos agregados de deuda y samples diagnosticos
+acotados. Los limites normales actuales son 192 steps por ruta, 4096 evidence
+refs por entidad, 1024 string refs, 1024 flow-identity refs, 128 proof evidence
+refs y 32 refs por failure reason.
+
+Un MAP por encima de 96 MiB se lee mediante una proyeccion streaming separada:
+una ruta que supera 32 steps se difiere antes de materializarla, y las
+colecciones proyectadas usan limites propios de 8 evidence refs, 16 string refs
+y 32 flow-identity refs. Esto impide que un MAP legacy multi-GiB fuerce el mismo
+intermedio en memoria.
+
+`budget.status=coverage_debt` significa analisis incompleto, no exito acotado.
+Una ruta v2 completa que excede el limite se difiere entera: secuencia vacia,
+`materialization.status=route_deferred_budget`, `route_complete=false` y sin
+`route_digest_verified`. Solo rutas legacy/no autoritativas pueden conservar un
+frontier head/tail como `bounded_partial`, siempre como deuda. Core rechaza
+ledgers ausentes, divergentes o malformados y propaga coverage debt como
+degradacion bloqueante.
+
 ## Ensamblado exacto de flujos
 
 VALUE construye un índice de autoridad sobre MAP antes de combinar fragmentos.

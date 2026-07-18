@@ -72,6 +72,21 @@ El catalogo v0.8 cubre familias como:
 - assumptions externas;
 - disponibilidad.
 
+### Autorizacion por actor
+
+Un binding TRACE `trace.actor_authorization_binding.v1` solo se materializa si
+esta `resolved`, su status es `violated`, la regla es exactamente
+`authorization.caller_must_match_subject_or_allowance_spender` y la ruta
+contiene las cuatro superficies source-backed exigidas. INVARIANT lo representa
+como familia `permission_freshness`, predicado tipado
+`actor_authorization_binding` y operador
+`caller_matches_subject_or_allowance_spender`.
+
+El scope conserva por separado caller, subject, allowance owner/spender,
+amount y recipient. Un binding satisfecho, una ruta incompleta o evidencia sin
+ubicacion exacta no crea una invariante resuelta. Esta propiedad formaliza una
+obligacion aplicable; VALIDATE sigue siendo la autoridad del veredicto.
+
 ## Determinismo
 
 Los IDs de invariantes dependen de:

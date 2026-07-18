@@ -220,6 +220,80 @@ anteriores y los nuevos campos tienen defaults de deserialización. Un artefacto
 sin `identity_version=economic_flow_identity.v2` es legacy; sigue siendo
 legible, pero no posee autoridad de identidad exacta para cerrar una prueba.
 
+## Presupuestos y cobertura observable
+
+`audit_map.json` incluye dos recibos aditivos:
+
+- `economic_flow_coverage.v1`: limites y conteos de rutas por entrypoint, steps
+  por ruta, flows/steps globales y cualquier ruta omitida;
+- `map_collection_coverage.v1`: `observed`, `duplicates_collapsed`, identidades
+  semanticas unicas, retenidas y truncadas para dependencias, call edges y graph
+  edges.
+
+El inventario de `map_collection_coverage.v1` es completo por modo y lenguaje,
+no una muestra de los productores que alcanzaron a emitir datos. Una ejecucion
+`fast` publica los 35 recibos base y una ejecucion `deep` los 42 recibos base;
+los productores condicionales de un lenguaje se anaden cuando esa capability
+esta activa. Cada productor esperado aparece una sola vez, incluso con cero
+identidades. Un recibo base ausente o duplicado deja el ledger incompleto; los
+recibos adicionales solo corresponden a productores condicionales activos y
+mantienen las mismas invariantes de coherencia.
+
+Los joins semanticos usan un source-scope estable. En Go, el scope es el paquete
+por directorio; en los demas lenguajes soportados es el fichero fuente junto al
+componente declarado. Reutilizar nombres genericos como `main`, `bindings` o
+`client` en directorios independientes no une sus simbolos. Solo una relacion
+de import explicita puede hacer visible un destino fuera del scope local.
+
+La resolucion de receivers construye el entorno de tipos en el contexto local
+del caller. Declaraciones de fichero pueden ser visibles, pero un parametro o
+receiver homonimo de otra funcion no puede sobrescribir el tipo del caller. MAP
+excluye declaraciones que el parser superficial podria confundir con
+pseudo-calls. A la vez, una llamada recursiva real dentro del cuerpo se conserva
+como relacion semantica: compartir nombre con la funcion caller no basta para
+eliminarla.
+
+MAP deduplica identidades semanticas exactas antes de presupuestar rutas. Cada
+entrypoint comienza con un cap interno de 64; solo si esa pasada demuestra una
+identidad unica adicional se repite de forma determinista con el hard cap 256.
+La misma recuperacion adaptativa se aplica dentro de callees. Siguen vigentes
+los limites de 128 steps por ruta, 4096 flows y 32768 steps globales.
+
+El fallback interprocedural tampoco resuelve una llamada por coincidencia global
+de nombre cuando existe un receiver tipado. Para Solidity y Vyper solo es
+elegible el componente del tipo declarado; si su implementacion no esta en el
+source, la llamada permanece externa o dinamica. En Vyper,
+`self.metodo(...)` queda acotado al componente caller. Esto evita multiplicar
+una llamada por metodos homonimos de componentes no compatibles sin inventar un
+destino interno.
+
+Escribir JSON compacto evita multiplicar memoria y disco por whitespace, pero
+no cambia la cobertura. Colapsar duplicados exactos se contabiliza y no crea
+deuda. Si la pasada 256 demuestra otra identidad, una ruta supera 128 steps o
+se agota un limite global, MAP conserva la omision como deuda fail-closed: las
+rutas retenidas afectadas permanecen `partial` y `coverage_debt` registra el
+presupuesto agotado. Los consumidores no pueden presentarlas como cobertura
+completa ni usar la ausencia de una ruta como evidencia negativa.
+
+### Evidencia diagnostica dirigida
+
+El smoke dirigido final de Optimism produjo un `audit_map.json` de
+119.784.018 bytes con SHA-256
+`e4c290b3ccd7925ab1316b7979489d309d3a28fa250739a8716d669b575b70b6`.
+Este artefacto sirve para verificar ingestion, identidad byte-exacta y los
+recibos de cobertura del MAP usado por DISCOVER. La aceptacion downstream final
+quedo sellada en
+`D:\SolguardDiagnostics\phase1-discover-optimism-ledger-runtime-20260718-final-r2`:
+el `protocol_model.json` tiene SHA-256
+`EE0B843CC92C7611EAE3B510CB35B3BB0937980E8F557DC0DE1F4A098D42206C`,
+el `index.json`
+`2D616D703C06B9E70B2022EBB61C3D8665B71319E00C9FEE09BF578A14B62A3A`
+y el binario DISCOVER
+`DE3C09078ACF8822800EFE51919F07609BA72CE7255BAB01F5BFD7E46BFED363`.
+El caso dirigido paso de 180.303 a 23.882 ms. Es evidencia diagnostica de
+contrato y runtime; por si sola no demuestra una mejora de precision, recall ni
+generalizacion.
+
 ## Limites
 
 - No ejecuta codigo.

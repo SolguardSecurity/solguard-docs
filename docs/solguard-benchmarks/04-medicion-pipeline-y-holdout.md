@@ -60,7 +60,8 @@ El replay usa los binarios comprometidos con `--no-prebuild`. El runner deriva
 cada comando del lock y pasa al child exactamente el entorno explicito del
 runbook; no hereda variables arbitrarias del proceso llamador. Antes de ejecutar
 adquiere un lease exclusivo y crea un journal de inicio. Cada comando exitoso
-produce un recibo Ed25519 create-only que liga identidad de comando, telemetria
+produce `solguard-measurement-command-receipt.v2`, un recibo Ed25519 create-only
+que liga identidad de comando, telemetria
 y un manifest canonico de evidencia con extensiones y directorios excluidos
 declarados en el propio recibo, y que enlaza el recibo anterior mediante
 `previous_receipt_sha256`. No afirma cubrir cada byte del arbol: los artefactos
@@ -68,6 +69,28 @@ semanticos/offline listados se rehashean aparte y cada descriptor de medicion en
 scope debe coincidir con un recibo firmado. La firma prueba integridad bajo la
 clave suministrada, no autorizacion de esa clave, un timestamp externo notarial
 ni aislamiento fisico del host.
+
+El recibo v2 liga ademas el informe exacto `solguard-pre-release-check.v3` y sus
+dos decisiones independientes:
+
+- `measurement_integrity`: evidencia completa, coherente, contabilizada y
+  comparable;
+- `product_health`: politica estricta de salud y promocion del producto.
+
+Una medicion coherente puede firmarse con `product_health=failed`, pero el mismo
+recibo fija `product_release_eligible=false`. `finalize` y `verify` releen los
+artefactos, regeneran el informe y comparan ambas decisiones; no pueden
+reinterpretar esa baseline como un release sano. El tier `release` sigue
+seleccionando `product_health` sin soft-fail.
+
+Un comando que termina non-zero, recibe una signal, pierde artefactos requeridos
+o no supera `measurement_integrity` no recibe un recibo de exito. Emite
+`solguard-measurement-command-failure-receipt.v1`, firmado y create-only, con
+`release_eligible=false`, `continuation=false` y `root_reusable=false`. El
+documento `solguard-measurement-failure-diagnostic.v1` y el inventario
+`solguard-pipeline-partial-diagnostic.v1` pueden describir evidencia parcial,
+pero no autorizan el siguiente comando, `finalize`, `verify` ni una baseline.
+El siguiente intento exige root nuevo y un pre-run lock nuevo.
 
 ## Loss ledger
 
@@ -105,6 +128,20 @@ representante tiene decision `pass`.
 El ledger se genera despues del scan y pertenece al evaluador. Ground truth,
 matcher y ledger nunca son inputs de CORE, herramientas o FILTER.
 
+La elegibilidad del denominador se congela antes del analisis mediante el
+preflight comun de benchmarks/labs. Sus outcomes son disjuntos:
+
+- `ground_truth_ineligible`: la referencia declarada no describe un finding
+  evaluable en el snapshot inmutable;
+- `source_unavailable`: el source requerido no pudo materializarse o localizarse;
+- `analysis_failed_after_source_preflight`: la referencia era elegible y el
+  source paso preflight, pero el pipeline fallo despues.
+
+Estos campos se persisten aunque exista timeout o fallo downstream. Un finding
+`ground_truth_ineligible` termina en el loss ledger como
+`finding_not_applicable`; no cuenta como miss, source ausente ni scoreable. El
+preflight es evaluador/corpus y nunca se entrega al pipeline productivo.
+
 ## Metricas y comparabilidad
 
 `solguard-pipeline-measurement.v1` publica denominadores y disponibilidad para:
@@ -119,6 +156,11 @@ matcher y ledger nunca son inputs de CORE, herramientas o FILTER.
 - tiempos totales, por protocolo y por fase;
 - peak RSS, memoria virtual y memoria privada del arbol de procesos, junto con
   calidad y cobertura del muestreo.
+
+`solguard-resource-telemetry.v2` conserva esa telemetria de proceso y anade
+memoria global del host, GPU NVIDIA y observaciones Ollama. Un sensor no
+soportado o no observado queda `unavailable`, nunca se convierte en cero. La
+medicion acepta recibos historicos v1 y nuevos recibos v2 de forma explicita.
 
 El macro recall por protocolo solo tiene valor numerico cuando estan observados
 los 254 protocolos configurados. Si la cobertura es parcial queda `null` y se
@@ -147,16 +189,27 @@ comparacion.
 
 Los runners productivos no se duplican:
 
-- `full-run.sh --flow legacy --tier release` para v1-v8;
-- `labs-v2/run.sh` en `audit_only`, con FILTER obligatorio, para los 90 labs.
+- `full-run.sh --flow legacy --tier measurement` mediante
+  `v1-v8-measurement` para v1-v8;
+- `labs-v2/run.sh --tier measurement` mediante `labs-measurement`, siempre en
+  `audit_only`, para los 90 labs.
+
+El mismo gate calcula `product_health` con la politica estricta. No se usa
+`v1-v8-release` para medir una herramienta que puede estar degradada: ese
+comando conserva su papel de promocion y seguiria devolviendo non-zero si la
+salud falla, que fue precisamente la conflacion observada en el root anterior.
 
 Se ejecutan secuencialmente sobre un root ausente o vacio mediante el subcomando
 `current-pipeline.mjs run`. Cada invocacion `run` exige tanto
 `--signing-private-key` como `--signing-public-key`, rechaza receipts, journals u
 outputs previos, valida el lock antes y despues del comando y demuestra que los
 intervalos no se solapan. No admite resume: si falla o se interrumpe hay que
-preparar un root nuevo. La duracion historica real fue 8 h 36 min para v1-v8 y
-5 h 08 min para labs. Por ello los ejecuta el operador, no un worker con limite
+preparar un root nuevo. El replay v1-v8 del 17 de julio de 2026 tardo
+`10:43:28.624` end-to-end (`10:43:09.834` de proceso medido) con ocho suites en
+paralelo; termino con codigo 1 y no llego a ejecutar labs, por lo que es
+diagnostico y no baseline. Para el siguiente v1-v8 se reserva prudentemente una
+ventana de 11-13 horas sin prometerla. El ultimo tiempo historico disponible de
+labs es 5 h 08 min. Por ello los ejecuta el operador, no un worker con limite
 inferior a una hora. El runbook exacto y los comandos PowerShell estan en
 `solguard-deploy/scripts/measurement/README.md`.
 

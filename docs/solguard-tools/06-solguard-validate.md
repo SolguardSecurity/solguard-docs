@@ -90,6 +90,15 @@ evidencia enlaza source fingerprint, superficies root/trigger/impact y pasos
 criticos resueltos. Esta ruta es general y no debe depender del nombre de un
 protocolo concreto.
 
+Para `authorization.caller_must_match_subject_or_allowance_spender`, VALIDATE
+solo reconcilia el candidato agregado `actor_authorization_binding` con una
+invariante `permission_freshness` que tenga la misma regla semantica, predicado
+tipado y scope resuelto. Las dimensiones caller, subject, allowance
+owner/spender, amount y recipient deben proceder del binding TRACE exacto y
+coincidir con las superficies causales del candidato. Una regla distinta,
+evidencia heuristica, un binding satisfecho o un scope contradictorio permanece
+`inconclusive`; no se relaja el contrato de soporte por similitud textual.
+
 ## Criterio de `refuted`
 
 Requiere proteccion positiva, resuelta y en scope exacto:
@@ -101,6 +110,13 @@ Requiere proteccion positiva, resuelta y en scope exacto:
 - proteccion antes del impacto.
 
 La ausencia de ruta no basta para refutar.
+
+La proteccion debe pertenecer a una familia aplicable. Revalidar una secuencia o
+invalidar un objeto puede refutar una invariante temporal/lifecycle compatible,
+pero no una invariante distinta de autorizacion, permiso, contabilidad,
+identidad o estructura. VALIDATE conserva ademas cada procedencia TRACE como
+`trace:<ruta-relativa-normalizada>` y el SHA-256 de los bytes consumidos; FILTER
+usa ese conjunto exacto para la reconciliacion posterior.
 
 ## Inconclusos
 
