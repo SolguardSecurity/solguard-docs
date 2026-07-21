@@ -10,6 +10,13 @@ y conserva los contratos `pipeline.v0.10`, `filter.v0.1` y `exploit.v0.2`.
 Core anade de forma backward-compatible rutas `candidate_value` dentro de
 `AnalyzeOutputs`; backend las transporta sin interpretarlas.
 
+Para un target ZIP, el DTO acepta el handoff cerrado
+`solguard-source-authority-handoff.v1` y devuelve el receipt de Core junto a
+`outputs.source_authority_json`. Backend no lo calcula ni lo valida
+semanticamente: conserva ademas el `AnalysisResponseLease` no serializado hasta
+terminar la respuesta, para que otro request del mismo proyecto no pueda
+resetear sus fuentes u outputs durante la serializacion.
+
 ## Alcance real
 
 El backend posee:

@@ -35,15 +35,81 @@ Schemas:
 economic_model.v0.1
 synthesized_invariants.v0.1
 economic_index.v0.1
+economic_collection_coverage.v1
+economic_route_graph_coverage.v1
+economic_route_graph_consumption.v1
+economic_route_graph_reasoning.v1
+solguard-coverage-manifest.v1
 ```
 
 Archivos:
 
 - `economic_model.json`
+- `economic_model.coverage.json`
 - `synthesized_invariants.json`
+- `synthesized_invariants.coverage.json`
 - `index.json`
 - `economic_model.md`
 - `summary.txt`
+
+## Cobertura de colecciones y artefactos grandes
+
+Los dos primarios incorporan `economic_collection_coverage.v1`. Cada budget se
+identifica de forma unica por `producer + collection`, se ordena de forma
+canonica y contabiliza por separado:
+
+- items observados y duplicados semanticos colapsados;
+- identidades unicas totales, retenidas y omitidas;
+- bytes compactos totales, retenidos y omitidos;
+- limite de cardinalidad, limite de bytes y politica de seleccion.
+
+La deduplicacion semantica ocurre antes del presupuesto. Alcanzar exactamente
+un limite sin omitir una identidad sigue siendo `complete`; una omision produce
+`status=degraded` y una entrada de deuda reconstruible desde los contadores. El
+ledger de `synthesized_invariants.json` debe conservar sin cambios todos los
+budgets del modelo y anadir el de la sintesis. Una divergencia aritmetica, deuda
+oculta, identidad duplicada o budget del modelo ausente falla cerrada.
+
+Los techos son barreras de seguridad generales, no objetivos de calidad:
+20.000 relaciones/128 MiB, 4.096 escenarios/128 MiB, 4.096 invariantes
+concretas o sintetizadas/256 MiB y 4.096 hipotesis/128 MiB. Los bindings
+anidados tienen presupuestos propios y publican la misma contabilidad exacta.
+
+Los sidecars ligan basename, schema, bytes y SHA-256 streaming del primario y
+proyectan el ledger exacto junto a un resumen operacional acotado. Core y el
+gate de release solo usan esa proyeccion cuando el primario excede su limite de
+parseo; por debajo manda el documento completo. Un sidecar ausente, stale,
+symlinked, sustituido o incoherente no convierte el artefacto en sano.
+
+El umbral de observabilidad de Core es 96 MiB; el gate independiente de Deploy
+mantiene su lectura inline hasta 100 MiB. Ambos rehashean el primario completo y
+leen el sidecar con un maximo de 100 MiB antes de aceptar su proyeccion. La
+diferencia de umbrales no cambia la autoridad: siempre mandan los mismos bytes,
+schema y ledger ligados por el productor.
+
+ECONOMIC parsea y hashea cada input desde un unico descriptor regular bajo un
+techo explicito, comprueba de nuevo identidad y path al terminar y confina el
+arbol TRACE a su root canonico sin symlinks. Los primarios y sidecars se escriben
+streaming, mediante temporales exclusivos e instalacion create-only. Core y el
+gate anaden confinamiento fisico del root y rechazo de reparse/path swaps. Un
+cambio durante el EOF, destino preexistente o descriptor divergente falla
+cerrado; no se recupera con metadata o un resumen stale.
+
+## Razonamiento graph-native
+
+Si MAP incluye `economic_route_graph.v1`, ECONOMIC valida su shape cerrado,
+IDs/digests, referencias y cobertura, y calcula hechos may/must directamente
+sobre roots y fragments. No convierte elecciones independientes en una lista
+cartesiana de rutas. Un must solo existe si todas las alternativas aplicables
+lo conservan; una region `over_approximation` no se eleva a transicion concreta
+ni proof exacto.
+
+Ambos primarios copian literalmente `economic_route_graph_coverage.v1` y
+publican el mismo `economic_route_graph_consumption.v1` full-graph. Ambos
+sidecars proyectan coverage y receipt dentro de su summary hash-bound. El
+ledger sintetizado debe preservar los dos contratos exactamente igual que los
+budgets del modelo; digest drift, deuda escondida u omision local fallan
+cerrado.
 
 ## Que modela
 

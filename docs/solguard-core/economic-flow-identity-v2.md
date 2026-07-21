@@ -130,13 +130,13 @@ fallar en ese vector antes de llegar a una auditoría.
 
 ## Responsabilidad por productor y consumidor
 
-| Componente | Responsabilidad exacta                                                                                                                                                                                |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MAP        | Construye la ruta, calcula ID/digest y publica operaciones, aristas, links, legs y steps autoritativos.                                                                                               |
-| TRACE      | Selecciona contexto sin mutar la ruta. En `economic_checks[].evidence` correlaciona ID/digest mediante un singleton explícito, conserva operations observadas y la copia MAP canónica.                |
+| Componente | Responsabilidad exacta                                                                                                                                                                                                                                                                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MAP        | Construye la ruta, calcula ID/digest y publica operaciones, aristas, links, legs y steps autoritativos.                                                                                                                                                                                         |
+| TRACE      | Selecciona contexto sin mutar la ruta. En `economic_checks[].evidence` correlaciona ID/digest mediante un singleton explícito, conserva operations observadas y la copia MAP canónica.                                                                                                          |
 | ECONOMIC   | Liga transitions e invariantes mediante ID/digest exactos. Si una equation nombra flows, no usa fallback fuzzy. `flow_bound` exige una ruta MAP v2 exacta y `resolved`, pero conserva deuda de estado u observaciones; una ruta MAP `partial` permanece diagnóstica y sin binding autoritativo. |
-| VALUE      | Indexa la autoridad MAP, conserva el upstream ID y fusiona fragments solo por identidad exacta sin conflictos.                                                                                        |
-| CORE       | Solo enruta requests tras revalidar el binding TRACE completo; al cerrar reabre refs, exige una identidad de ruta singleton, rechaza respuestas repetidas y preserva ruta/claim.                      |
+| VALUE      | Indexa la autoridad MAP, conserva el upstream ID y fusiona fragments solo por identidad exacta sin conflictos.                                                                                                                                                                                  |
+| CORE       | Solo enruta requests tras revalidar el binding TRACE completo; al cerrar reabre refs, exige una identidad de ruta singleton, rechaza respuestas repetidas y preserva ruta/claim.                                                                                                                |
 
 TRACE no puede podar steps y mantener el mismo ID. ECONOMIC y VALUE pueden
 añadir facts o evidence, pero no cambiar source, sink, asset, sequence ni
@@ -190,7 +190,8 @@ fail-closed:
    completo descrito arriba.
 
 El segundo camino escribe ese ID exacto en `flow_hints`. VALUE resuelve la
-request contra todos los paths generados antes del ranking/top-50. Esto evita
+request contra todos los paths generados antes del ranking y de su frontier de
+4.096. Esto evita
 que el truncado sea una frontera de detección, pero no relaja el matching.
 
 Una respuesta fuera del conjunto base solo se acepta cuando:

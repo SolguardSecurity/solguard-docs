@@ -56,6 +56,89 @@ read-only ni demuestra inmutabilidad fisica. El runner rehashea los inputs antes
 y despues de cada comando y cualquier drift invalida la baseline; tampoco cubre
 una mutacion-and-restore entre checkpoints.
 
+La frontera ZIP se valida antes de arrancar workers. Un link interno procedente
+del archive upstream no se replica como symlink del host: solo se acepta cuando
+su target POSIX UTF-8/NFC resuelve, incluso a traves de componentes intermedios,
+a un archivo o directorio existente dentro del mismo archive. El preflight
+rechaza paths absolutos, drives, backslashes, NUL, escapes, dangling links,
+ciclos, colisiones, paths no canonicos y expansiones fuera de presupuesto. Los
+links seguros se materializan deterministamente como archivos/directorios
+regulares; Core repite una validacion equivalente sobre el inventario completo
+y publica desde staging solo despues de cerrar plan, limites y contenido.
+
+Deploy limita cada ZIP y la suma comprimida de base mas componentes a 256 MiB;
+el presupuesto restante se aplica antes de leer o descargar el siguiente
+componente. Inventario y paths del output tienen caps independientes de 32 MiB,
+cobrados antes de insertar en memoria. Se permiten como maximo 256
+`source_components`, con mounts normalizados y validados en O(n log n). Core
+mantiene sus propios caps de 64 MiB para trabajo de inventario y paths
+materializados, ademas del cap fisico de 256 MiB y el payload de 1 GiB.
+
+La identidad raw del ZIP es telemetria de transporte, no la autoridad comun de
+source. Cada base y componente queda fijado por commit SHA-1 inmutable de 40
+caracteres y `snapshot_tree_sha256`; el catalogo scan proyecta el mismo valor
+como `source_tree_sha256`. `solguard-materialized-source-tree.v1` hashea paths,
+tipos, longitudes y contenido del arbol regular resultante. Dos mirrors pueden
+tener ZIPs raw diferentes, pero deben producir exactamente ese mismo tree hash.
+La cache incluye locator, mirrors, revision y tree identity; una entrada legacy
+o una coincidencia solo por project+commit no concede autoridad.
+
+Los ocho runners v1-v8, el runner scan-only y los dos runners de labs son los
+once callers HTTP y todos deben transmitir
+`solguard-source-authority-handoff.v1`. Core devuelve
+`solguard-source-authority-receipt.v1` y encadena receipts de integridad entre
+MAP, TRACE y FILTER. El preflight, el materializador usado por el runner y Core
+deben compartir este contrato; no se admite un camino legacy paralelo.
+
+La actualizacion de catalogos sigue la ceremonia
+`source-authority-seal.mjs create -> verify -> apply -> finalize`. `apply`
+actualiza de forma transaccional catalogos legacy y scan, ground truth,
+known-corpus exclusion y application receipt bajo lease exclusivo, journal,
+compare-and-swap, fsync y rollback recuperable. Una rotacion de un tree ya
+declarado necesita autorizacion versionada. Seal, application receipt y cada
+record del journal llevan firma Ed25519; receipt y journal comparten un UUID de
+transaccion nuevo, el hash del seal y el plan exacto, por lo que recovery
+rechaza una transaccion stale o replayed. El seal cierra `v1`-`v8` y el receipt
+liga el denominador completo de known corpus `v1`-`v8` mas `labs-90`.
+`finalize` usa la pareja Ed25519 fijada para revalidar el receipt persistido y
+sus derivados, y publica create-only un
+`solguard-source-authority-finalization.v1` firmado. Los consumers verifican
+marker, application receipt y hashes derivados con la trust root y key ID
+`solguard-phase1-20260717` fijados por el repositorio. De esos bytes exactos,
+finalize deriva tambien `solguard-release-catalog-manifest.v1`, ordenado v1-v8
+y ligado a la generacion del application receipt; los batch plans lo embeben y
+no dependen de hashes manuales. La ceremonia real continua
+pendiente hasta conservar los tres documentos firmados y completar esa
+revalidacion; los comandos PowerShell exactos estan en
+[Integridad de fuentes](../solguard-core/integridad-de-fuentes.md).
+
+Fuera de `apply` no existe un regenerador de catalogos autorizado.
+`materialize-scan-catalogs.mjs` admite solo `--check`; los aliases
+`benchmark:scan-catalogs` y `benchmark:scan-catalogs:check` son read-only y
+exigen paridad byte-exacta.
+
+Los consumers normales leen derivados exclusivamente dentro de
+`withSourceAuthorityRead`. El lease compartido del SO mantiene estable el root
+fisico y la generacion del application receipt; el callback recibe un capability
+opaco in-process que expira al salir. Los accessors solo aceptan paths exactos
+descritos por el receipt, usan handles acotados y verifican identidad, longitud,
+SHA-256 y JSON estricto antes de devolver datos. Al terminar, incluso ante una
+excepcion, se vuelven a comprobar lease, root y la misma finalizacion. Verificar
+y despues reabrir un pathname raw no conserva esta autoridad.
+
+La ejecucion supervisada usa un capability de proceso separado, corto, ligado a
+la generacion y a la ascendencia del runner. Su watchdog single-flight verifica
+periodicamente capability y lease. Ante perdida de lease/capability o sustitucion
+del root fisico, termina y drena el arbol entero mediante Job Object en Windows o
+process group en Unix; el cierre normal del lider tampoco deja descendientes.
+Solo `apply`/`finalize`, con purpose y lease explicitos, pueden observar el estado
+de ceremonia aun no finalizado.
+
+Un futuro commitment externo que cite un hash anterior del known corpus no se
+puede reescribir en sitio: debe publicarse una version nueva sin abrir la cohorte
+privada. Actualmente no existe un commitment real, por lo que esta es una regla
+de ceremonia y no el registro de una rotacion ya realizada.
+
 El replay usa los binarios comprometidos con `--no-prebuild`. El runner deriva
 cada comando del lock y pasa al child exactamente el entorno explicito del
 runbook; no hereda variables arbitrarias del proceso llamador. Antes de ejecutar
@@ -76,6 +159,112 @@ dos decisiones independientes:
 - `measurement_integrity`: evidencia completa, coherente, contabilizada y
   comparable;
 - `product_health`: politica estricta de salud y promocion del producto.
+
+`measurement_integrity` no tolera autoridad ausente, invalida o no
+verificable. En particular, `coverage_contract_missing`,
+`coverage_contract_invalid`, `coverage_contract_unverifiable` y un artefacto de
+cohorte demasiado grande para su verificador acotado bloquean el comando. Una
+deuda coherente y explicitamente ligada puede seguir siendo diagnostica, pero
+mantiene `product_health=failed` y nunca permite promocion.
+
+El gate recompone tambien las tres cohortes de candidatos: inventario canonico
+completo, subconjunto exacto realmente emitido a VALIDATE y resultados exactos
+de ese subconjunto. Las filas VALIDATE conservan el mismo cuerpo y solo estados
+de admision cerrados; cada corte canonico necesita una unica entrada
+`pre_validation_noise_gate` en `rejected_candidates.json`. Los runners cuentan
+`candidate_findings` desde canonical y el total/veredictos desde VALIDATE. Un
+ID reusado con otro cuerpo, un lead no validable admitido, un resultado desnudo
+o un corte sin ledger invalida la medicion.
+
+El gate no confia en contadores copiados. Recalcula desde las filas fisicas de
+VALIDATE `total`, `supported`, `refuted`, `inconclusive`,
+`supported_findings`, `review_queue`, `reviewable_leads` y `non_findings`;
+`supported_candidates` debe coincidir con los verdictos `supported`. Exige la
+misma verdad en `validation.summary`, en cada registro de protocolo y en los
+agregados de suite. `candidate_findings` se agrega por separado desde el
+inventario canonico fisico. Un contador secundario ausente o stale es un fallo
+de integridad de medicion, incluso si recall o el estado textual parecen sanos.
+
+Canonical, input VALIDATE, ledger de cortes y resultados VALIDATE se leen como
+autoridad fisica acotada. Cada path debe permanecer dentro del project root,
+sin symlink, junction/reparse point ni hardlink, y conservar la misma identidad
+de fichero y cadena de padres durante la lectura. Un escape, alias, sustitucion
+TOCTOU o artefacto de cohorte mayor de 100 MiB falla cerrado: estas cohortes no
+tienen un sidecar semantico que permita saltarse el join exacto.
+
+La recuperacion posterior a VALIDATE aplica el mismo contrato sobre artefactos
+frescos, confinados al root, link-free y fisicamente estables. Ademas exige que
+el SHA-256 de los bytes reales de `validation_candidates.json` sea exactamente
+`validation.metadata.source_hashes.candidates`; un timeout no concede permiso
+para fabricar o ampliar la cohorte.
+
+El inventario de detection coverage es exacto y ordenado:
+`MAP -> TRACE -> DISCOVER -> ECONOMIC -> VALUE -> INVARIANT -> VALIDATE -> FILTER`.
+MAP se verifica directamente desde `audit_map.json`; una proyeccion MAP dentro
+de DISCOVER o un receipt posterior solo puede servir como cross-check y nunca
+sustituye al artefacto autoritativo. Para MAP mayor de 100 MiB, el gate exige el
+sidecar ligado por bytes/SHA-256, pero recompone desde el primario sus ledgers,
+audit summary, graph edge health, economic flow runtime health, clausura e
+identidades antes de evaluar deuda. La igualdad con el sidecar es obligatoria:
+el sidecar nunca es autoridad semantica independiente.
+El mismo sidecar debe incluir
+`economic_route_graph_closure_manifest.v1`: el gate valida su digest
+content-addressed, cobertura, roots, clausura transitiva de fragments y
+contadores. La exactitud se calcula por cada conjunto de roots seleccionado;
+una region no seleccionada `over_approximation` no contamina un root exacto,
+pero una region MAY alcanzada nunca autoriza un claim exacto/MUST. Omision de
+cobertura y resolucion semantica se contabilizan por separado.
+
+TRACE debe sellar `trace.contract_manifest.v1` con un binding ordenado para
+cada target del batch. El gate rehashea cada `trace.v0.9`, compara su ledger y
+route receipt inline y recalcula deuda, roots y `manifest_digest`. Cuando la
+clausura factorada autoriza separar la linearizacion legacy, exige ademas que
+`trace.materialization_manifest.v1` sea el subset exacto de targets con
+diagnosticos, ligado a los mismos bytes. Un target ausente/extra/intercambiado,
+un digest stale o diagnosticos clasificados sin clausura completa, debt-free y
+con roots bloquean `product_health`. Tanto `exact` como `over_approximation`
+pueden acreditar esa cobertura MAY; el gate conserva la segunda etiqueta y no
+la usa para probar exactitud, MUST o ausencia.
+
+El inventario TRACE usa la whitelist
+`trace_v0_9_typed_evidence_paths_v1`. En particular, cada
+`evidence_items[*]` debe contener un unico `trace-evidence-v1-<sha256>` que el
+gate recompone con `trace.evidence_item.v1` desde target, rango y payload
+exactos. Cambiar target/detail/kind/source/file/line/range o re-sellar un ID
+arbitrario bloquea `product_health` tanto en primarios pequenos como grandes.
+
+ECONOMIC solo queda completo si ambos `economic_collection_coverage.v1` son
+aritmeticamente coherentes y el ledger sintetizado preserva cada budget exacto
+del modelo. Para primarios por encima de 100 MiB, el gate verifica el sidecar del
+productor, su SHA-256 streaming, recompone la proyeccion semantica desde el
+primario y exige igualdad exacta; no trata el tamano como fallo ni acepta un
+resumen sin autoridad. VALUE e INVARIANT siguen la misma regla con sus summaries,
+estados de materializacion/proof y stage coverage.
+
+DISCOVER publica siempre `discover_coverage_contract.v1`, no solo cuando el
+modelo es grande. El gate liga `protocol_model.json` por bytes y SHA-256,
+recomputa su enum `coverage_reasons` desde los ledgers y contadores y exige
+coincidencia exacta con el primario cuando este cabe bajo el limite. Por encima
+de 100 MiB recompone la proyeccion desde el primario y exige que el contrato
+hash-bound la reproduzca sin elevar el parse cap. Un contrato
+ausente, cobertura upstream `unknown`, deuda, una etapa semantica no exacta o
+aritmetica incoherente bloquean `product_health`.
+
+INVARIANT puede llegar a VALIDATE/FILTER mediante
+`invariant.bounded_runtime.v1`, pero el gate exige el source
+`invariant.v0.8` byte-exacto, la seleccion de objetos completos y su coverage
+ledger. La omision valida solo puede quedar inconclusa. Core, VALIDATE, FILTER y
+el gate realizan comprobaciones fail-closed independientes; que una capa haya
+aceptado un artefacto no exime a la siguiente de revalidarlo.
+
+La lectura inline de Core cambia a proyeccion a partir de 96 MiB; el gate de
+Deploy conserva 100 MiB como limite inline. Los sidecars estan limitados a 100
+MiB y la clausura MAP a 64 MiB. En ambos lados del limite, el mismo parser
+rechaza UTF-8 invalido, claves duplicadas, JSON truncado o con datos posteriores.
+El primario completo se rehashea por streaming desde un descriptor acotado y se
+comprueban identidad fisica, root, symlinks/reparse points, hard links y cambios
+antes/despues. Esta defensa evita aceptar un artefacto sustituido durante la
+lectura; no convierte la ejecucion host en una frontera blind aislada.
 
 Una medicion coherente puede firmarse con `product_health=failed`, pero el mismo
 recibo fija `product_release_eligible=false`. `finalize` y `verify` releen los
@@ -189,6 +378,12 @@ comparacion.
 
 Los runners productivos no se duplican:
 
+`labs-v1` no forma parte de este replay canonico: sus 8 labs legacy solo admiten
+`regression` o `targeted`, nunca release/measurement, y no pueden satisfacer el
+denominador ni el receipt de los 90 labs. La unica superficie canonica de 90
+labs es `labs-v2`; release y measurement exigen el conjunto completo y rechazan
+`--protocol`. Ambas colecciones siguen siendo regresion conocida.
+
 - `full-run.sh --flow legacy --tier measurement` mediante
   `v1-v8-measurement` para v1-v8;
 - `labs-v2/run.sh --tier measurement` mediante `labs-measurement`, siempre en
@@ -198,6 +393,93 @@ El mismo gate calcula `product_health` con la politica estricta. No se usa
 `v1-v8-release` para medir una herramienta que puede estar degradada: ese
 comando conserva su papel de promocion y seguiria devolviendo non-zero si la
 salud falla, que fue precisamente la conflacion observada en el root anterior.
+
+Antes de reservar otro replay completo se usa una barrera de canarios dirigida,
+sin ground truth como input del producto. `--require-product-health` solo es
+valido con `--tier targeted` y exige el mismo contrato operacional que el
+release sin convertir el canario en un release. Ninguna invocacion agrupa los
+ocho targets: cada canario se ejecuta como un comando independiente y usa un
+root nuevo, ausente y exclusivo. Asi cada comando conserva una ventana inferior
+a una hora y un fallo no consume ni contamina la evidencia de otro selector.
+Con `--require-product-health`, `full-run.sh` exige que `--projects-root` este
+fisicamente ausente antes de cualquier write y rechaza directorios, ficheros,
+symlinks —tambien rotos— y junctions/reparse points existentes. El runner crea
+el root de forma exclusiva; un intento fallido se conserva y nunca se reutiliza.
+La matriz exacta es la siguiente. Su ejecucion empieza solo despues de finalizar la autoridad
+de source, regenerar sus contratos derivados y completar prebuild/preflight:
+
+El canario Vyper v8 no confia en el tag mutable `v0.3.7`: el catalogo fija el
+objeto Git afectado `6020b8bbf66b062d299d87bc7e4eddc4c9d1c157` y la URL de
+snapshot incorpora ese SHA-1 completo. Asi una mutacion o redireccion del tag
+no puede cambiar silenciosamente el corpus sellado.
+
+```text
+v1:Compound-Finance -> <root-compound-nuevo>
+v1:Monad            -> <root-monad-nuevo>
+v2:Size             -> <root-size-nuevo>
+v2:LoopFi           -> <root-loopfi-nuevo>
+v4:Morpheus         -> <root-morpheus-v4-nuevo>
+v5:Timeswap         -> <root-timeswap-nuevo>
+v6:Morpheus         -> <root-morpheus-v6-nuevo>
+v8:Vyper            -> <root-vyper-nuevo>
+```
+
+Se hace un unico prebuild canonico antes de la matriz. No se vuelve a ejecutar
+prebuild entre canarios: cada fila reutiliza exactamente esos binarios con
+`--no-prebuild`, repite `--snapshot-preflight` y recibe un root fisicamente
+ausente. Cada fila se lanza por separado desde `solguard-deploy` con esta
+plantilla; no se convierte la tabla en un unico loop o comando de larga duracion:
+
+```powershell
+$env:OLLAMA_MODEL = 'qwen2.5-coder:7b'
+$env:SOLGUARD_MODEL_MANIFEST = 'D:\models\manifests\registry.ollama.ai\library\qwen2.5-coder\7b'
+```
+
+```bash
+./scripts/benchmarks/full-run.sh \
+  --tier targeted \
+  --target "<selector-unico>" \
+  --require-product-health \
+  --snapshot-preflight \
+  --no-prebuild \
+  --projects-root "<root-nuevo-y-exclusivo>"
+```
+
+Cada canario debe terminar con estado limpio, `filter_results.json` presente y
+product health aprobado; un error, deuda de cobertura, fallback o artefacto
+contractual invalido impide preparar el root v1-v8. Los roots fallidos no se
+reciclan. Los ocho outputs se cierran offline con
+`benchmark:canary-acceptance`. Este exige el manifest exacto
+`solguard-canary-acceptance-input.v1`, roots fisicamente distintos y no
+anidados, y crea un snapshot CAS privado por root mediante copia streaming. El
+inventario sella dev/ino, mtime/ctime, directorios y SHA-256 de source,
+knowledge y tool outputs; rechaza links, hardlinks, escapes, JSON con claves
+duplicadas, swaps de directorio, cambios TOCTOU, threshold o selector drift.
+Sobre esos bytes recompone `buildPreReleaseCheck` con
+`enforceProductHealth=true` y vuelve a evaluar los bugs conocidos con catalogo,
+GT y matcher actuales. Cada bug scoreable debe tener un match exact/equivalente
+supported y el candidato debe acabar en FILTER `pass`, directamente o por un
+representante dedupe pass explicitamente ligado. Los ocho roots deben compartir
+los mismos bytes de repos, binarios, runtime, modelo y manifest fisico. La
+provenance Git tambien se conserva, pero un commit sin cambio de contenido no
+rompe la identidad material. El JSON
+`solguard-canary-acceptance.v1` se publica de forma atomica y create-only con
+descriptores fisicos, SHA-256 y mappings finding-candidate-FILTER por selector.
+Es local, no esta
+firmado y solo habilita preparar otro root ausente para el replay completo
+v1-v8; declara `release_eligible=false`, `generalization_evidence=false` y
+`blind_detection_evidence=false`.
+
+Esta seccion define una condicion de aceptacion, no registra su cumplimiento.
+Hasta conservar los outputs y el informe product-health de cada canario, su
+estado es no verificado y no autoriza preparar ni anunciar el replay completo.
+
+Monad v1 queda fijado al snapshot compuesto completo
+`code-423n4/2025-09-monad@bcc1592fcf38f47a417190b1ea159934926f1f12`, que
+incluye el alcance Rust BFT y C++ execution del concurso. El snapshot anterior
+del componente C++ aislado no representa el alcance auditable completo. Esta
+correccion de corpus evita una evaluacion incompleta; no es una regla de
+deteccion ni evidencia de mejora.
 
 Se ejecutan secuencialmente sobre un root ausente o vacio mediante el subcomando
 `current-pipeline.mjs run`. Cada invocacion `run` exige tanto

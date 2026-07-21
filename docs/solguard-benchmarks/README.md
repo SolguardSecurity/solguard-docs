@@ -47,6 +47,62 @@ SolGuard, por ejemplo:
 
 ## Estado de la frontera de evaluacion E0+M1
 
+### Autoridad de source previa a cualquier replay
+
+Los catalogos productivos y scan comparten commits Git inmutables y un tree
+hash semantico. El ZIP raw conserva su propio hash/bytes de transporte; mirrors
+raw distintos solo son equivalentes si materializan exactamente el mismo
+`solguard-materialized-source-tree.v1`. Los ocho runners v1-v8, scan-only y los
+dos runners de labs transmiten esa autoridad por el mismo handoff HTTP y
+verifican el receipt fisico de Core.
+
+La aplicacion del seal actualiza catalogos, ground truth, known-corpus exclusion
+y application receipt en una transaccion crash-safe. Seal, receipt y journal
+hash-chained estan firmados con Ed25519 y ligados a un UUID de transaccion
+anti-replay. El seal cierra `v1`-`v8`; el receipt anade `labs-90` al denominador
+known-corpus. `finalize` requiere la pareja de claves fijada, revalida lo
+persistido y publica create-only un
+`solguard-source-authority-finalization.v1` firmado. Los readers exigen marker,
+application receipt y hashes derivados bajo la trust root Ed25519 fijada por el
+repositorio. La finalizacion deriva asimismo
+`solguard-release-catalog-manifest.v1` de los bytes exactos de los ocho
+catalogos descritos por el receipt y lo liga a esa generacion. Hasta conservar
+`create/verify/apply/finalize`, el marker y su
+commitment derivado verificado, la ceremonia real se considera pendiente; la
+verificacion final de lifecycle tampoco se declara cerrada solo con tests
+parciales. Los aliases de materializacion de scan catalog son read-only
+`--check`; el unico writer es `apply`. Vease el runbook exacto en
+[Integridad de fuentes](../solguard-core/integridad-de-fuentes.md).
+
+Los consumers normales no hacen `verify` y luego reabren paths raw.
+`withSourceAuthorityRead` mantiene un lease compartido del SO, fija el root
+fisico y la generacion finalizada, y concede al callback un capability opaco que
+expira al terminar. Sus accessors solo leen paths exactos descritos por el
+application receipt mediante handles acotados y verifican identidad, bytes,
+longitud, SHA-256 y JSON estricto. Al salir se revalidan lease, root y generacion.
+Los comandos hijos usan otro capability de proceso, corto y ligado al runner;
+un watchdog single-flight termina y drena todo el Job Object de Windows o
+process group de Unix si el lease, el capability o el root se vuelven inestables.
+
+### Superficies de labs y aceptacion previa al replay
+
+`labs-v1` conserva los 8 labs legacy solo para regresion completa o diagnostico
+`targeted`: rechaza release y measurement y no satisface el receipt de 90 labs.
+`labs-v2` es la unica superficie canonica de 90 labs; sus tiers `release` y
+`measurement` exigen el denominador completo y rechazan seleccion por protocolo.
+Ambos corpus son regresion conocida, nunca evidencia blind o de generalizacion.
+
+`solguard-pre-release-check.v3` separa `measurement_integrity` de
+`product_health`. Una medicion coherente puede conservar salud fallida, pero
+queda firmada con `product_release_eligible=false`; release exige salud estricta.
+Los canarios dirigidos exactos son `v1:Compound-Finance`, `v1:Monad`, `v2:Size`,
+`v2:LoopFi`, `v4:Morpheus`, `v5:Timeswap`, `v6:Morpheus` y `v8:Vyper`, cada uno
+en un root nuevo. Su barrera offline solo puede autorizar preparar otro root
+v1-v8 despues de estados limpios, `filter_results.json` y product health
+aprobado. Esta documentacion no registra esos canarios como ejecutados o
+aceptados; incluso su exito no probaria release, deteccion blind ni
+generalizacion.
+
 ### Tercera ola E0: scan-only diagnostico disponible
 
 `solguard-deploy` ya contiene una cadena contractual separada para construir una
@@ -65,14 +121,17 @@ futura evaluacion pre-oracle:
 Cada suite v1-v8 tiene un `protocols-scan.json` oracle-free bajo
 `solguard-scan-catalog.v1`: v1 contiene 24 targets y v2-v8 contienen 20 cada
 una. Cada target contiene unicamente
-`project`, `commit`, `source_locator` y `source_mirrors`; nombres, categorias,
+`project`, `commit`, `source_locator`, `source_mirrors` y
+`source_tree_sha256`; nombres, categorias,
 aliases y cualquier narrativa libre quedan fuera del contrato. La suite debe
 coincidir con la solicitada, las URLs se limitan a archives de
 `codeload.github.com` sin credenciales/query/fragment y su ref final debe
 coincidir con `commit`. El modo check exige los
 bytes generados exactos ademas de paridad project+commit con el catalogo legacy.
-Los refs `main`/`master` no fijan contenido: antes del scan los bytes descargados
-deben quedar ligados por el `source_sha256` obligatorio del scan contract.
+El commit y todos los componentes usan un SHA-1 Git inmutable de 40 caracteres;
+`main`, `master`, tags y refs abreviados no son identidades admisibles. El scan
+contract liga ademas el ZIP raw mediante `source_sha256`, pero la autoridad
+comun entre mirrors es `source_tree_sha256`.
 
 Los cuatro payloads tienen JSON Schemas Draft 2020-12 cerrados bajo
 `solguard-deploy/schemas/`. Los documentos usan JSON canonico, SHA-256 y solo
@@ -97,13 +156,27 @@ afirmacion del proveedor. Ninguno significa aislamiento verificado ni confianza
 de release.
 
 Existe ademas `solguard-scan-execution-contract.v2`. Su fingerprint scan-only
-cierra exactamente 14 componentes: su constructor, runner, launcher, catalogo
-materializado, modulo de catalogo, product-priority, scan-contract,
-scan-boundary y seis schemas. Ground truth, evaluator, matcher, splits y
+cierra exactamente 26 componentes: su constructor, runner, launcher, helper CLI
+productivo, runner de procesos y lock de autoridad de source, catalogo
+materializado, modulo de catalogo, compositor de snapshots, contrato de rutas
+portables, autoridad de cohortes, handoff, reader y finalizacion de autoridad de
+source, trust root y clave publica fijadas, parser JSON estricto,
+product-priority, scan-contract, scan-boundary y seis schemas.
+Ground truth, evaluator, matcher, splits y
 adjudications no forman parte de esa huella y sus nombres/rutas se rechazan. El
 contrato embebe tambien `solguard-toolchain-fingerprint.v2`: el worker rehashea
-los 14 componentes y recomputa los 13 repositorios antes y despues. Detectar
+los 26 componentes y recomputa los 13 repositorios antes y despues. Detectar
 drift no demuestra aislamiento de capacidades.
+
+El `solguard-benchmark-execution-contract.v1` legacy conserva capacidad de
+oracle y solo sirve como regresion conocida, pero su frontera de resume
+fingerprinta exactamente 33 componentes. Incluye los descriptores de
+corpus/runtime y todos los modulos locales alcanzables estaticamente desde los
+runners v1-v8: prioridad, snapshot/preflight, cohortes, rutas portables,
+seleccion, frontera/catalogo/contrato scan, handoff y la cadena completa de
+autoridad de source. Un test recompone el grafo de imports relativos y rechaza
+cualquier dependencia alcanzable ausente; la libreria dinamica del evaluador se
+incluye expresamente.
 
 El ranking productivo vive ahora en el modulo independiente
 `benchmarks/product-priority.mjs`. No importa el matcher ni el evaluador y
@@ -117,8 +190,9 @@ por allowlist positiva cualquier nombre que no sea una variable de aplicacion
 `SOLGUARD_*` libre de oracle; esto incluye controles no enumerados como
 `LD_AUDIT`. Limita argumentos y entrypoint, recoge
 solo artefactos declarados y rechaza traversal/symlinks. Cada target exige
-`source_sha256`; scanner, toolchain, product-priority, configuracion y todos los
-sources se suministran como `inputPaths` exactos y se rehashean antes y despues
+`source_bytes`, `source_sha256` y `source_tree_sha256`; scanner, toolchain,
+product-priority, configuracion y todos los sources se suministran como
+`inputPaths` exactos y se rehashean antes y despues
 de ejecutar. Esos checkpoints no demuestran todavia que el child consumiera las
 rutas declaradas ni impiden swap-and-restore durante la ejecucion. El receipt
 registra separacion de proceso y cierre observado del
@@ -127,21 +201,32 @@ mantiene `oracle_capability_separated=false`. Un proceso hijo en el mismo host n
 prueba aislamiento de filesystem, red, database o capacidades.
 
 `protocols-scan.mjs` implementa el runner scan-only comun y `scan-suite.mjs` su
-launcher por suite. El launcher materializa cada source y fija
-`source_sha256`, crea un backend y una base nuevos por target, y mantiene
+launcher por suite. El launcher materializa cada source y fija `source_bytes`,
+`source_sha256` y `source_tree_sha256`, crea un backend y una base nuevos por target, y mantiene
 separados el arbol sellable de outputs y el runtime mutable de logs y bases. El
 reporte conserva en el denominador targets completados, parciales y fallidos;
 tambien escribe ranking productivo y manifest completo de outputs.
 
 Antes de ejecutar, `scan-release-batch.mjs` prepara exactamente v1-v8 y escribe
 `solguard-scan-batch-plan.v1`, que fija hash documental, hash de bytes y tamano
-de cada catalogo. Solo despues del cierre correcto de todas las suites crea
+de cada catalogo mediante el manifest completo derivado de la autoridad
+finalizada. El plan embebe el manifest y la generacion del application receipt:
+no existe un root ni una tabla de hashes mantenidos manualmente, y un bundle
+historico se valida contra su propio manifest, no contra una autoridad activa
+posterior. Solo despues del cierre correcto de todas las suites crea
 `solguard-scan-batch-barrier.v1`; la barrera exige los artefactos de cada target
 y los agregados de suite. `solguard-scan-chain-bundle.v1` contiene el plan y la
 barrera completos. Un proceso scanner fallido, receipt no completado, target
 ausente o artefacto obligatorio vacio impide crear ambos. Un target terminal
 `failed` con sus artefactos completos permanece sellado en el denominador. Es
 un bundle crudo, diagnostico y no firmado: no contiene ni abre ground truth.
+
+Decision de compatibilidad del 2026-07-20: la forma v1 pre-authority fue un
+borrador diagnostico sin tag, artefacto firmado/aceptado ni bundle elegible;
+acceptance-r1 no la produjo. Se rechaza fail-closed y sin migracion. La forma
+ligada a autoridad es el primer v1 soportado. Despues de su primer seal aceptado,
+un cambio breaking exige bump coordinado de plan, barrier y bundle; descubrir un
+consumidor o artefacto aceptado del borrador invalida esta excepcion.
 
 Cuando se suministra una cadena al evaluator, su preflight verifica primero las
 cuatro firmas DSSE y todos los enlaces contract/receipt/attestation/evaluation.
@@ -218,7 +303,7 @@ diagnosticar el orden product-derived, pero es solo una metrica de desarrollo:
 no demuestra Recall@K ciego, generalizacion ni calidad de release.
 
 En el flow legacy y tier `release`, `full-run.sh` ejecuta obligatoriamente
-`solguard-pre-release-check.v2` despues de cerrar las suites y escribir el
+`solguard-pre-release-check.v3` despues de cerrar las suites y escribir el
 summary agregado. El release no usa `--soft-fail`: un error bloqueante impide
 declarar exito. `--soft-fail` solo sirve para informes diagnosticos manuales.
 

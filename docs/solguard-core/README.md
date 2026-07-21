@@ -26,6 +26,20 @@ cliente / solguard-deploy
 La dependencia es unidireccional: backend depende de core. Core no importa
 controllers, rutas ni DTO HTTP del backend.
 
+## Autoridad de source
+
+Un analisis de ZIP no confia solo en la URL o en el hash de transporte. Deploy
+entrega `solguard-source-authority-handoff.v1` con bytes/SHA-256 raw y el digest
+`solguard-materialized-source-tree.v1`; Core verifica ambos sobre el ZIP y el
+arbol fisico realmente publicados. Un lease OS exclusivo protege el proyecto
+desde antes del reset/extraccion hasta que Backend termina de serializar la
+respuesta. MAP, TRACE y FILTER rehashean el arbol antes y despues, conservan
+receipts encadenados y ligan el artefacto exacto de cada fase.
+
+El contrato, incluidos mirrors, nombres reservados de Windows y ceremonia de
+catalogos, se documenta en
+[Integridad de fuentes y cadena MAP -> TRACE -> FILTER](./integridad-de-fuentes.md).
+
 ## Pipeline preservado
 
 El orden contractual de `pipeline.v0.10` no cambia con la migracion:
@@ -67,7 +81,7 @@ Despues de crear candidatos canonicos, core puede ejecutar VALUE de nuevo como
 `query_only`, estan limitadas a 128 y parten de evidencia independiente
 MAP/TRACE. Con `economic_flow_identity.v2`, una request puede dirigirse a una
 ruta content-addressed única compartida por MAP y TRACE aunque el path no esté
-en el top-50 base. VALUE busca esa identidad antes del ranking; core exige ID,
+en el frontier rankeado base. VALUE busca esa identidad antes del ranking; core exige ID,
 digest, superficies, secuencia y refs exactos antes de añadir el path a la vista
 efectiva. Solo una respuesta `solguard-value-proof-responses.v1` completa,
 `map_trace_reverified`, sin autocorroboracion, con binding exacto y proof
@@ -105,12 +119,13 @@ define cuatro payloads versionados:
 V1-v8 tambien tienen ahora catalogos oracle-free `protocols-scan.json` bajo
 `solguard-scan-catalog.v1`: 24 targets en v1 y 20 en cada suite v2-v8. El
 generador/check mantiene paridad exacta de project+commit y bytes materializados
-exactos. Cada target contiene solo project, commit y locators/mirrors limitados
-a `codeload.github.com`; elimina nombres, categorias, aliases y texto libre, y
+exactos. Cada target contiene solo project, commit, locators/mirrors limitados
+a `codeload.github.com` y `source_tree_sha256`; elimina nombres, categorias, aliases y texto libre, y
 liga su suite a la solicitada y cada locator ref a `commit`. Un ref legacy
-`main`/`master` solo se convierte en
-input fijo cuando el scan contract compromete los bytes descargados mediante el
-`source_sha256` obligatorio. El runner scan-only comun consume esta proyeccion.
+`main`/`master`, un tag o un SHA abreviado no es admisible: base y componentes
+usan objetos Git inmutables de 40 caracteres. El scan contract liga tambien los
+bytes raw mediante `source_sha256`, pero la identidad comun entre mirrors es el
+tree hash. El runner scan-only comun consume esta proyeccion.
 
 Cada payload tiene un JSON Schema Draft 2020-12 cerrado. El modulo contractual
 usa JSON canonico y SHA-256, y solo acepta envelopes DSSE Ed25519. La
@@ -139,27 +154,47 @@ evaluator. Mantiene el wire contract `solguard-product-priority-ranking.v2` y su
 semantica actual: separar el codigo no equivale a certificar el momento ni las
 capacidades con las que se ejecuto.
 
-`solguard-scan-execution-contract.v2` cierra exactamente 14 componentes: su
-constructor, runner, launcher, catalogo materializado, modulo de catalogo,
-product-priority, scan-contract, scan-boundary y seis schemas. El constructor
+`solguard-scan-execution-contract.v2` cierra exactamente 26 componentes: su
+constructor, runner, launcher, helper CLI productivo, runner de procesos y lock
+de autoridad de source, catalogo materializado, modulo de catalogo, compositor
+de snapshots, contrato de rutas portables, autoridad de cohortes, handoff,
+reader y finalizacion de autoridad de source, trust root y clave publica
+fijadas, parser JSON estricto, product-priority, scan-contract, scan-boundary y
+seis schemas. El constructor
 rechaza ground truth, matcher, evaluator, splits y adjudications. El contrato
 embebe el estado completo `solguard-toolchain-fingerprint.v2`; el worker
 rehashea los componentes y recomputa los 13 repositorios antes y despues. Esto
 detecta drift, no aislamiento de capacidades.
 
+El execution contract legacy de v1-v8 sigue siendo evidencia de regresion
+conocida, no blind, pero cierra exactamente 33 componentes para resume:
+descriptores de corpus/runtime y todos los modulos locales alcanzables por
+imports estaticos desde cada runner. El test de cierre vuelve a calcular ese
+grafo y falla ante una dependencia omitida; la libreria dinamica del evaluador
+permanece declarada de forma explicita.
+
 `protocols-scan.mjs` es el runner scan-only comun y `scan-suite.mjs` su launcher
-por suite. Cada source se materializa y liga por `source_sha256`; cada target
+por suite. Cada source se materializa y liga por `source_sha256` y por el tree
+hash canonico; cada target
 recibe backend y base nuevos. Los outputs sellables y el runtime mutable de
 logs/bases viven en raices frescas y fisicamente disjuntas. Targets completados, parciales y
 fallidos permanecen en el denominador declarado.
 
 El orquestador predeclara exactamente v1-v8 en
 `solguard-scan-batch-plan.v1`, fijando hash documental, hash de bytes y tamano
-de cada catalogo antes de iniciar scans. Solo crea
+de cada catalogo mediante el `solguard-release-catalog-manifest.v1` completo,
+derivado de la finalizacion firmada y ligado a la misma generacion del
+application receipt. El plan lo embebe para que su validacion historica no
+dependa de una autoridad activa posterior ni de hashes manuales. Solo crea
 `solguard-scan-batch-barrier.v1` y `solguard-scan-chain-bundle.v1` despues del
 cierre correcto de todas las suites y de validar todos los artefactos por target
 y suite. El bundle contiene plan y barrier completos, pero es crudo, no firmado
 y diagnostico: no abre ni incorpora el oracle.
+
+La forma v1 pre-authority nunca tuvo tag, seal/receipt aceptado ni bundle
+elegible y acceptance-r1 no la produjo; se rechaza sin migracion. La forma
+authority-bound es el primer v1 soportado. Tras su primer seal aceptado, todo
+cambio breaking debe versionar coordinadamente plan, barrier y bundle.
 
 ## Estructura principal
 
@@ -195,6 +230,7 @@ Documentacion detallada:
 
 - [Servicios y responsabilidades](./servicios-y-responsabilidades.md)
 - [Pipeline, fases y artefactos](./pipeline-y-fases.md)
+- [Integridad de fuentes y cadena MAP -> TRACE -> FILTER](./integridad-de-fuentes.md)
 - [DISCOVER v2 y cierre candidate-directed VALUE](./discovery-v2-y-candidate-value.md)
 - [Identidad económica de flujo v2](./economic-flow-identity-v2.md)
 

@@ -17,18 +17,18 @@ Respuesta:
 
 ```json
 {
-  "status": "ok",
-  "service": "solguard-backend",
-  "version": "...",
-  "execution_contract_sha256": "...",
-  "execution_runtime": {
-    "projects_dir": "...",
-    "database_path": "...",
-    "database_connector_dir": "...",
-    "map_dir": "...",
-    "filter_dir": "...",
-    "exploit_dir": "..."
-  }
+    "status": "ok",
+    "service": "solguard-backend",
+    "version": "...",
+    "execution_contract_sha256": "...",
+    "execution_runtime": {
+        "projects_dir": "...",
+        "database_path": "...",
+        "database_connector_dir": "...",
+        "map_dir": "...",
+        "filter_dir": "...",
+        "exploit_dir": "..."
+    }
 }
 ```
 
@@ -67,7 +67,7 @@ Respuesta:
 
 ```json
 {
-  "projects_dir": "..."
+    "projects_dir": "..."
 }
 ```
 
@@ -79,14 +79,14 @@ Respuesta:
 
 ```json
 {
-  "projects_dir": "...",
-  "projects": [
-    {
-      "name": "Proyecto",
-      "description": "...",
-      "path": "..."
-    }
-  ]
+    "projects_dir": "...",
+    "projects": [
+        {
+            "name": "Proyecto",
+            "description": "...",
+            "path": "..."
+        }
+    ]
 }
 ```
 
@@ -98,8 +98,8 @@ Body:
 
 ```json
 {
-  "name": "Proyecto",
-  "description": "opcional"
+    "name": "Proyecto",
+    "description": "opcional"
 }
 ```
 
@@ -112,9 +112,9 @@ Lee el contrato autoritativo de validacion del proyecto.
 
 Filtros opcionales:
 
-| Query | Valores validos |
-| --- | --- |
-| `result` | `supported`, `refuted`, `inconclusive` |
+| Query           | Valores validos                                                       |
+| --------------- | --------------------------------------------------------------------- |
+| `result`        | `supported`, `refuted`, `inconclusive`                                |
 | `finding_class` | `supported_finding`, `review_queue`, `reviewable_lead`, `non_finding` |
 
 Ejemplo:
@@ -131,8 +131,8 @@ Body:
 
 ```json
 {
-  "query": "patrones parecidos a share inflation",
-  "mode": "hybrid"
+    "query": "patrones parecidos a share inflation",
+    "mode": "hybrid"
 }
 ```
 
@@ -148,11 +148,11 @@ Respuesta:
 
 ```json
 {
-  "mode": "hybrid",
-  "answer": "...",
-  "model": "...",
-  "used_context": true,
-  "retrieval": {}
+    "mode": "hybrid",
+    "answer": "...",
+    "model": "...",
+    "used_context": true,
+    "retrieval": {}
 }
 ```
 
@@ -164,7 +164,7 @@ Body:
 
 ```json
 {
-  "path": "C:\\ruta\\a\\informes"
+    "path": "C:\\ruta\\a\\informes"
 }
 ```
 
@@ -172,18 +172,18 @@ Respuesta:
 
 ```json
 {
-  "processed": 1,
-  "inserted": [
-    {
-      "source_sha256": "...",
-      "report_title": "...",
-      "finding_count": 3,
-      "payload_path": "..."
-    }
-  ],
-  "skipped": [],
-  "failures": [],
-  "database_path": "..."
+    "processed": 1,
+    "inserted": [
+        {
+            "source_sha256": "...",
+            "report_title": "...",
+            "finding_count": 3,
+            "payload_path": "..."
+        }
+    ],
+    "skipped": [],
+    "failures": [],
+    "database_path": "..."
 }
 ```
 
@@ -195,10 +195,10 @@ Body:
 
 ```json
 {
-  "project": "Proyecto",
-  "target": "https://github.com/org/repo",
-  "mode": "full",
-  "run_exploit": false
+    "project": "Proyecto",
+    "target": "https://github.com/org/repo",
+    "mode": "full",
+    "run_exploit": false
 }
 ```
 
@@ -213,9 +213,35 @@ contradecir la politica del modo. La respuesta incluye:
 - `findings_path`: ruta a `findings.md`.
 - `outputs`: mapa de rutas a artefactos.
 
+Cuando `target` es un ZIP, el request debe anadir el objeto cerrado calculado
+por el materializador de Deploy:
+
+```json
+{
+    "project": "Proyecto",
+    "target": "D:\\snapshots\\protocolo.zip",
+    "mode": "audit_only",
+    "run_exploit": false,
+    "source_authority": {
+        "schema_version": "solguard-source-authority-handoff.v1",
+        "transport_bytes": 123,
+        "transport_sha256": "<64-hex-minuscula>",
+        "materialized_tree_sha256": "<64-hex-minuscula>"
+    }
+}
+```
+
+El objeto es obligatorio para ZIPs y no se admite con una carpeta local o un
+target Git. La respuesta refleja `source_authority` como
+`solguard-source-authority-receipt.v1` y
+`outputs.source_authority_json` apunta al artefacto fisico create-only. El
+backend conserva internamente el lease OS de Core hasta terminar de serializar
+esta respuesta; ese lease no aparece en JSON.
+
 Artefactos destacados en `outputs`:
 
 - `pipeline_json`
+- `source_authority_json` para una fuente ZIP autoritativa
 - `analysis_funnel_json`
 - `canonical_candidates_json`
 - `raw_candidates_json`

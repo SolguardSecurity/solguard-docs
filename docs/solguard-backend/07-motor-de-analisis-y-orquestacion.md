@@ -57,7 +57,9 @@ las reglas de admision e aislamiento ya existentes.
 
 Recorre MAP hasta FILTER. Las cinco fases posteriores quedan en el journal con
 estado `skipped`, duracion cero y razon `skipped_by_audit_only_mode`; no se
-materializan sus artefactos. Este comportamiento es necesario para labs ciegos.
+materializan sus artefactos. Este comportamiento permite ejecutar el producto
+sin ground truth como input y abrir despues la evaluacion post-hoc de regresion
+conocida; no certifica por si mismo una frontera blind o pre-oracle.
 
 ## Estados
 

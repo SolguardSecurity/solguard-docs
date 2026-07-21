@@ -25,18 +25,19 @@ cargo run -- <input> --out solguard-output
 
 Opciones principales:
 
-| Opcion                                         | Funcion                                           |
-| ---------------------------------------------- | ------------------------------------------------- |
-| `--out <dir>`                                  | Directorio de salida. Default: `solguard-output`. |
-| `--branch <name>`                              | Rama remota al clonar una URL Git.                |
-| `--langs solidity,vyper,rust,go,node,c,config` | Filtra lenguajes.                                 |
-| `--exclude a,b,c`                              | Excluye fragmentos de ruta adicionales.           |
-| `--fast`                                       | Modo heuristico rapido.                           |
-| `--deep`                                       | Anade enlaces aproximados sobre el modo base.     |
-| `--graph`                                      | Exporta Graphviz.                                 |
-| `--build-probe`                                | Ejecuta probes de build/toolchain best-effort.    |
-| `--build-probe-timeout-ms <ms>`                | Timeout por probe. Default: `2500`.               |
-| `--no-color`                                   | Desactiva colores ANSI.                           |
+| Opcion                                                | Funcion                                           |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| `--out <dir>`                                         | Directorio de salida. Default: `solguard-output`. |
+| `--branch <name>`                                     | Rama remota al clonar una URL Git.                |
+| `--langs solidity,vyper,python,rust,go,node,c,config` | Filtra lenguajes; `py` es alias de `python`.      |
+| `--exclude a,b,c`                                     | Excluye fragmentos de ruta adicionales.           |
+| `--fast`                                              | Modo heuristico rapido.                           |
+| `--deep`                                              | Anade enlaces aproximados sobre el modo base.     |
+| `--graph`                                             | Exporta Graphviz.                                 |
+| `--build-probe`                                       | Ejecuta probes de build/toolchain best-effort.    |
+| `--build-probe-timeout-ms <ms>`                       | Timeout por probe. Default: `2500`.               |
+| `--source-integrity <json>`                           | Contrato orquestado del arbol fisico autorizado.  |
+| `--no-color`                                          | Desactiva colores ANSI.                           |
 
 ## Contrato de salida
 
@@ -49,6 +50,8 @@ audit_map.v0.10
 Archivos base:
 
 - `audit_map.json`
+- `audit_map.coverage.json`
+- `source_integrity.json` cuando Core entrega `--source-integrity`
 - `audit_map.md`
 - `summary.txt`
 - `flows.md`
@@ -132,7 +135,8 @@ Los niveles `S`, `A`, `B`, `C`, `D` son prioridad de revision, no severidad:
 
 `audit_map.v0.10` incluye mejoras sobre versiones antiguas:
 
-- Tree-sitter para Solidity/C/C++ y parsers mas estructurados para Go y TS.
+- Tree-sitter para Solidity, Python, C y C++; los demas adaptadores declaran de
+  forma explicita si usaron AST o fallback.
 - Grafo con `graph_symbols` y `graph_edges`.
 - Resolucion de imports, aliases, tipos y storage layout.
 - Build context con profiles, compile units y probes opcionales.
@@ -141,6 +145,30 @@ Los niveles `S`, `A`, `B`, `C`, `D` son prioridad de revision, no severidad:
 - External dependency contracts y assumptions.
 - Cross-component links/paths.
 - Semantic context tracking, identity schemas y atomicity boundaries.
+
+### Python productivo
+
+Python es una entrada estructural real de MAP, no una etiqueta de stack ni un
+fallback Vyper. Para `.py` y `.pyi`, el parser Tree-sitter extrae modulos,
+clases, funciones sync/async, decorators, parametros y asignaciones de estado
+con rangos source-backed. Conserva imports, roles y uso read/write de estado;
+si el AST no es admisible, usa un fallback regex explicito y publica
+diagnosticos de fallback en vez de presentar esa extraccion como AST exacto.
+
+La identidad de modulo normaliza separadores, elimina la extension y
+`__init__`, y retira como maximo un prefijo raiz `src/`. Un `src` interno sigue
+siendo parte del paquete: `src/pkg/core.py` deriva `pkg.core`, mientras
+`pkg/src/core.py` deriva `pkg.src.core` y no puede colisionar con
+`pkg/core.py`.
+
+Las funciones Python participan en `functions`, `states`, `call_edges`,
+`graph_symbols`, capacidades por lenguaje y en los manifests de identidad y
+cobertura de MAP. El filtro `--langs python` o `--langs py` selecciona este
+camino. Core inventaria de forma independiente los `.py` productivos que
+declaran funciones, excluye tests convencionales y exige que MAP represente
+cada fichero antes de aceptar MAP o propagarlo a TRACE y DISCOVER. Este gate
+prueba integridad de intake, no cobertura completa de bugs Python ni paridad
+semantica con Solidity.
 
 ### Identidad de flujo económico v2
 
@@ -220,15 +248,109 @@ anteriores y los nuevos campos tienen defaults de deserialización. Un artefacto
 sin `identity_version=economic_flow_identity.v2` es legacy; sigue siendo
 legible, pero no posee autoridad de identidad exacta para cerrar una prueba.
 
+### Grafo economico factorado v1
+
+MAP publica aditivamente `economic_route_graph.v1` como autoridad no
+enumerativa para los consumidores nuevos. Las roots apuntan a fragments; cada
+fragment conserva choices, events economicos ordenados y call alternatives una
+sola vez. Por tanto, una secuencia con ramas y dispatches multiples no se
+convierte en un producto cartesiano de rutas concretas.
+
+Roots, fragments, events y alternatives usan IDs content-addressed; cada
+fragment y el grafo completo tienen digest canonico. El productor conserva
+clausuras transitivas completas bajo caps de 100.000 roots/fragments y 500.000
+choices/events/call alternatives. `economic_route_graph_coverage.v1` separa
+omision real de `semantic_resolution=over_approximation`: la primera es deuda
+de release; la segunda conserva posibilidades may, pero no autoriza ausencia,
+hechos must ni una identidad v2 exacta.
+
+En `--fast`, MAP no ejecuta inferencia de rutas, pero tampoco omite el contrato
+ni publica un grafo falsamente completo. Emite el grafo v1 canonico de
+roots/fragments vacios con `coverage.status=coverage_debt`, la causa
+`economic_route_graph_not_produced:fast_mode` y cada entrypoint considerado
+como no representado. TRACE puede consumir ese objeto content-addressed para
+continuidad diagnostica; la deuda impide usarlo como prueba de ausencia.
+
+`economic_flows` permanece como vista compatible de witnesses lineales
+acotados. Cuando el grafo es completo y valido, su deuda de materializacion es
+diagnostica; esa vista nunca puede sustituir, contradecir ni ampliar el grafo.
+
+La proyeccion compacta del grafo se publica dentro de
+`audit_map.coverage.json` como
+`economic_route_graph_closure_manifest.v1`. El contrato cerrado contiene
+`schema_version`, las dos versiones de identidad del grafo, `graph_digest`, la
+cobertura completa, `roots`, `fragments` y `manifest_digest`. Cada root liga
+`id`, `entrypoint_symbol_id`, `fragment_id` y `semantic_resolution`; cada
+`entrypoint_symbol_id` debe coincidir exactamente con el `symbol_id` del
+fragment indicado por ese mismo `fragment_id`. Volver a sellar una root contra
+el fragment inicial de otra funcion invalida tanto el primario como la
+proyeccion. Cada fragment liga su digest, symbol, resolucion, hijos y los
+contadores exactos de choices, events y call alternatives. Los arrays de IDs
+son unicos y canonicos.
+`manifest_digest` usa framing content-addressed con el namespace
+`economic-route-graph-closure-manifest-v1` sobre el JSON canonico sin el propio
+digest.
+
+La exactitud se decide por clausura seleccionada, no con una etiqueta global.
+Un consumidor recorre desde los roots solicitados por `fragment_id` y
+`child_fragment_ids`, deduplica fragments y suma sus contadores. Un root exacto
+sigue siendo exacto aunque otro root no seleccionado sea
+`over_approximation`. A la inversa, cualquier root o fragment alcanzado
+over-approximated convierte esa clausura en MAY. `coverage.status` responde a
+omision; `semantic_resolution` responde a incertidumbre del modelo. Una
+over-approximation honesta no fabrica deuda de cobertura, pero tampoco puede
+autorizar una ruta v2 exacta, un hecho MUST ni evidencia de ausencia.
+
 ## Presupuestos y cobertura observable
 
-`audit_map.json` incluye dos recibos aditivos:
+`audit_map.json` incluye tres recibos/contratos aditivos:
 
 - `economic_flow_coverage.v1`: limites y conteos de rutas por entrypoint, steps
   por ruta, flows/steps globales y cualquier ruta omitida;
+- `economic_route_graph_coverage.v1`: caps y conteos exactos del programa
+  factorado, retenido siempre por clausuras completas;
 - `map_collection_coverage.v1`: `observed`, `duplicates_collapsed`, identidades
   semanticas unicas, retenidas y truncadas para dependencias, call edges y graph
   edges.
+
+MAP genera siempre `audit_map.coverage.json`. El envelope
+`solguard-coverage-manifest.v1` declara `producer=solguard-map`, liga el
+`audit_map.v0.10` instalado por basename, bytes y SHA-256 y proyecta copias
+exactas de los tres recibos bajo `solguard-map-coverage.v1`. El sidecar permite
+validar cobertura sin cargar un JSON mayor de 100 MiB; no sustituye el mapa ni
+autoriza relaciones semanticas por si mismo. Tambien proyecta el contrato
+exacto `solguard-map-runtime-summary.v1`: los contadores del audit, la salud de
+resolucion de graph edges, `economic-flow-runtime-health.v1` y
+`economic-route-graph-health.v1`. Los consumidores
+reconcilian esos agregados con los ledgers; un contador falsificado, una
+categoria que no suma o un envelope de flujo invalido falla cerrado.
+
+El ledger incluye tambien `map_function_identity_manifest.v1`, derivado de
+todas las funciones del primario. Cada entrada completa liga
+`{function_id,symbol_id,qualified_name,component,file,start_line}`, usa un path
+relativo normalizado y una linea positiva, y se ordena por la tupla canonica.
+`function_id` y `symbol_id` son unicos. El contrato v1 retiene como maximo
+100.000 entradas y 24 MiB de entradas JSON compactas enteras; cualquier
+colision, truncamiento por conteo o truncamiento por bytes publica
+`coverage_debt` y no puede autorizar un target TRACE exacto. Junto al limite de
+64 MiB de clausuras quedan 12 MiB reservados bajo el cap total del sidecar.
+
+La seccion `economic_route_graph_closure_manifest` vale `null` solamente para
+un MAP shallow sin `economic_route_graph.v1`. Su JSON compacto tiene un maximo
+de 64 MiB y el sidecar completo uno de 100 MiB; esos limites dejan espacio a
+los demas ledgers sin volver opaco un primario grande. El primario y el sidecar
+se serializan de forma streaming a temporales exclusivos, se verifican desde
+el mismo descriptor abierto y se instalan create-only. Un output root
+simbolico, un destino previo, una sustitucion concurrente o un sidecar fuera de
+presupuesto fallan cerrados y obligan a usar un root nuevo.
+Core puede cambiar a esta proyeccion por encima de 96 MiB; el gate de Deploy
+mantiene 100 MiB como limite inline. Ambos siguen verificando el hash completo
+del `audit_map.json`, por lo que el umbral no cambia la autoridad. Un consumidor
+de release no acepta los objetos semanticos del sidecar por confianza: recorre
+el primario desde un unico descriptor, recalcula sus proyecciones y SHA-256, y
+exige igualdad exacta con el sidecar. JSON truncado, contenido posterior al
+valor raiz, sustitucion durante la lectura o una proyeccion lateral forjada
+fallan cerrados.
 
 El inventario de `map_collection_coverage.v1` es completo por modo y lenguaje,
 no una muestra de los productores que alcanzaron a emitir datos. Una ejecucion

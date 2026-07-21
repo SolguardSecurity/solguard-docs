@@ -43,15 +43,18 @@ Un `value_proof` completo sigue siendo evidencia para VALIDATE, no un finding
 Los cuatro JSON base contienen una copia semanticamente identica de
 `solguard-value-budget.v1`. El ledger registra limites, cardinalidades
 observadas/retenidas, conteos agregados de deuda y samples diagnosticos
-acotados. Los limites normales actuales son 192 steps por ruta, 4096 evidence
-refs por entidad, 1024 string refs, 1024 flow-identity refs, 128 proof evidence
-refs y 32 refs por failure reason.
+acotados. Los techos de seguridad actuales son 4.096 steps por ruta, 8.192
+evidence refs por entidad, 1.024 string refs, 1.024 flow-identity refs, 128
+proof evidence refs, 32 refs por failure reason y 4.096 attack paths rankeados.
+Se aplican despues de deduplicar identidades y toda omision queda en el ledger.
 
 Un MAP por encima de 96 MiB se lee mediante una proyeccion streaming separada:
-una ruta que supera 32 steps se difiere antes de materializarla, y las
-colecciones proyectadas usan limites propios de 8 evidence refs, 16 string refs
-y 32 flow-identity refs. Esto impide que un MAP legacy multi-GiB fuerce el mismo
-intermedio en memoria.
+se hashea y recorre el documento completo, conserva todos los campos semanticos
+que VALUE consume y preserva rutas economicas completas. No introduce caps
+reducidos exclusivos de la proyeccion. El hard cap raw es 256 MiB y, una vez
+proyectado, rigen los mismos techos generales. Esto evita cargar el primario
+completo sin convertir un detalle de observabilidad en una frontera de
+deteccion.
 
 `budget.status=coverage_debt` significa analisis incompleto, no exito acotado.
 Una ruta v2 completa que excede el limite se difiere entera: secuencia vacia,
@@ -60,6 +63,37 @@ Una ruta v2 completa que excede el limite se difiere entera: secuencia vacia,
 frontier head/tail como `bounded_partial`, siempre como deuda. Core rechaza
 ledgers ausentes, divergentes o malformados y propaga coverage debt como
 degradacion bloqueante.
+
+Cada primario tiene ademas un sidecar
+`<artifact>.coverage.json` hash-bound. Conserva el ledger, la proyeccion
+exacta de materializacion y el summary tipado exacto del primario. Core puede
+consumirlo por encima de su umbral de observabilidad de 96 MiB; el gate de
+Deploy mantiene su limite inline de 100 MiB. En ambos casos se verifican bytes y
+SHA-256 del documento completo y el sidecar queda acotado a 100 MiB; no se eleva
+el limite ni se pierden contadores de salud. Un sidecar ausente, stale o
+incoherente falla cerrado.
+
+VALUE parsea y hashea sus inputs desde un descriptor regular acotado, rechaza
+symlinks y comprueba identidad y path despues del EOF; el MAP proyectado conserva
+un hard cap raw de 256 MiB y los demas JSON uno de 512 MiB. El traversal TRACE
+queda dentro del root canonico. Core y Deploy anaden la comprobacion del root
+fisico y detectan reparse/path swaps antes de admitir los sidecars. Los outputs
+se publican streaming y create-only: una mutacion concurrente o un destino
+preexistente no se trata como un artefacto reutilizable.
+
+VALUE tambien valida y conserva sin cambios `economic_route_graph.v1` dentro
+de `value_model.json`. Publica un recibo
+`economic_route_graph_consumption.v1` full-graph que liga exactamente digest,
+coverage upstream y contadores consumidos; la inferencia sobre el grafo es
+factorada y nunca materializa el producto de ramas y dispatches. Las regiones
+may/over-approximated pueden abrir evidencia pendiente, pero no un
+`value_proof` completo.
+
+Cuando un consumidor usa el sidecar de `value_model.json`, el receipt se
+proyecta literalmente en `summary.economic_route_graph_consumption` de
+`value_model.coverage.json`, ligado al primario por bytes y SHA-256. No se
+aceptan defaults saludables ni se infiere el digest desde el nombre del
+artefacto.
 
 ## Ensamblado exacto de flujos
 
@@ -150,7 +184,7 @@ El input usa `solguard-value-proof-requests.v1`. La herramienta exige:
 - superficies, hints y referencias con el formato tipado del schema.
 
 VALUE no trata el request como prueba. Resuelve las requests contra el conjunto
-completo de attack paths generado antes del ranking y del top-50, y solo después
+completo de attack paths generado antes del ranking y de su frontier de 4.096, y solo después
 materializa la salida base acotada. Una `flow_hint` v2 permite seleccionar una
 única ruta exacta aunque no hubiese sobrevivido el truncado inicial. VALUE
 vuelve a comprobar superficies, digest y evidencia contra MAP y TRACE de esa

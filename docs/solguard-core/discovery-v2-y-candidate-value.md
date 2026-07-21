@@ -9,7 +9,8 @@ busqueda sin rebajar la autoridad de VALIDATE:
 Ambos contratos producen hipotesis o evidencia. Ninguno emite por si mismo un
 finding `supported`.
 
-La identidad compartida que habilita la búsqueda exacta fuera del top-50 se
+La identidad compartida que habilita la búsqueda exacta fuera del frontier
+rankeado se
 documenta en
 [Identidad económica de flujo v2](./economic-flow-identity-v2.md).
 
@@ -271,7 +272,7 @@ no interpreta ni cambia su autoridad.
 
 Los tests de contrato de esta frontera deben verificar schemas, límites,
 reconstrucción autoritativa, ausencia de autocorroboración, exclusión de
-respuestas parciales y rutas v2 candidate-directed fuera del top-50. Incluso
+respuestas parciales y rutas v2 candidate-directed fuera del frontier rankeado. Incluso
 cuando esos tests pasen, no prueban una mejora de recall ni de generalización.
 
 No debe afirmarse que esta ola mejora la deteccion hasta ejecutar de nuevo los

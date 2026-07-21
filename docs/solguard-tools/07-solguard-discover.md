@@ -64,25 +64,70 @@ Schemas:
 ```text
 protocol_model.v0.1
 discover_index.v0.1
+discover_coverage_contract.v1
 ```
 
 Archivos:
 
 - `protocol_model.json`
+- `coverage_contract.json`
 - `index.json`
 - `protocol_model.md`
 - `summary.txt`
 
+`coverage_contract.json` es el contrato de salud compacto y obligatorio de
+DISCOVER. Liga `protocol_model.json` por basename, schema, bytes y SHA-256, y
+proyecta exactamente `tool_version`, `summary`, `metadata.degraded`,
+`metadata.resource_usage`, los diagnosticos y el recibo
+`economic_route_graph_consumption.v1`. Se emite incluso cuando el modelo
+cabe bajo el limite de parseo: no es un fallback opcional para archivos grandes.
+
+`coverage_reasons` es un enum ordenado y recomputable, no texto libre. Distingue
+deuda o cobertura desconocida de los dos ledgers MAP, TRACE o fuentes omitidas,
+items semanticos omitidos, etapas cuya observacion no fue `exact` y degradacion
+por recursos sin otra causa. Los contadores de admision y cada recibo
+`semantic_coverage.v1` deben reconciliarse exactamente con esos motivos. Core y
+el gate fallan cerrados ante ausencia, shape no canonico, hash divergente,
+contadores incoherentes, cobertura `unknown`, deuda u observacion incompleta.
+
+Los valores cerrados de `kind` son:
+
+```text
+upstream_map_collection_coverage_debt
+upstream_map_collection_coverage_unknown
+upstream_economic_flow_coverage_debt
+upstream_economic_flow_coverage_unknown
+trace_files_skipped
+source_files_skipped
+semantic_items_omitted
+semantic_observation_incomplete
+resource_limit_degradation
+```
+
+El gate no busca palabras en `diagnostics`: reconstruye este array desde
+`resource_usage`, ledgers y receipts, lo ordena y exige igualdad exacta con el
+contrato. Un enum desconocido o una causa omitida bloquea product health.
+
+Cuando TRACE es un directorio batch, DISCOVER valida ademas el
+`trace.contract_manifest.v1` all-target: membresia/orden, bytes y SHA-256 de
+cada primario, digest canonico de su coverage ledger, receipt de route graph y
+agregados. El `trace.materialization_manifest.v1`, cuando aplica, debe ser el
+subset exacto ligado a esos mismos primarios. Ningun resumen del indice puede
+lavar deuda, sustituir un target o aportar evidencia semantica por si solo. Un
+receipt `over_approximation` completo puede acreditar cobertura MAY del subset,
+pero no exactitud, MUST ni ausencia.
+
 ## Proyeccion semantica del MAP
 
 El MAP requerido se ingiere mediante `map.semantic_projection.v1`. DISCOVER
-lee y hashea el archivo completo en streaming, pero solo retiene los 34 campos
+lee y hashea el archivo completo en streaming, pero solo retiene los 35 campos
 top-level que consume semanticamente:
 
 ```text
 schema_version, repository, source_capabilities, language_capabilities,
 components, functions, roles, states, state_machines, state_transitions,
 economic_values, economic_operations, economic_value_links, economic_flows,
+economic_route_graph,
 accrual_checkpoints, dependencies, external_dependency_contracts,
 dependency_assumptions, flows, call_edges, graph_symbols, graph_edges,
 cross_component_paths, semantic_contexts, context_couplings, identity_schemas,
@@ -90,6 +135,13 @@ state_slot_uniqueness, context_freshness, atomicity_boundaries,
 trust_boundaries, critical_surfaces, review_targets,
 map_collection_coverage, economic_flow_coverage
 ```
+
+DISCOVER valida el grafo factorado, lo recorre como world model sin expandir
+productos cartesianos y publica un recibo full-graph ligado al `graph_digest`
+de MAP. La cobertura upstream y las omisiones locales permanecen separadas;
+una region over-approximated genera hipotesis may y evidencia requerida, nunca
+un binding exacto ni una afirmacion de ausencia. El receipt se repite
+literalmente en `coverage_contract.json`, ligado por bytes y SHA-256 al modelo.
 
 Los campos no consumidos tambien se parsean y entran en el SHA-256 del archivo,
 pero no se conservan en memoria. Sus nombres quedan en un diagnostico
@@ -237,8 +289,9 @@ ordenada distinta conserva su propia identidad. Este orden evita que el
 enriquecimiento multiplique de forma cartesiana una misma regla antes de
 consumir el presupuesto final.
 
-El binding de una regla requiere anchors exactos: localizacion de evidencia,
-simbolo cualificado o identidad explicita de ruta. Para proyectar el scope de
+Los productores resuelven localizacion de evidencia y simbolo cualificado a una
+identidad de ruta; el binding final exige ese ID explicito y nunca vuelve a
+adivinar por similitud lexica. Para proyectar el scope de
 una ruta, lifecycle objects, assets y trust boundaries necesitan un anchor
 exacto de estado, flow, simbolo o endpoint. Compartir componente, tipo o
 vocabulario de una familia de reglas solo aporta contexto; nunca autoriza por
@@ -256,23 +309,26 @@ vez de ejecutar sin limite. La degradacion queda visible en metadata,
 `protocol_model.md`, `summary.txt` y diagnosticos.
 
 El deadline por defecto es cooperativo y vale 180000 ms. Se comprueba dentro de
-los bucles grandes de inferencia MAP/TRACE y entre subfases; no es un kill duro
-del proceso, por lo que el elapsed puede superar el limite hasta el siguiente
-checkpoint. Al alcanzarlo se detiene el trabajo restante y se registra
-degradacion explicita. La proyeccion intermedia de rutas TRACE retiene como
-maximo 700: llegar exactamente a 700 no crea deuda por si solo, pero observar
-una ruta source-backed valida adicional marca el modelo como degradado con el
-diagnostico `TRACE intermediate route cap reached: retained 700 routes;
-additional source-backed routes were omitted`. Los trust boundaries se ordenan
-por confianza, tipo e ID y se retienen como maximo 2000; si existen mas, el
-diagnostico publica `retained <n> of <total>` y el modelo queda degradado.
+los recorridos grandes de inferencia MAP/TRACE y entre subfases; no es un kill
+duro del proceso, por lo que el elapsed puede superar el limite hasta el
+siguiente checkpoint. El cierre de rutas es BFS por estado semantico y conserva
+el testigo canonico mas corto; alternativas dominadas y ciclos se contabilizan
+como redundancia, mientras un edge ambiguo termina en una ruta parcial y no se
+encadena como causalidad inventada. Las rutas se emiten de forma incremental
+hacia colecciones deduplicadas y acotadas por bytes e items; no se materializa
+primero el espacio cartesiano completo. Llegar exactamente a un limite no crea deuda:
+solo una omision observada, una busqueda incompleta o una etapa no iniciada
+degrada el modelo y queda cuantificada en el ledger.
 
 Cada coleccion acotada publica un recibo `semantic_coverage.v1`. Cuando la
 busqueda demuestra al menos una omision pero el presupuesto impide enumerar
 todo el espacio restante, `observation=lower_bound` evita fingir un total
 exacto. Si el deadline impide iniciar una etapa, se registra
 `observation=not_started`, el modelo queda degradado y cero elementos no se
-presentan como cobertura completa.
+presentan como cobertura completa. `observation` es un enum cerrado en el
+productor y en el gate: solo admite `exact`, `lower_bound` o `not_started`;
+cualquier valor desconocido falla cerrado aunque el artefacto se haya
+autosellado.
 
 ### Evidencia diagnostica de Phase 1
 

@@ -35,19 +35,21 @@ cargo run -- <repo> --from-map solguard-output/audit_map.json --top 20 --out sol
 
 Opciones:
 
-| Opcion                      | Funcion                                                         |
-| --------------------------- | --------------------------------------------------------------- |
-| `--target <name>`           | Target individual.                                              |
-| `--out <dir>`               | Directorio de salida. Default: `solguard-trace-output`.         |
-| `--from-map <path>`         | Contexto de `audit_map.json`.                                   |
-| `--max-depth <n>`           | Profundidad de llamadas internas. Default: `2`.                 |
-| `--max-path-expansions <n>` | Presupuesto de expansiones causales por target. Default: `192`. |
-| `--max-deep-paths <n>`      | Máximo de deep paths retenidos por target. Default: `64`.       |
-| `--top <n>`                 | Batch budget de targets.                                        |
-| `--levels S,A,...`          | Filtra batch por nivel SolGuard.                                |
-| `--allow-empty-batch-targets` | Permite al orquestador registrar seleccion batch vacia como coverage gap. |
-| `--include-tests`           | Incluye tests/mocks Solidity omitidos por defecto.              |
-| `--no-color`                | Desactiva colores ANSI.                                         |
+| Opcion                          | Funcion                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| `--target <name>`               | Target individual.                                                        |
+| `--out <dir>`                   | Directorio de salida. Default: `solguard-trace-output`.                   |
+| `--from-map <path>`             | Contexto de `audit_map.json`.                                             |
+| `--max-depth <n>`               | Profundidad de llamadas internas. Default: `2`.                           |
+| `--max-path-expansions <n>`     | Presupuesto de expansiones causales por target. Default: `192`.           |
+| `--max-deep-paths <n>`          | Máximo de deep paths retenidos por target. Default: `64`.                 |
+| `--top <n>`                     | Batch budget de targets.                                                  |
+| `--levels S,A,...`              | Filtra batch por nivel SolGuard.                                          |
+| `--allow-empty-batch-targets`   | Permite al orquestador registrar seleccion batch vacia como coverage gap. |
+| `--include-tests`               | Incluye tests/mocks Solidity omitidos por defecto.                        |
+| `--source-integrity <json>`     | Contrato orquestado del arbol fisico autorizado.                          |
+| `--map-source-integrity <json>` | Receipt MAP obligatorio junto al contrato anterior.                       |
+| `--no-color`                    | Desactiva colores ANSI.                                                   |
 
 Reglas:
 
@@ -60,10 +62,15 @@ Reglas:
 
 ## Contrato de salida
 
-Schema principal:
+Schemas:
 
 ```text
 trace.v0.9
+trace.coverage_ledger.v1
+trace.contract_manifest.v1
+trace.materialization_diagnostics.v1
+trace.materialization_manifest.v1
+trace.evidence_verification.v1
 ```
 
 Modo individual:
@@ -74,12 +81,35 @@ Modo individual:
 
 Modo batch:
 
-- `index.json`
+- `index.json` (`trace.batch_index.v1`)
 - `index.md`
 - `summary.txt`
 - `traces/<rank>_<target>.json`
 - `traces/<rank>_<target>.md`
 - `traces/<rank>_<target>.txt`
+- `evidence_verification.json` cuando la seleccion usa
+  `trace.batch_selection.v3`
+- `source_integrity.json` cuando Core entrega ambos contratos de integridad
+
+`evidence_verification.json` no es un autosellado suficiente. Prebuild
+materializa una autoridad single-link del binario release independiente
+`solguard-trace-evidence-verify`. Core comprueba sus bytes/SHA-256 y crea con
+`create_new` una copia privada single-link por analisis bajo `trace/.runtime-tools`;
+esa misma copia verifica `index.json`, MAP y source y es la unica que se entrega
+a FILTER. FILTER la vuelve a ejecutar desde un entorno vacio y un directorio
+temporal privado. El receipt adyacente, stdout y el fichero create-only fresco
+deben ser byte-identicos y no superar inclusivamente 64 MiB. Hardlinks,
+symlinks, junctions/reparse points, sustituciones o drift de identidad fallan
+cerrados.
+
+El receipt usa schema `trace.evidence_verification.v1` y policy
+`physical_map_source_exact_evidence_multiset_v1`. Liga roles relocatables,
+bytes/SHA-256 de index y MAP, todos los targets seleccionados, descriptor y
+source fisico de cada target, primario TRACE, multiset/digest de evidencia y el
+binding nativo. Su `receipt_digest` emplea framing de longitudes de 64 bits. La
+ausencia de un target, evidencia adicional, binding inventado, binario stale o
+cambio fisico durante el replay falla cerrado para todos los lenguajes, no solo
+para Python/Vyper.
 
 ## Que modela
 
@@ -122,10 +152,174 @@ terminación `path_expansion_budget`. La ausencia, invalidez o contradicción de
 esa metadata es deuda de integridad, no una ejecución ilimitada implícita.
 
 Cuando el modo orquestado permite una seleccion vacia, `index.json` declara
-`selection.status=empty_allowed` y
-`selection.coverage_gap=no_targets_matched_requested_batch_filters`. Esa salida
-permite continuar con un fallback tipado y observable, pero sigue siendo deuda
-de cobertura y nunca demuestra ausencia de vulnerabilidad.
+`selection.status=empty_allowed` y un `empty_reason` cerrado:
+`no_targets_requested` cuando el filtro no selecciona ningun target logico o
+`all_targets_rejected` cuando todos fallan la admision anterior al presupuesto.
+Esa salida permite continuar con un fallback tipado y observable, pero sigue
+siendo deuda de cobertura y nunca demuestra ausencia de vulnerabilidad.
+
+La seleccion completa usa el contrato cerrado `trace.batch_selection.v3`; v1 y
+v2 quedan solo como entradas diagnosticas y nunca son limpias ni aptas para
+release. V3 liga el SHA-256 fisico de `audit_map.json`, filtros canonicos, un
+outcome por identidad MAP unica, el orden elegible total, todos los elegibles
+como seleccion fisica, cada SHA-256 de source y todos los contadores. Los
+rechazos anteriores a la elegibilidad usan un enum cerrado:
+`invalid_target_identity`, `non_production_source`,
+`source_binding_unresolved` o `source_unresolved`. V3 prohibe
+`target_budget_omitted`: `--top` limita solo el prefijo profundo, no targets.
+Duplicados MAP exactos no son deuda: se sellan por separado en
+`duplicate_collapses`, mientras los overloads conservan identidades fuertes
+distintas. Un gap fisico no vacio siempre es deuda. `empty_allowed` tambien es
+deuda aunque no emita evidencia TRACE.
+
+El subcontrato `trace.batch_deep_enrichment.v1` sella el prefijo exacto de
+analisis profundo y un inventario completo deep/compact. Cada `trace.v0.9`
+publica `trace.batch_target_enrichment.v1`, ligado a identidad y rank fisicos.
+`compact` conserva source y contexto MAP autoritativos, pero declara que el
+analisis profundo no se materializo. Esa declaracion es
+`bounded_non_authoritative`: no es deuda de cobertura, no prueba ausencia y no
+puede alimentar inferencia negativa.
+
+Los filtros sellados son exactamente `levels`, `top` e `include_tests`; este
+ultimo forma parte de la autoridad porque cambia que fuentes pueden entrar. Los
+consumidores no confian en el motivo publicado por TRACE: reabren MAP y source,
+recalculan existencia, binding, politica production/test y admision Vyper
+`@external`, y reconstruyen `priority_diversity_total_order_v1`. Por ello ni un
+rechazo autosellado falso ni un prefijo reordenado pueden ocultar un target
+fisicamente elegible, incluso cuando MAP supera 100 MiB.
+
+El indice sella la membresia exacta: ranks continuos, rutas relativas seguras,
+companions `.json`/`.md`/`.txt`, contadores y estado de seleccion deben
+reconciliar con disco. VALIDATE y FILTER verifican su hash como metadata; no lo
+incluyen entre los schemas de evidencia `trace.v0.9`.
+
+### Contrato TRACE -> consumidores
+
+Toda salida batch actual incorpora en `index.json` el manifiesto obligatorio
+`trace.contract_manifest.v1`. Su array `targets` tiene el mismo orden y
+membresia que el indice y liga cada target mediante ocho campos cerrados:
+`target`, `trace_json`, `primary_bytes`, `primary_sha256`, el ledger
+`trace.coverage_ledger.v1` con su digest canonico y el receipt
+`economic_route_graph_consumption.v1` con su digest canonico. Los dos campos del
+receipt son ambos `null` cuando no existe grafo; no se admite una pareja a
+medias.
+
+El agregado reconcilia `target_count`, targets y receipts con deuda y la union
+ordenada de roots observados, consumidos y omitidos. `manifest_digest` usa
+framing content-addressed `trace-contract-manifest-v1` sobre el JSON canonico
+sin ese campo. Core, DISCOVER, VALIDATE, FILTER y el gate de Deploy reabren los
+primarios declarados, comprueban bytes/SHA-256, comparan ledger y receipt inline
+y recalculan agregados y digest. Un target ausente o extra, path intercambiado,
+hash stale, contrato inline distinto o resumen coherente solo en apariencia
+falla cerrado.
+
+El target del primario conserva obligatoriamente identidad MAP suficiente:
+`id`, `qualified_name`, `component`, `file` y `line_start`. Los consumidores lo
+resuelven primero contra el `audit_map.json` autoritativo y su manifiesto de
+funciones completo. `solguard_map_context` es un dato opcional de
+corroboracion, no otra autoridad: puede omitirse cuando el primario MAP resuelve
+de forma exacta, pero cualquier `function_id` o lista `functions` declarada
+debe confirmar esa misma identidad. Declarar un contexto forjado, omitir el
+componente del target o resolver una identidad duplicada impide una decision
+terminal.
+
+Los cuatro receipts acotados de la linearizacion legacy de deep paths dejan de
+ser cobertura semantica solo cuando el target tiene una clausura factorada
+completa, sin deuda y con roots no vacios. Su `semantic_resolution` puede ser
+`exact` u `over_approximation`: ambas acreditan consumo completo del espacio
+MAY, pero la segunda no acredita exactitud, MUST ni ausencia. En ese caso el target publica
+`trace.materialization_diagnostics.v1` con la clasificacion
+`non_authoritative_legacy_linearization`. `index.json` publica entonces
+`trace.materialization_manifest.v1`: un subset de membresia exacta, ordenado y sin bindings
+inventados, compuesto solo por los targets que tienen esos diagnosticos. Cada
+binding conserva target/path/root IDs, bytes/SHA-256 del primario, digest de los
+diagnosticos y su objeto completo. Si falta esa autoridad de cobertura, los mismos
+receipts permanecen en `trace.coverage_ledger.v1`; toda omision sigue siendo
+deuda semantica y no puede lavarse como diagnostico.
+
+Los consumidores no tienen que materializar un `trace.v0.9` grande para sellar
+esta frontera: recorren los campos seleccionados y calculan el hash del archivo
+completo desde el descriptor abierto. La identidad declarada por ambos
+manifiestos debe referirse a esos mismos bytes. Una sustitucion durante la
+lectura, un symlink/reparse point, una ruta que escape del root o una identidad
+fisica distinta al reabrir se rechaza en vez de confiar solo en tamano y fecha.
+La misma lectura streaming se aplica a un `trace.v0.9` mayor de 100 MiB: extrae
+solo los campos contractuales necesarios mientras calcula bytes y SHA-256 del
+archivo completo. Un primario grande sigue formando parte del inventario de
+autoridad; JSON truncado, datos despues del valor raiz o limites internos
+agotados fallan cerrados.
+
+El MAP fisico consumido por TRACE tiene limites de seguridad independientes:
+256 MiB de bytes, 192 MiB acumulados de datos retenidos y 8 MiB para cualquier
+string o miembro de array retenido. El cap fisico se comprueba antes del hash y
+la proyeccion se obtiene en dos pasadas sobre el mismo handle. Estos limites no
+son el umbral de observabilidad inline de 96/100 MiB.
+
+El descriptor no basta por si solo: cada directorio padre lexico desde el root
+se comprueba con `lstat` e identidad fisica antes y despues de la lectura. Un
+symlink, junction/reparse point o cambio de padre falla incluso cuando resuelve
+a otra ruta situada dentro del mismo root.
+
+FILTER y el gate de Deploy comparten la politica cerrada
+`trace.evidence_authority_paths.v1`. Solo inventarian arrays `evidence_ids`
+canonicos en bindings de actor/autorizacion y sus route steps, semantic-context
+flows, identity-completeness fields, atomicity boundaries/operations, semantic
+finding surfaces/chains, deep-path edge evidence, causal/temporal stages,
+evidencia economica tipada y `evidence_items`. No cuentan aliases arbitrarios,
+un `evidence_ids` top-level, target/path/assembled, `solguard_map_context`,
+`trace_claim_authority` ni texto libre. El inventario ordena/deduplica y aplica
+presupuestos de 2.000.000 nodos JSON, 250.000 ocurrencias, 100.000 IDs unicos y
+16 MiB de bytes de identidad. Un binding puede reclamar un ID solo si aparece
+en el mismo primario ligado por path y SHA-256; un ID inventado o presente solo
+en otro target no concede autoridad.
+
+Dentro de esas rutas, el namespace tambien es cerrado: solo
+`trace-evidence-v1-<64hex>` y `trace-auth-<64hex>` conceden autoridad TRACE.
+Identidades `ev-*`, `source-*`, `native-source-*` o `symbol*` copiadas desde
+MAP/source conservan esa procedencia; su posicion dentro de un JSON TRACE no
+las renombra. Las refs tampoco pierden multiplicidad: una referencia generica
+debe resolver exactamente una ocurrencia path-bound y una repeticion identica
+en el mismo artefacto invalida el claim.
+
+Cada `evidence_items[*]` publica exactamente un
+`trace-evidence-v1-<sha256>`. Los consumidores recomponen el framing
+`trace.evidence_item.v1`: nombre, qualified name, componente, archivo y rango
+del target, seguidos de kind, source, archivo, linea y detail normalizado del
+item, todos con longitud big-endian de 64 bits. Cambiar cualquiera de esos
+campos o reemplazar el ID por un re-sellado arbitrario invalida la autoridad,
+con independencia del tamano del primario.
+
+### Consumo del grafo economico
+
+Cuando MAP publica `economic_route_graph.v1`, TRACE valida el wire completo y
+selecciona para cada target la clausura transitiva de sus roots sin enumerar
+combinaciones de alternativas. Cada trace publica un recibo
+`economic_route_graph_consumption.v1` con `scope=root_closure`; `index.json`
+publica el agregado union-deduplicado. Un target que no es root conserva un
+recibo explicito de cero items, no una omision silenciosa.
+
+El recibo copia digest, identidad, estado y deuda upstream de MAP, y separa
+omision local de `semantic_resolution=over_approximation`. Esta ultima permite
+razonamiento may, pero no una ruta v2 exacta ni evidencia de ausencia. Digest
+distinto, referencia desconocida, shape no canonico o deuda local hacen fallar
+cerrado el contrato TRACE -> consumidores.
+
+La resolucion agregada se calcula unicamente sobre los roots elegidos para ese
+target y sus fragments transitivos deduplicados. Un root exacto no hereda la
+over-approximation de otro root no seleccionado. Una over-approximation dentro
+de su propia clausura conserva cobertura completa si no hubo omision, pero
+reduce la autoridad a MAY y bloquea cualquier materializacion exacta/MUST.
+
+### Evidencia source-local Vyper
+
+`vyper_source_evidence.v1` extrae guards `assert`/revert, reads y writes
+`self.*`, llamadas internas y efectos `transfer`, `send`, `raw_call`,
+`extcall` y create con fichero/linea. Los eventos `log` tambien quedan
+localizados, pero no se cuentan como escritura economica ni movimiento de
+valor. La admision excepcional de un `.vy`
+bajo un unico segmento `example` o `examples` exige entrypoint MAP exacto,
+archivo canonico dentro del root y decorador `@external` en la declaracion.
+No abre tests, fixtures, mocks, vendor ni generated.
 
 ## Binding de autorizacion por actor
 
