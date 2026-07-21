@@ -146,6 +146,19 @@ Los niveles `S`, `A`, `B`, `C`, `D` son prioridad de revision, no severidad:
 - Cross-component links/paths.
 - Semantic context tracking, identity schemas y atomicity boundaries.
 
+### Visibilidad Solidity
+
+La visibilidad de una funcion Solidity procede exclusivamente de su
+declaracion. El parser Tree-sitter acepta solo el nodo `visibility` hijo directo
+de la declaracion; el fallback regex analiza unicamente el header con
+comentarios y literales enmascarados. Texto `public` o `external` dentro de un
+comentario, modifier, string o cuerpo nunca convierte la funcion en entrypoint.
+
+Si no hay visibilidad explicita, o el AST recuperado contiene visibilidades
+contradictorias, MAP usa el default conservador de Solidity: `internal`. La
+misma decision gobierna `functions`, entrypoints, critical surfaces y roots de
+rutas economicas, de modo que una clasificacion falsa no se propaga a TRACE.
+
 ### Python productivo
 
 Python es una entrada estructural real de MAP, no una etiqueta de stack ni un

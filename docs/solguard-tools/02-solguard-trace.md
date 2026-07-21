@@ -225,17 +225,35 @@ terminal.
 
 Los cuatro receipts acotados de la linearizacion legacy de deep paths dejan de
 ser cobertura semantica solo cuando el target tiene una clausura factorada
-completa, sin deuda y con roots no vacios. Su `semantic_resolution` puede ser
-`exact` u `over_approximation`: ambas acreditan consumo completo del espacio
-MAY, pero la segunda no acredita exactitud, MUST ni ausencia. En ese caso el target publica
+completa, sin deuda y con roots no vacios, y ambos consumidores publican una
+evaluacion graph-native completa e independientemente recomputable. El campo
+`factorized_graph_evaluations` contiene exactamente dos receipts
+`trace.factorized_graph_evaluation.v1`: perfil
+`causal.factorized_structure_and_guard_lattice.v1` y perfil
+`economic.factorized_operation_consistency.v1`. Ambos ligan el mismo
+`graph_digest`, proyeccion, `root_ids`, inventarios, contadores y digests de
+resultado/evaluacion. Su `semantic_resolution` puede ser `exact` u
+`over_approximation`: ambas acreditan consumo completo del espacio MAY, pero la
+segunda no acredita exactitud, MUST ni ausencia. En ese caso el target publica
 `trace.materialization_diagnostics.v1` con la clasificacion
 `non_authoritative_legacy_linearization`. `index.json` publica entonces
 `trace.materialization_manifest.v1`: un subset de membresia exacta, ordenado y sin bindings
 inventados, compuesto solo por los targets que tienen esos diagnosticos. Cada
 binding conserva target/path/root IDs, bytes/SHA-256 del primario, digest de los
-diagnosticos y su objeto completo. Si falta esa autoridad de cobertura, los mismos
-receipts permanecen en `trace.coverage_ledger.v1`; toda omision sigue siendo
-deuda semantica y no puede lavarse como diagnostico.
+diagnosticos y su objeto completo. `semantic_authority` enumera el graph receipt,
+ambos consumers y `trace.v0.9.target_evidence`. Si falta una evaluacion, existe
+deuda/omision o cualquier digest deriva, los receipts permanecen en
+`trace.coverage_ledger.v1`; la omision no puede lavarse como diagnostico.
+
+Fuera de esa excepcion cerrada, toda coleccion acotada publica un receipt tipado
+unico por `{producer,collection}`. Debe cumplirse
+`observed = retained + omitted`, `truncated = (omitted > 0)` y el receipt
+conserva limite de items/bytes, orden de seleccion determinista y motivo. Un
+`take`/`truncate` silencioso, un recorrido de grafo detenido a profundidad fija
+o un receipt limpio tras omitir elementos es deuda contractual, no una
+optimizacion invisible. TRACE selecciona primero scopes exactos de target, CFG,
+grafo, estado, semantica, tiempo y evidencia y solo despues materializa sus
+proyecciones acotadas.
 
 Los consumidores no tienen que materializar un `trace.v0.9` grande para sellar
 esta frontera: recorren los campos seleccionados y calculan el hash del archivo
@@ -248,6 +266,15 @@ solo los campos contractuales necesarios mientras calcula bytes y SHA-256 del
 archivo completo. Un primario grande sigue formando parte del inventario de
 autoridad; JSON truncado, datos despues del valor raiz o limites internos
 agotados fallan cerrados.
+
+Core aplica esta frontera mediante proyecciones serde especificas para cada
+consumidor. Los campos no consumidos se recorren y hashean pero no se retienen
+como un `Value` raw; la proyeccion materializada tiene un techo sellado de 64
+MiB. El descriptor, metadata, identidad fisica, root y path canonicos se
+comparan antes y despues de parsear. Por tanto, superar 100 MiB no elimina el
+primario de TRACE ni concede autoridad a un sidecar: hash, bytes y contrato
+siguen procediendo del fichero completo, y overflow de proyeccion o drift TOCTOU
+fallan cerrados.
 
 El MAP fisico consumido por TRACE tiene limites de seguridad independientes:
 256 MiB de bytes, 192 MiB acumulados de datos retenidos y 8 MiB para cualquier

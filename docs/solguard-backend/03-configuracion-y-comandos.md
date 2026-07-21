@@ -16,6 +16,8 @@ variables al arrancar.
 | `OLLAMA_HOST`                        | `http://127.0.0.1:11434` | Endpoint Ollama.                                                                      |
 | `OLLAMA_TIMEOUT_MS`                  | `600000`                 | Timeout del adaptador de modelo.                                                      |
 | `SOLGUARD_EXECUTION_CONTRACT_SHA256` | ausente                  | Attestation opcional de 64 hex que inyecta `solguard-deploy` en procesos gestionados. |
+| `SOLGUARD_BACKEND_BIN`               | ausente                  | Path absoluto al binario release canonico en ejecuciones gestionadas.                 |
+| `SOLGUARD_BACKEND_BIN_SHA256`        | ausente                  | SHA-256 lowercase esperado del binario release gestionado.                            |
 
 Ambos servidores escuchan solo en `127.0.0.1`.
 
@@ -58,6 +60,17 @@ configuracion N-1 se rechaza antes de ejecutar procesos.
 `SOLGUARD_CORE_DIR` es una variable de `solguard-deploy` para localizar el
 repositorio durante prebuilds y fingerprints. No selecciona dinamicamente otra
 libreria dentro del binario backend ya compilado.
+
+En benchmark, labs y release, las dos variables de binario son inseparables. El
+host Node acepta unicamente el path fisico absoluto
+`solguard-backend/target/release/solguard-backend[.exe]`, rechaza debug, paths
+alternativos, links/reparse points y drift de SHA-256, y solo entonces crea el
+proceso. Rust vuelve a identificar y hashear el ejecutable realmente cargado
+(`/proc/self/exe` en Linux y `current_exe` bloqueado en Windows); un mismatch
+termina el arranque. `/health.backend_binary_sha256` expone ese digest
+autocalculado, y el runner propietario exige igualdad exacta con el descriptor
+sellado. Fuera de ejecucion gestionada, la ausencia de ambas variables conserva
+el arranque de desarrollo, pero nunca satisface un gate release.
 
 ## Arranque y pruebas del backend
 

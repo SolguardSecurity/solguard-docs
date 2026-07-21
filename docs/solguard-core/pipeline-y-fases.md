@@ -79,6 +79,15 @@ productor que corresponda; ningun sidecar o coverage contract sustituye
 semantica que no pueda derivarse del primario. Sus lectores tienen un maximo de
 100 MiB y MAP reserva como maximo 64 MiB a su manifiesto de clausuras.
 
+La lectura TRACE de Core es una proyeccion tipada streaming, no una carga raw
+del JSON completo. El reader hashea todos los bytes, deja que serde descarte los
+campos ajenos al consumidor y solo materializa la vista requerida, con un techo
+independiente de 64 MiB. Conserva bytes/SHA-256 del primario como autoridad y
+revalida root/path canonicos, metadata e identidad fisica antes y despues. Asi
+un `trace.v0.9` por encima de 100 MiB sigue siendo consumible sin sidecar
+semantico; overflow de la vista, link, escape, sustitucion o drift TOCTOU fallan
+cerrados.
+
 Cada lectura estricta queda ligada a un descriptor regular y a su identidad
 fisica, con techo de bytes y comprobaciones antes y despues de EOF. Core exige
 que el path y el `tool-outputs` root sigan resolviendo al mismo objeto dentro del
@@ -270,14 +279,29 @@ mayores de 100 MiB se recorren y hashean desde un unico descriptor con el mismo
 contrato; el tamano nunca los excluye silenciosamente del inventario de
 autoridad.
 
+Cada coleccion TRACE acotada conserva un receipt tipado unico por
+`{producer,collection}` con conteos observados, retenidos y omitidos, limite
+activo y politica de seleccion determinista. La aritmetica debe cerrar y
+`truncated` solo puede ser true cuando existe omision. Salvo las cuatro
+linearizaciones legacy clasificadas bajo la autoridad factorada descrita abajo,
+una omision permanece `coverage_debt`; Core no acepta truncados silenciosos ni
+recorridos de profundidad fija como cobertura completa.
+
 Cuando existe autoridad factorada completa, sin deuda y con roots no vacios,
-TRACE separa la linearizacion legacy
+TRACE separa la linearizacion legacy solo si `factorized_graph_evaluations`
+incluye ambos receipts `trace.factorized_graph_evaluation.v1`: perfiles
+`causal.factorized_structure_and_guard_lattice.v1` y
+`economic.factorized_operation_consistency.v1`. Core recompone cada evaluacion
+desde el graph receipt y exige igualdad de `graph_digest`, proyeccion,
+`root_ids`, inventarios, contadores y digests, sin omisiones ni debt. Su
+`semantic_authority` liga graph receipt, ambos consumers y
+`trace.v0.9.target_evidence`. Con esa autoridad TRACE separa la linearizacion legacy
 de deep paths como `trace.materialization_diagnostics.v1` no autoritativo y
 publica `trace.materialization_manifest.v1`. Este segundo manifiesto no cubre
 todos los targets: debe ser exactamente el subset que contiene esos
 diagnosticos, ligado a los mismos bytes primarios del manifiesto all-target. Sin
-clausura completa y debt-free, esos receipts permanecen cobertura semantica
-normal y sus omisiones degradan la fase. Una clausura
+clausura completa, ambas evaluaciones completas y debt-free, esos receipts
+permanecen cobertura semantica normal y sus omisiones degradan la fase. Una clausura
 `semantic_resolution=over_approximation` puede cerrar el espacio MAY y usar el
 manifiesto, pero nunca prueba exactitud, MUST ni ausencia.
 

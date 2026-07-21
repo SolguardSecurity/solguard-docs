@@ -36,6 +36,19 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 ## Contracts
 
 - `documentation truthfulness`
+- Solidity visibility comes only from direct AST declaration nodes or a masked
+  fallback header and defaults to `internal`; comments and bodies cannot create
+  entrypoint authority
+- TRACE bounded collections keep unique typed receipts with closed arithmetic;
+  Core consumes typed streaming projections under a 64-MiB materialized ceiling
+  while hashing and revalidating the full physical primary, including above
+  100 MiB
+- `trace.factorized_graph_evaluation.v1` requires independently recomputable
+  causal and economic profiles bound to the same graph digest/projection/roots;
+  without both, bounded legacy linearizations remain coverage debt
+- managed release execution binds the canonical absolute Backend release binary
+  and SHA-256, requires Rust loaded-executable self-attestation and compares
+  `/health.backend_binary_sha256` in the owning runner
 - MAP treats productive Python as source input through Tree-sitter with an
   explicit regex fallback; Core independently inventories bounded productive
   `.py` files and rejects MAP, TRACE or DISCOVER acceptance when MAP omits one.
