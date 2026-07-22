@@ -101,6 +101,15 @@ PID gestionado y el cleanup debe volver a dejar libre el endpoint. Un fallo de
 cleanup impide informar exito y se conserva junto al fallo operacional, si lo
 hubo.
 
+Antes de arrancar Ollama, setup ejecuta tambien un smoke receipt-bound del
+Backend real. Ese smoke ya debe haber pasado una primera vez dentro del prebuild,
+despues de los builds y antes de que se publique el receipt. Arranca el Bun
+interno y el binario Rust sellado con database, projects, source y puertos
+temporales; no llama a `/analyze` ni carga el modelo. Health publica y con clave
+incorrecta deben ocultar la attestation. Health autenticada debe ligar los
+hashes exactos y las 14 rutas runtime, y el cierre debe liberar proceso, puertos
+y temporal.
+
 Sobre ese proceso ejecuta un probe real `POST /api/generate` con
 `num_ctx=32768`, seguido por `GET /api/ps`. El preflight exige exactamente una
 entrada del modelo solicitado, `context_length=32768`, tamano total positivo y
@@ -159,15 +168,22 @@ un proceso host en una frontera OCI/VM.
 
 ### Legacy v1-v8
 
-`solguard-benchmark-execution-contract.v1` contiene exactamente 35
+`solguard-benchmark-execution-contract.v1` contiene exactamente 36
 componentes:
 
-- 24 modulos JavaScript alcanzables estaticamente por los runners, incluido el
-  helper de autenticacion Backend;
+- 25 modulos JavaScript alcanzables estaticamente por los runners, incluidos el
+  helper de autenticacion Backend y el evaluador comun de runtime attestation;
 - 11 recursos corpus/runtime.
 
 El test de clausura recompone los imports y exige igualdad exacta. Este contrato
 es una frontera de resume de regresion conocida, no una attestation blind.
+
+El evaluador comun se usa tambien en labs. Para el handshake live compara la
+identidad fisica canonica de rutas existentes, de modo que una representacion
+Windows namespaced o 8.3 solo es equivalente si resuelve al mismo objeto fisico.
+La aceptacion offline mantiene el path sellado lexicalmente exacto. Ausencia,
+roots extra, siblings o identidades fisicas distintas fallan cerrado, y el
+diagnostico publica nombres de campos, no valores sensibles.
 
 ### Scan v2
 
@@ -291,9 +307,10 @@ autoriza ningun paso posterior.
 
 La secuencia cerrada es:
 
-1. Verificar preliminarmente el prebuild receipt antes del daemon gestionado y
-   de cualquier proceso de inferencia o scan; cada canario recibe y valida
-   despues esa misma identidad sin recompilar.
+1. Verificar preliminarmente el prebuild receipt, repositorios y puertos; pasar
+   el smoke receipt-bound del Backend real antes del daemon Ollama y de cualquier
+   proceso de inferencia o scan. Cada canario recibe y valida despues esa misma
+   identidad sin recompilar.
 2. Fijar los cinco valores del entorno Ollama, exigir el endpoint dedicado
    `127.0.0.1:11435`, arrancar el ejecutable receipt-bound y pasar el probe de
    contexto/offload completo; despues ejecutar el preflight temprano del
@@ -376,6 +393,39 @@ El root fallido de Compound y el receipt `r3` se conservan como evidencia
 historica. `r3` queda retirado y no se reanuda ni reutiliza. Los otros siete
 canarios no se ejecutaron.
 
+### Fallo del primer canario `r4`
+
+La cadena `professional-r4` publico un receipt nuevo que sello 14 repositorios
+y 24 binarios. Setup verifico el receipt, los endpoints, el Ollama dedicado y el
+preflight de los 90 commits. El unico canario ejecutado,
+`v1:Compound-Finance`, fallo en 6.823 ms antes de MAP con:
+
+```text
+Managed backend runtime attestation mismatch
+```
+
+El artefacto r4 conserva solo ese error generico. Una reproduccion aislada con
+el Backend real identifico una diferencia de representacion: Rust canonicaliza
+paths fisicos existentes y en Windows puede devolver la forma namespaced y
+expandir un nombre corto 8.3, mientras el runner comparaba lexicalmente. Los
+hashes del binario y del contrato coincidian.
+
+La correccion separa las dos fronteras. El handshake live exige identidad fisica
+existente mediante un evaluador comun para v1-v8 y labs; la aceptacion offline
+conserva igualdad lexical estricta. El evaluador valida estado, servicio, hashes,
+keys runtime exactas, 13 paths y el unico local-source root, y sus errores solo
+enumeran campos. Su inclusion eleva la clausura legacy actual a 36 componentes:
+25 modulos JavaScript y 11 recursos, sin cambiar el schema.
+
+El mismo evaluador se ejercita mediante el smoke obligatorio descrito arriba:
+una vez dentro del prebuild antes del receipt y otra en setup antes de Ollama.
+El smoke final con supervisor de arbol paso en 815 ms, verifico 14 paths y dejo
+libres sus puertos y temporal. Esto no ejecuta analisis ni demuestra calidad o
+rendimiento de deteccion.
+
+El root y receipt r4 se preservan sin reintento ni reutilizacion. Los otros siete
+canarios y toda la cadena posterior no se ejecutaron.
+
 Un canario o root existente solo se reutiliza como input tras revalidarlo; un
 fallo no se reanuda en sitio. Si existe un acceptance pero falta cualquiera de
 sus ocho roots, el orquestador falla. No se ha completado esta secuencia: no
@@ -403,9 +453,9 @@ sigue congelada. A fecha de esta documentacion:
 - no se ha completado un nuevo `v1-v8-release` con estas mejoras;
 - no se han completado los 90 labs con esta identidad;
 - no existe una salida canonica de telemetry v3/pipeline measurement v2;
-- existe el prebuild receipt historico `r3`, pero su primer canario fallo antes
-  de MAP y la cadena esta retirada;
-- no existe telemetry receipt completo de la cadena `r3`;
+- existen los receipts historicos `r3` y `r4`, pero sus primeros canarios
+  fallaron antes de MAP y ambas cadenas estan retiradas;
+- no existe telemetry receipt completo de las cadenas `r3` o `r4`;
 - finalize, baseline v2 y verify de ese futuro root no existen;
 - el holdout independiente no se ha abierto ni ejecutado.
 

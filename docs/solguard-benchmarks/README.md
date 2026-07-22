@@ -199,9 +199,10 @@ drift no demuestra aislamiento de capacidades.
 
 El `solguard-benchmark-execution-contract.v1` legacy conserva capacidad de
 oracle y solo sirve como regresion conocida, pero su frontera de resume
-fingerprinta exactamente 35 componentes: 24 modulos JavaScript alcanzables y
-11 recursos corpus/runtime. El modulo adicional es el helper de autenticacion
-Backend usado por los runners. Incluye los descriptores de
+fingerprinta exactamente 36 componentes: 25 modulos JavaScript alcanzables y
+11 recursos corpus/runtime. Los modulos adicionales incluyen el helper de
+autenticacion Backend y el evaluador comun de runtime attestation usado por los
+runners. Incluye los descriptores de
 corpus/runtime y todos los modulos locales alcanzables estaticamente desde los
 runners v1-v8: prioridad, snapshot/preflight, cohortes, rutas portables,
 seleccion, frontera/catalogo/contrato scan, handoff y la cadena completa de
@@ -209,12 +210,25 @@ autoridad de source. Un test recompone el grafo de imports relativos y rechaza
 cualquier dependencia alcanzable ausente; la libreria dinamica del evaluador se
 incluye expresamente.
 
-Esta clausura de 35 componentes pertenece al scanner legacy y a su resume; no
+Esta clausura de 36 componentes pertenece al scanner legacy y a su resume; no
 es un inventario universal de los gates posteriores. Los verificadores de
 pre-release, incluido el gate TRACE producer v2 y sus streamers, quedan fuera de
-esos 23 imports y se sellan mediante la captura completa del worktree, el
+esos 24 imports y se sellan mediante la captura completa del worktree, el
 prebuild canonico y el lock de medicion. Agregar un descriptor no alcanzable
 falsearia la igualdad entre imports y fingerprint.
+
+V1-v8 y labs consumen el mismo evaluador de la attestation gestionada. En el
+handshake live, las rutas existentes se comparan por identidad fisica canonica;
+esto admite una forma Windows namespaced o 8.3 solo cuando resuelve al mismo
+objeto. El contrato y la aceptacion offline conservan sus paths lexicalmente
+exactos. Los fallos enumeran campos sin publicar valores sensibles.
+
+La integracion se prueba sin gastar inferencia mediante un smoke obligatorio
+del Bun interno y del binario Rust real. El prebuild debe pasarlo despues de los
+builds y antes de publicar el receipt; setup lo repite despues de verificar
+receipt, repositorios y puertos, y antes de Ollama. Comprueba health publica,
+wrong-key y autenticada, hashes, 14 rutas y cleanup, pero no llama a `/analyze`
+y no es evidencia de deteccion, recall o generalizacion.
 
 El ranking productivo vive ahora en el modulo independiente
 `benchmarks/product-priority.mjs`. No importa el matcher ni el evaluador y

@@ -3,6 +3,39 @@
 Este changelog registra cambios comprobables de la documentacion. No convierte
 tests de contratos en evidencia de calidad de deteccion.
 
+## 2026-07-22 - Fallo r4 y smoke real de atestacion Backend
+
+- La cadena `professional-r4` publico un prebuild receipt que sello 14
+  repositorios y 24 binarios. Setup verifico ese receipt, los endpoints
+  gestionados, el Ollama dedicado y los 90 commits fijados antes de iniciar el
+  primer canario.
+- El unico canario ejecutado, `v1:Compound-Finance`, fallo en 6.823 ms antes de
+  MAP con `Managed backend runtime attestation mismatch`. El artefacto r4
+  conserva ese mensaje generico, no un campo divergente concreto. Una
+  reproduccion aislada con el Backend real confirmo que Rust canonicalizaba los
+  paths fisicos existentes a una representacion Windows namespaced y expandia
+  el nombre corto 8.3, mientras el runner comparaba la representacion lexical.
+- V1-v8 y labs consumen ahora un evaluador comun de runtime attestation. La
+  comprobacion live exige la misma identidad fisica existente para las rutas y
+  exactamente una autoridad local; la aceptacion offline conserva la igualdad
+  lexical estricta del contrato sellado. Los diagnosticos enumeran solo campos,
+  nunca valores de paths o secretos.
+- La clausura legacy actual contiene 36 componentes: 25 modulos JavaScript
+  alcanzables y 11 recursos corpus/runtime. El nuevo componente es el evaluador
+  comun; el schema del contrato no cambia.
+- El prebuild ejecuta un smoke del Bun interno y del binario Rust real despues
+  de compilar y antes de publicar su receipt. Setup lo repite despues de
+  verificar receipt, repositorios y puertos, y antes de Ollama. El smoke exige
+  que health publica y con clave incorrecta oculten la attestation, verifica en
+  health autenticada los hashes y 14 rutas runtime, y cierra proceso, puertos y
+  temporal. No llama a `/analyze` ni al modelo.
+- El smoke final con supervisor de arbol paso en 815 ms, verifico 14 paths y
+  dejo libres sus puertos y temporal. Esto valida el handshake y su lifecycle,
+  no deteccion, recall, precision, rendimiento del pipeline ni generalizacion.
+- El root y receipt r4 se preservan y no se reutilizan. Los otros siete
+  canarios, la aceptacion 8/8, v1-v8, labs, `finalize`, `verify` y el holdout no
+  se ejecutaron.
+
 ## 2026-07-22 - Incidente r3 y autoridad local exacta de benchmarks
 
 - Se registro que el prebuild `professional-r3` si se completo y sello 14

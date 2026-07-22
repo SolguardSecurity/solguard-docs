@@ -175,9 +175,10 @@ rehashea los componentes y recomputa los 13 repositorios antes y despues. Esto
 detecta drift, no aislamiento de capacidades.
 
 El execution contract legacy de v1-v8 sigue siendo evidencia de regresion
-conocida, no blind, pero cierra exactamente 35 componentes para resume: 24
-modulos JavaScript alcanzables y 11 recursos corpus/runtime. El modulo adicional
-es la autenticacion Backend usada por los runners. Incluye sus
+conocida, no blind, pero cierra exactamente 36 componentes para resume: 25
+modulos JavaScript alcanzables y 11 recursos corpus/runtime. Los modulos
+adicionales incluyen la autenticacion Backend y el evaluador comun de runtime
+attestation usado por los runners. Incluye sus
 descriptores y todos los modulos locales alcanzables por
 imports estaticos desde cada runner. El test de cierre vuelve a calcular ese
 grafo y falla ante una dependencia omitida; la libreria dinamica del evaluador
@@ -187,6 +188,14 @@ Los gates de pre-release no se falsean dentro de ese closure legacy: sus
 modulos se sellan mediante la captura completa del worktree, el prebuild y el
 lock de medicion. Un execution contract dedicado para ellos seria otra frontera
 versionada.
+
+El evaluador comun de Deploy se usa en v1-v8 y labs. Para health autenticada
+compara rutas live existentes por identidad fisica canonica y conserva la
+igualdad lexical estricta en los contratos offline; sus diagnosticos publican
+solo campos. Un smoke obligatorio arranca el Bun interno y el Backend Rust real
+despues de los builds y antes del prebuild receipt, y setup lo repite antes de
+Ollama. Verifica hashes, 14 rutas, ocultacion publica/wrong-key y cleanup sin
+ejecutar `/analyze`; por tanto no modifica ni demuestra semantica de deteccion.
 
 `protocols-scan.mjs` es el runner scan-only comun y `scan-suite.mjs` su launcher
 por suite. Cada source se materializa y liga por `source_sha256` y por el tree

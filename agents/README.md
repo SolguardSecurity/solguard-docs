@@ -64,8 +64,8 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   closure is derived from resolved MAP callable edges and stays bounded to 256
   files/32 MiB per project, 16 projects/64 MiB LRU, 65,536 files/256 MiB global
   catalog and 8 MiB per file
-- Deploy closure counts are 35 components for the legacy v1-v8 resume contract
-  (24 JavaScript plus 11 runtime/corpus) and 29 for scan v2 (20 JavaScript plus
+- Deploy closure counts are 36 components for the legacy v1-v8 resume contract
+  (25 JavaScript plus 11 runtime/corpus) and 29 for scan v2 (20 JavaScript plus
   9 sealed resources). Documentation must not retain historical closure counts
 - Solidity visibility comes only from direct AST declaration nodes or a masked
   fallback header and defaults to `internal`; comments and bodies cannot create
@@ -84,6 +84,17 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 - managed release execution binds the canonical absolute Backend release binary
   and SHA-256, requires Rust loaded-executable self-attestation and compares
   `/health.backend_binary_sha256` in the owning runner
+- v1-v8 and labs consume one shared managed-Backend runtime-attestation
+  evaluator. Live existing paths are compared by physical canonical identity,
+  including equivalent Windows namespaced/8.3 representations, while sealed
+  offline contract paths remain lexically exact. Failures expose only field
+  names, never path or credential values
+- the canonical prebuild must start the real Bun/Rust Backend pair and pass the
+  runtime-attestation smoke after all builds but before publishing its receipt.
+  Windows setup repeats the receipt-bound smoke after receipt/repository/port
+  verification and before Ollama. Public and wrong-key health stay minimal;
+  authenticated health binds hashes plus 14 runtime paths, and cleanup is
+  mandatory. The smoke never invokes analysis and is not detector evidence
 - MAP treats productive Python as source input through Tree-sitter with an
   explicit regex fallback; Core independently inventories bounded productive
   `.py` files and rejects MAP, TRACE or DISCOVER acceptance when MAP omits one.
