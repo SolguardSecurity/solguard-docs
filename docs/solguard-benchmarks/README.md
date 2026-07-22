@@ -331,16 +331,21 @@ antes del scan y verifica drift antes/despues de cada comando, sin afirmar
 inmutabilidad fisica. Ejecuta con entorno explicito, lease exclusivo y recibos
 Ed25519 encadenados sin resume sobre un scope canonico de evidencia declarado;
 los artefactos listados se verifican aparte. Instrumenta memoria del arbol de
-procesos, normaliza v1-v8 y labs, crea un ledger por finding, compara
-disponibilidad metrica por metrica y firma una baseline nueva cuyo binding al
-commit/tree exacto de core se recomputa para las nueve colecciones. Un missing
-de precision, FILTER, recall o memoria permanece `null`/no disponible, nunca
-cero; el macro recall tambien queda `null` con cobertura parcial. Ningun
-resultado de estos corpus conocidos cambia su clase: siguen siendo regresion,
-nunca una demostracion blind. La politica y el mecanismo del holdout futuro
-estan definidos, pero la politica no queda congelada para una cohorte real hasta
-que un custodio externo publique el commitment firmado; no se abre ni se
-ejecuta en esta fase. Los replays canonicos y la baseline actual siguen
+procesos, CPU/IO, host, GPU/Ollama y storage mediante resource telemetry v3;
+pipeline measurement v2 anade distribuciones, throughput, eficiencia y el
+manifest de outputs firmado. Normaliza v1-v8 y labs, crea un ledger por finding
+y firma baseline v2 cuyo binding al commit/tree exacto de core se recomputa para
+las nueve colecciones. El primer run usa modo bootstrap porque no existe una
+baseline historica verificable: la comparacion y el claim de mejora permanecen
+no disponibles. Un missing de precision, FILTER, recall o recursos permanece
+`null`/no disponible, nunca cero; la precision real sigue `null` y el macro
+recall tambien queda `null` con cobertura parcial. Los lectores v1/v2 historicos
+siguen soportados, pero los nuevos productores emiten las versiones actuales.
+Ningun resultado de estos corpus conocidos cambia su clase: siguen siendo
+regresion, nunca una demostracion blind. La politica y el mecanismo del holdout
+futuro estan definidos, pero la politica no queda congelada para una cohorte
+real hasta que un custodio externo publique el commitment firmado; no se abre
+ni se ejecuta en esta fase. Los replays canonicos y la baseline actual siguen
 pendientes hasta completar los comandos de operador documentados.
 
 ## Congelacion tras la macroauditoria
@@ -348,8 +353,11 @@ pendientes hasta completar los comandos de operador documentados.
 El endurecimiento de Core, Backend, TRACE, FILTER y Deploy no autoriza por si
 solo otro resultado de producto. La siguiente ejecucion debe usar un root nuevo
 y solo puede prepararse tras conservar la barrera 8/8 con estados limpios,
-`filter_results.json` y product health aprobado. Despues deben ejecutarse
-v1-v8-release, labs-release, finalize y verify con la misma identidad sellada.
+`filter_results.json`, `generic_blind` verificado y product health aprobado. El
+orquestador `scripts/measurement/setup-release.ps1` procesa los ocho canarios
+secuencialmente, exige acceptance 8/8, ejecuta v1-v8-release con `--parallel 8`,
+solo inicia labs-release tras su exito y termina con finalize/verify bajo la
+misma identidad sellada.
 
 Ninguno de esos pasos se ejecuto durante la macroauditoria documental. Los
 numeros historicos siguientes permanecen como historia de regresion conocida;

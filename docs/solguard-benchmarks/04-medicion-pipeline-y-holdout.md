@@ -28,10 +28,10 @@ cobertura se publican aparte; missing nunca se convierte en cero.
 
 ## Precommit de identidades anterior al replay
 
-`solguard-measurement-pre-run-lock.v1` se crea despues del prebuild y antes de
+`solguard-measurement-pre-run-lock.v2` se crea despues del prebuild y antes de
 analizar protocolos. Es un precommit firmado Ed25519 que incluye su timestamp;
-falla si algun repositorio runtime esta sucio, el root no esta vacio o falta un
-input. Precompromete:
+falla si algun repositorio runtime esta sucio, el root no esta fisicamente
+ausente o falta un input. Precompromete:
 
 - commit, tree y estado limpio de los repos runtime;
 - hashes explicitos de prompts, templates, policies, schemas, configs y locks
@@ -47,9 +47,17 @@ input. Precompromete:
   verificados contra su SHA-256;
 - argv, cwd, entorno explicito allowlisted, paralelismo, outputs requeridos y
   autoridad de firma;
-- medicion historica preservada antes de escribir el nuevo root, junto con un
-  manifest que compromete tanto cada artefacto historico presente como cada
-  slot ausente de results, pipeline, funnel, VALIDATE y FILTER.
+- historia de baseline en uno de dos modos cerrados: `bootstrap` sin evidencia
+  historica verificable o `comparative` con measurement, loss ledger y manifest
+  historicos byte-bound.
+
+En `bootstrap`, que es el modo elegido por el orquestador para el primer replay,
+`previous_measurement`, `previous_loss_ledger`, manifest historico y comparacion
+quedan `null`. El lock declara `comparison_available=false`, no importa
+agregados publicados como evidencia y mantiene la mejora del detector como no
+disponible. `comparative` solo es valido cuando los artefactos historicos reales
+se preservaron y verificaron. Los validadores aceptan v1 para comprobar material
+historico almacenado; todo lock nuevo se emite como v2.
 
 El manifest de snapshots y cache compromete identidades de bytes, no crea mounts
 read-only ni demuestra inmutabilidad fisica. El runner rehashea los inputs antes
@@ -152,6 +160,13 @@ semanticos/offline listados se rehashean aparte y cada descriptor de medicion en
 scope debe coincidir con un recibo firmado. La firma prueba integridad bajo la
 clave suministrada, no autorizacion de esa clave, un timestamp externo notarial
 ni aislamiento fisico del host.
+
+Los runners de release y labs solicitan `analysis_profile=generic_blind` junto
+con `mode=audit_only` y `run_exploit=false`, lo sellan en
+`solguard-runtime-policy.v2` y verifican que Backend devuelva el mismo perfil en
+la respuesta autenticada. `compatibility`, un perfil ausente o una respuesta
+distinta fallan cerrados. Esta es una propiedad contractual del nuevo camino;
+todavia no hay un replay ejecutado que mida su efecto sobre deteccion.
 
 El recibo v2 liga ademas el informe exacto `solguard-pre-release-check.v3` y sus
 dos decisiones independientes:
@@ -395,7 +410,8 @@ preflight es evaluador/corpus y nunca se entrega al pipeline productivo.
 
 ## Metricas y comparabilidad
 
-`solguard-pipeline-measurement.v1` publica denominadores y disponibilidad para:
+El productor actual emite `solguard-pipeline-measurement.v2`. Conserva los
+denominadores y controles de v1 para:
 
 - volumen MAP, TRACE, DISCOVER, ECONOMIC, VALUE, candidatos, VALIDATE y FILTER;
 - recall end-to-end sobre los 630 findings declarados, donde fallos de source y
@@ -404,14 +420,47 @@ preflight es evaluador/corpus y nunca se entrega al pipeline productivo.
 - macro recall por protocolo, familia y lenguaje;
 - review queue, overflow, ruido, densidad y candidatos por bug conocido;
 - fallos, degradaciones, fallbacks y truncaciones observables;
-- tiempos totales, por protocolo y por fase;
-- peak RSS, memoria virtual y memoria privada del arbol de procesos, junto con
-  calidad y cobertura del muestreo.
+- precision real y adjudicacion: `precision=null`, cero findings adjudicados y
+  cobertura explicita (que puede ser `null` sin denominador) mientras no exista
+  adjudicacion independiente; `known_bug_precision_proxy` se mantiene separado
+  y no es precision de producto.
 
-`solguard-resource-telemetry.v2` conserva esa telemetria de proceso y anade
-memoria global del host, GPU NVIDIA y observaciones Ollama. Un sensor no
-soportado o no observado queda `unavailable`, nunca se convierte en cero. La
-medicion acepta recibos historicos v1 y nuevos recibos v2 de forma explicita.
+V2 anade tiempos batch de benchmarks/labs, tiempo secuencial total y
+distribuciones de duracion por protocolo y fase con
+`min/mean/p50/p95/max`, interpolacion R7 y cobertura explicita. Publica
+throughput de protocolos, protocolos completados, candidatos y findings
+supported por hora; y eficiencia por protocolo completado para CPU, IO y bytes
+de output declarados. El output manifest solo suma ficheros/bytes de los
+manifests ligados por los command receipts firmados: no afirma medir todos los
+bytes escritos en el filesystem.
+
+`solguard-resource-telemetry.v3` alimenta esa vista operacional y separa:
+
+- proceso supervisado: picos de RSS, memoria virtual y privada, CPU acumulada,
+  pico de utilizacion respecto a un CPU logico e IO de transferencia read/write;
+- host: RAM usada/disponible y CPU global;
+- GPU: en Windows consulta contadores CIM
+  `Win32_PerfFormattedData_GPUPerformanceCounters_*`, una ruta aplicable a AMD
+  cuando el host los expone; opcionalmente puede usar un `nvidia-smi` fisico
+  para memoria total/usada y utilizacion;
+- Ollama: modelos activos, tamano y `size_vram` mediante `/api/ps` local;
+- storage: usados, libres y disponibles del filesystem fisico del run mediante
+  `statfs`.
+
+El runbook canonico configura 5 segundos para el arbol de procesos y 30 para
+sistema/storage. El proveedor fisico de tabla de procesos y el
+`nvidia-smi` opcional se resuelven, hashean y atestiguan antes de ejecutar y se
+reatestiguan al terminar; el root de storage tambien queda ligado por identidad
+fisica. El runbook Windows actual liga PowerShell y usa CIM;
+`--nvidia-smi-executable` es una capacidad opcional de v3, no un provider que el
+runbook configure por defecto. Las observaciones de host/GPU son system-wide,
+Ollama no queda atribuido en exclusiva al child, el IO de proceso no son bytes
+fisicos de disco y storage no equivale a output. La ruta CIM no identifica por
+si sola el vendor y deja la capacidad VRAM total como `null`; solo conserva los
+contadores expuestos por el host. El muestreo puede perder procesos cortos,
+detached o reparented. Un sensor no soportado o no observado queda
+`null`/`unavailable`, nunca se convierte en cero. Los lectores conservan
+compatibilidad explicita con telemetria v1/v2; el nuevo runbook produce v3.
 
 El macro recall por protocolo solo tiene valor numerico cuando estan observados
 los 254 protocolos configurados. Si la cobertura es parcial queda `null` y se
@@ -423,7 +472,7 @@ de memoria o adjudicacion no se convierte en cero. Tiempo y memoria solo pueden
 ser plenamente comparables con corpus, hardware, concurrencia y metodo
 equivalentes.
 
-La baseline final `solguard-measurement-baseline.v1` exige evidencia
+La baseline final `solguard-measurement-baseline.v2` exige evidencia
 `core_bound`, un manifest offline completo, todos los outputs requeridos, cada
 finding en el ledger y firma Ed25519. `core_bound` se recomputa contra el
 commit/tree limpio de `solguard-core` del lock para exactamente las nueve
@@ -431,10 +480,15 @@ colecciones: v1-v8 lo incluyen en `reproducibility.toolchain.repos`; labs en
 `analysis_toolchain.repos` y en un `core_source_tree` reconciliado. Los
 self-hashes de los execution contracts, componentes, runner y comando tambien
 se verifican; una etiqueta no sirve como evidencia. La baseline embebe el
-inventario semantico completo y los hashes de measurement, ledger y comparison.
-Finalizacion y verificacion vuelven a comprobar los bytes y las ausencias de la
-baseline historica; una aparicion, desaparicion o mutacion invalida la
-comparacion.
+inventario semantico completo, los hashes de measurement y ledger y, solo
+cuando existe historia comparable, el hash de comparison.
+En modo `bootstrap`, los descriptores y hashes historicos y `comparison` son
+`null`, `comparison_available=false` y
+`detector_improvement=unavailable_without_previous_baseline`. En modo
+`comparative`, finalizacion y verificacion vuelven a comprobar los bytes y las
+ausencias de la baseline historica; una aparicion, desaparicion o mutacion
+invalida la comparacion. Baseline v1 queda admitida solo para verificacion
+historica; el productor actual firma v2.
 
 ## Replay de fase 1
 
@@ -446,29 +500,26 @@ denominador ni el receipt de los 90 labs. La unica superficie canonica de 90
 labs es `labs-v2`; release y measurement exigen el conjunto completo y rechazan
 `--protocol`. Ambas colecciones siguen siendo regresion conocida.
 
-- `full-run.sh --flow legacy --tier measurement` mediante
-  `v1-v8-measurement` para v1-v8;
-- `labs-v2/run.sh --tier measurement` mediante `labs-measurement`, siempre en
-  `audit_only`, para los 90 labs.
+Los comandos `v1-v8-measurement` y `labs-measurement` siguen disponibles para
+conservar una medicion integra aunque product health falle. No son la cadena de
+aceptacion elegida para este intento. La superficie canonica de promocion es
+`scripts/measurement/setup-release.ps1`, que exige canarios 8/8 y despues usa
+exactamente `v1-v8-release` y `labs-release`; ambos solicitan y verifican
+`generic_blind`.
 
-El mismo gate calcula `product_health` con la politica estricta. No se usa
-`v1-v8-release` para medir una herramienta que puede estar degradada: ese
-comando conserva su papel de promocion y seguiria devolviendo non-zero si la
-salud falla, que fue precisamente la conflacion observada en el root anterior.
+El orquestador recibe un unico prebuild receipt ya creado y lo verifica antes
+de cualquier canario. Tambien valida repositorios limpios, binarios host
+exactos, modelo Ollama local, espacio libre, plan sellado y roots disjuntos y
+fisicamente ausentes. `-ValidateOnly` comprueba esas precondiciones sin crear ni
+cambiar outputs.
 
-Antes de reservar otro replay completo se usa una barrera de canarios dirigida,
-sin ground truth como input del producto. `--require-product-health` solo es
-valido con `--tier targeted` y exige el mismo contrato operacional que el
-release sin convertir el canario en un release. Ninguna invocacion agrupa los
-ocho targets: cada canario se ejecuta como un comando independiente y usa un
-root nuevo, ausente y exclusivo. Asi cada comando conserva una ventana inferior
-a una hora y un fallo no consume ni contamina la evidencia de otro selector.
-Con `--require-product-health`, `full-run.sh` exige que `--projects-root` este
-fisicamente ausente antes de cualquier write y rechaza directorios, ficheros,
-symlinks —tambien rotos— y junctions/reparse points existentes. El runner crea
-el root de forma exclusiva; un intento fallido se conserva y nunca se reutiliza.
-La matriz exacta es la siguiente. Su ejecucion empieza solo despues de finalizar la autoridad
-de source, regenerar sus contratos derivados y completar prebuild/preflight:
+Antes del replay completo, el orquestador ejecuta o revalida una barrera
+dirigida sin ground truth como input del producto. `--require-product-health`
+solo es valido con `--tier targeted`; cada canario es un comando independiente,
+usa el mismo prebuild con `--no-prebuild`, repite `--snapshot-preflight` y posee
+un root exclusivo. Los ocho se procesan secuencialmente, nunca en paralelo. Un
+fallo conserva su root y no contamina ni autoriza el siguiente estado. La matriz
+exacta es:
 
 El canario Vyper v8 no confia en el tag mutable `v0.3.7`: el catalogo fija el
 objeto Git afectado `6020b8bbf66b062d299d87bc7e4eddc4c9d1c157` y la URL de
@@ -486,26 +537,30 @@ v6:Morpheus         -> <root-morpheus-v6-nuevo>
 v8:Vyper            -> <root-vyper-nuevo>
 ```
 
-Se hace un unico prebuild canonico antes de la matriz. No se vuelve a ejecutar
-prebuild entre canarios: cada fila reutiliza exactamente esos binarios con
-`--no-prebuild`, repite `--snapshot-preflight` y recibe un root fisicamente
-ausente. Cada fila se lanza por separado desde `solguard-deploy` con esta
-plantilla; no se convierte la tabla en un unico loop o comando de larga duracion:
+La invocacion completa tiene esta forma. Ejecutarla inicia toda la secuencia y,
+por su duracion, pertenece al operador:
 
 ```powershell
-$env:OLLAMA_MODEL = 'qwen2.5-coder:7b'
-$env:SOLGUARD_MODEL_MANIFEST = 'D:\models\manifests\registry.ollama.ai\library\qwen2.5-coder\7b'
+& "$workspace\solguard-deploy\scripts\measurement\setup-release.ps1" `
+  -WorkspaceRoot $workspace `
+  -RunRoot $run `
+  -RunId $runId `
+  -CanaryBase $canaryBase `
+  -PrebuildReceipt $prebuildReceipt `
+  -SnapshotsRoot $snapshots `
+  -LabsCacheRoot $labsCache `
+  -ModelManifest $modelManifest `
+  -SigningPrivateKey $privateKey `
+  -SigningPublicKey $publicKey `
+  -Model 'qwen2.5-coder:7b' `
+  -OllamaHost 'http://127.0.0.1:11434' `
+  -OllamaModelsRoot 'D:\models'
 ```
 
-```bash
-./scripts/benchmarks/full-run.sh \
-  --tier targeted \
-  --target "<selector-unico>" \
-  --require-product-health \
-  --snapshot-preflight \
-  --no-prebuild \
-  --projects-root "<root-nuevo-y-exclusivo>"
-```
+El prebuild receipt es input obligatorio. El orquestador realiza una
+verificacion preliminar y cada canario recibe y valida esa misma identidad; no
+se recompila entre canarios. `-ValidateOnly` aplica el preflight sin ejecutar la
+matriz ni crear outputs.
 
 Cada canario debe terminar con estado limpio, `filter_results.json` presente y
 product health aprobado; un error, deuda de cobertura, fallback o artefacto
@@ -527,10 +582,9 @@ provenance Git tambien se conserva, pero un commit sin cambio de contenido no
 rompe la identidad material. El JSON
 `solguard-canary-acceptance.v1` se publica de forma atomica y create-only con
 descriptores fisicos, SHA-256 y mappings finding-candidate-FILTER por selector.
-Es local, no esta
-firmado y solo habilita preparar otro root ausente para el replay completo
-v1-v8; declara `release_eligible=false`, `generalization_evidence=false` y
-`blind_detection_evidence=false`.
+Es local, no esta firmado y solo habilita preparar otro root ausente para el
+replay completo v1-v8; declara `release_eligible=false`,
+`generalization_evidence=false` y `blind_detection_evidence=false`.
 
 Esta seccion define una condicion de aceptacion, no registra su cumplimiento.
 Hasta conservar los outputs y el informe product-health de cada canario, su
@@ -543,27 +597,25 @@ del componente C++ aislado no representa el alcance auditable completo. Esta
 correccion de corpus evita una evaluacion incompleta; no es una regla de
 deteccion ni evidencia de mejora.
 
-Se ejecutan secuencialmente sobre un root ausente o vacio mediante el subcomando
-`current-pipeline.mjs run`. Cada invocacion `run` exige tanto
-`--signing-private-key` como `--signing-public-key`, rechaza receipts, journals u
-outputs previos, valida el lock antes y despues del comando y demuestra que los
-intervalos no se solapan. No admite resume: si falla o se interrumpe hay que
-preparar un root nuevo. El replay v1-v8 del 17 de julio de 2026 tardo
-`10:43:28.624` end-to-end (`10:43:09.834` de proceso medido) con ocho suites en
-paralelo; termino con codigo 1 y no llego a ejecutar labs, por lo que es
-diagnostico y no baseline. Para el siguiente v1-v8 se reserva prudentemente una
-ventana de 11-13 horas sin prometerla. El ultimo tiempo historico disponible de
-labs es 5 h 08 min. Por ello los ejecuta el operador, no un worker con limite
-inferior a una hora. El runbook exacto y los comandos PowerShell estan en
-`solguard-deploy/scripts/measurement/README.md`.
+Tras obtener acceptance exacto 8/8, el orquestador prepara un root fisicamente
+ausente con `--bootstrap-baseline`, lock v2 y la identidad del acceptance. Lanza
+`v1-v8-release` con las ocho suites y `--parallel 8`; solo si ese comando termina
+con exito ejecuta `labs-release` sobre los 90 labs. Despues llama a `finalize` y
+`verify` sobre la baseline v2 firmada. Cada `run` requiere las claves privada y
+publica, valida drift antes/despues, sella receipt y no admite resume.
 
-Ambas ejecuciones superan tambien cinco horas, pero son vitales para aceptar la
-fase 1; por eso se mantienen como comandos exclusivos del operador y se
-ejecutan secuencialmente. Deben preservarse el root completo, las lineas
-`completed command=... receipt=...`, `finalized baseline=... comparison=...
-path=...` y `verified baseline=...`, junto con `pipeline-measurement.json`,
-`loss-ledger.json`, `comparison.json` y `measurement-baseline.json` bajo
-`_measurement/current`.
+En este primer bootstrap no se crea `comparison.json`: el mensaje de finalize
+debe indicar `comparison=unavailable_bootstrap`, y los campos correspondientes
+de lock/baseline permanecen `null`. Deben preservarse el root completo, las
+lineas `completed command=... receipt=...`, `finalized baseline=...
+comparison=unavailable_bootstrap path=...` y `verified baseline=...`, junto con
+`pipeline-measurement.json`, `loss-ledger.json` y
+`measurement-baseline.json` bajo `_measurement/current`.
+
+Nada de esta cadena se ha ejecutado todavia. No hay canarios aceptados 8/8, no
+hay replay nuevo de v1-v8, labs no se han iniciado, y no existen finalize ni
+verify de una baseline v2. La matriz, el orquestador y sus tests son capacidad
+operacional, no resultados de deteccion.
 
 ## Holdout futuro: politica y mecanismo, no cohorte real
 
