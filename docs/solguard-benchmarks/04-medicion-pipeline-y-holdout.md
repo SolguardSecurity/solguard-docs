@@ -562,6 +562,16 @@ verificacion preliminar y cada canario recibe y valida esa misma identidad; no
 se recompila entre canarios. `-ValidateOnly` aplica el preflight sin ejecutar la
 matriz ni crear outputs.
 
+El primer intento `r1` posterior al commit Deploy `0d1f1df` no llego a producir
+ese receipt. Aunque los 14 repositorios requeridos estaban limpios, el prebuild
+aborto antes de compilar por deriva del contrato TRACE: Core tenia 191980 bytes,
+Validate/Discover 191984 por formato rustfmt 2024/2021 y FILTER 176486 sobre la
+copia anterior sin `generic_blind`. No se ejecuto ningun canario ni replay y ese
+root no se reutiliza. La correccion emplea una forma estable y el prebuild
+compara ahora las siete copias byte-identicas de Core, Validate, Discover,
+FILTER y los vendors VALUE, ECONOMIC e INVARIANT antes de compilar. Esto es
+evidencia de paridad de input, no una medicion de deteccion.
+
 Cada canario debe terminar con estado limpio, `filter_results.json` presente y
 product health aprobado; un error, deuda de cobertura, fallback o artefacto
 contractual invalido impide preparar el root v1-v8. Los roots fallidos no se

@@ -211,6 +211,22 @@ La secuencia cerrada es:
    `labs-release` sobre los 90 labs.
 7. Ejecutar `finalize` y verificar la baseline firmada con `verify`.
 
+### Incidente del primer prebuild `r1`
+
+El primer intento posterior al commit Deploy `0d1f1df`, iniciado con los 14
+repositorios requeridos limpios, aborto antes de compilar. La comprobacion
+byte-exacta encontro Core con 191980 bytes, Validate y Discover con 191984 bytes
+por una asercion que rustfmt 2024 y 2021 representaban de forma distinta, y
+FILTER con 176486 bytes sobre el contrato anterior sin `generic_blind`.
+
+El intento no publico prebuild receipt y no alcanzo ningun canario ni replay.
+El root `r1` no se reanuda ni reutiliza. La correccion usa una forma estable bajo
+ambas ediciones y sincroniza exactamente siete copias: Core, Validate, Discover,
+FILTER y los vendors de VALUE, ECONOMIC e INVARIANT. El prebuild comprueba esas
+siete rutas fisicas antes de compilar y falla cerrado ante cualquier deriva.
+Haber cerrado esta paridad no constituye un acceptance 8/8 ni mide recall,
+precision, ruido, velocidad o generalizacion.
+
 Un canario o root existente solo se reutiliza como input tras revalidarlo; un
 fallo no se reanuda en sitio. Si existe un acceptance pero falta cualquiera de
 sus ocho roots, el orquestador falla. No se ha ejecutado todavia esta secuencia:

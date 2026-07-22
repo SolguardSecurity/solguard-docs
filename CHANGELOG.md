@@ -3,6 +3,21 @@
 Este changelog registra cambios comprobables de la documentacion. No convierte
 tests de contratos en evidencia de calidad de deteccion.
 
+## 2026-07-22 - Incidente prebuild r1 y cierre de paridad TRACE
+
+- Se registro que el primer prebuild posterior al commit Deploy `0d1f1df`, con
+  14 repositorios limpios, aborto antes de compilar por deriva byte-exacta:
+  Core tenia 191980 bytes, Validate/Discover 191984 por una asercion formateada
+  de forma distinta por rustfmt 2024/2021 y FILTER 176486 sobre el contrato
+  anterior sin `generic_blind`.
+- Se dejo explicito que `r1` no publico prebuild receipt, no ejecuto canarios ni
+  replay y no puede reutilizarse.
+- Se documento la forma estable frente a ambas ediciones y la paridad de las
+  siete copias: Core, Validate, Discover, FILTER y los vendors de VALUE,
+  ECONOMIC e INVARIANT.
+- Se documento que el prebuild compara fisicamente las siete antes de compilar.
+  Este cierre prueba paridad contractual, no calidad ni velocidad de deteccion.
+
 ## 2026-07-22 - Alineacion con la macroauditoria de madurez
 
 - Se documento la nueva autoridad operacional de Core: roots separados,

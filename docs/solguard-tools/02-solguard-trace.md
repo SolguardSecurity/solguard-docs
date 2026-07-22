@@ -262,6 +262,14 @@ y recalculan agregados y digest. Un target ausente o extra, path intercambiado,
 hash stale, contrato inline distinto o resumen coherente solo en apariencia
 falla cerrado.
 
+La implementacion consumidora de este contrato tambien conserva paridad
+byte-exacta en siete rutas: Core, Validate, Discover, FILTER y los vendors de
+VALUE, ECONOMIC e INVARIANT. Su fuente evita construcciones que rustfmt 2021 y
+2024 serialicen de forma distinta. El prebuild compara las siete copias antes de
+compilar; una diferencia de formato o una copia funcionalmente antigua, como un
+FILTER sin `generic_blind`, bloquea la cadena aunque el codigo pudiera compilar
+por separado.
+
 El target del primario conserva obligatoriamente identidad MAP suficiente:
 `id`, `qualified_name`, `component`, `file` y `line_start`. Su `id` publicado es
 exactamente el `map_function_id` seleccionado por `trace.batch_selection.v3`;
