@@ -156,7 +156,7 @@ afirmacion del proveedor. Ninguno significa aislamiento verificado ni confianza
 de release.
 
 Existe ademas `solguard-scan-execution-contract.v2`. Su fingerprint scan-only
-cierra exactamente 26 componentes: su constructor, runner, launcher, helper CLI
+cierra exactamente 27 componentes: su constructor, runner, launcher, helper CLI
 productivo, runner de procesos y lock de autoridad de source, catalogo
 materializado, modulo de catalogo, compositor de snapshots, contrato de rutas
 portables, autoridad de cohortes, handoff, reader y finalizacion de autoridad de
@@ -165,18 +165,26 @@ product-priority, scan-contract, scan-boundary y seis schemas.
 Ground truth, evaluator, matcher, splits y
 adjudications no forman parte de esa huella y sus nombres/rutas se rechazan. El
 contrato embebe tambien `solguard-toolchain-fingerprint.v2`: el worker rehashea
-los 26 componentes y recomputa los 13 repositorios antes y despues. Detectar
+los 27 componentes y recomputa los 13 repositorios antes y despues. Detectar
 drift no demuestra aislamiento de capacidades.
 
 El `solguard-benchmark-execution-contract.v1` legacy conserva capacidad de
 oracle y solo sirve como regresion conocida, pero su frontera de resume
-fingerprinta exactamente 33 componentes. Incluye los descriptores de
+fingerprinta exactamente 34 componentes: 23 modulos JavaScript alcanzables y
+11 recursos corpus/runtime. Incluye los descriptores de
 corpus/runtime y todos los modulos locales alcanzables estaticamente desde los
 runners v1-v8: prioridad, snapshot/preflight, cohortes, rutas portables,
 seleccion, frontera/catalogo/contrato scan, handoff y la cadena completa de
 autoridad de source. Un test recompone el grafo de imports relativos y rechaza
 cualquier dependencia alcanzable ausente; la libreria dinamica del evaluador se
 incluye expresamente.
+
+Esta clausura de 34 componentes pertenece al scanner legacy y a su resume; no
+es un inventario universal de los gates posteriores. Los verificadores de
+pre-release, incluido el gate TRACE producer v2 y sus streamers, quedan fuera de
+esos 23 imports y se sellan mediante la captura completa del worktree, el
+prebuild canonico y el lock de medicion. Agregar un descriptor no alcanzable
+falsearia la igualdad entre imports y fingerprint.
 
 El ranking productivo vive ahora en el modulo independiente
 `benchmarks/product-priority.mjs`. No importa el matcher ni el evaluador y

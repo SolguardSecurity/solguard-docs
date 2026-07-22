@@ -33,6 +33,10 @@ Opciones de limites:
 - `--max-json-file-bytes`
 - `--max-required-map-bytes`
 - `--max-trace-files`
+- `--max-trace-raw-bytes-total`
+- `--max-trace-integrity-duration-ms`
+- `--trace-integrity-min-bytes-per-second`
+- `--trace-integrity-per-file-overhead-ms`
 - `--max-trace-bytes-total`
 - `--max-source-files`
 - `--max-source-file-bytes`
@@ -48,6 +52,10 @@ Tambien existen variables equivalentes:
 - `SOLGUARD_DISCOVER_MAX_JSON_FILE_BYTES`
 - `SOLGUARD_DISCOVER_MAX_REQUIRED_MAP_BYTES`
 - `SOLGUARD_DISCOVER_MAX_TRACE_FILES`
+- `SOLGUARD_DISCOVER_MAX_TRACE_RAW_BYTES_TOTAL`
+- `SOLGUARD_DISCOVER_MAX_TRACE_INTEGRITY_DURATION_MS`
+- `SOLGUARD_DISCOVER_TRACE_INTEGRITY_MIN_BYTES_PER_SECOND`
+- `SOLGUARD_DISCOVER_TRACE_INTEGRITY_PER_FILE_OVERHEAD_MS`
 - `SOLGUARD_DISCOVER_MAX_TRACE_BYTES_TOTAL`
 - `SOLGUARD_DISCOVER_MAX_SOURCE_FILES`
 - `SOLGUARD_DISCOVER_MAX_SOURCE_FILE_BYTES`
@@ -64,7 +72,7 @@ Schemas:
 ```text
 protocol_model.v0.1
 discover_index.v0.1
-discover_coverage_contract.v1
+discover_coverage_contract.v2
 ```
 
 Archivos:
@@ -75,18 +83,22 @@ Archivos:
 - `protocol_model.md`
 - `summary.txt`
 
-`coverage_contract.json` es el contrato de salud compacto y obligatorio de
-DISCOVER. Liga `protocol_model.json` por basename, schema, bytes y SHA-256, y
-proyecta exactamente `tool_version`, `summary`, `metadata.degraded`,
-`metadata.resource_usage`, los diagnosticos y el recibo
+`coverage_contract.json` es el contrato de salud compacto, cerrado y obligatorio
+de DISCOVER. Liga `protocol_model.json` por basename, schema, bytes y SHA-256, y
+proyecta exactamente `tool_version`, `summary`, `degraded`, los 16 limites de
+recursos, los 34 contadores de uso, los diagnosticos y el recibo
 `economic_route_graph_consumption.v1`. Se emite incluso cuando el modelo
 cabe bajo el limite de parseo: no es un fallback opcional para archivos grandes.
+El index lo anuncia con schema y capability explicitos
+`discover_coverage_contract.v2`; el alias generico no concede autoridad de
+version. Un contrato v1 es diagnostico legacy y nunca puede representar salud
+limpia actual.
 
 `coverage_reasons` es un enum ordenado y recomputable, no texto libre. Distingue
 deuda o cobertura desconocida de los dos ledgers MAP, TRACE o fuentes omitidas,
 items semanticos omitidos, etapas cuya observacion no fue `exact` y degradacion
 por recursos sin otra causa. Los contadores de admision y cada recibo
-`semantic_coverage.v1` deben reconciliarse exactamente con esos motivos. Core y
+`semantic_coverage.v2` deben reconciliarse exactamente con esos motivos. Core y
 el gate fallan cerrados ante ausencia, shape no canonico, hash divergente,
 contadores incoherentes, cobertura `unknown`, deuda u observacion incompleta.
 
@@ -108,14 +120,45 @@ El gate no busca palabras en `diagnostics`: reconstruye este array desde
 `resource_usage`, ledgers y receipts, lo ordena y exige igualdad exacta con el
 contrato. Un enum desconocido o una causa omitida bloquea product health.
 
+La integridad fisica del batch TRACE tiene un presupuesto separado del reloj
+semantico de 180000 ms. Antes de leer, DISCOVER calcula dos pasadas obligatorias
+sobre todos los primarios declarados:
+
+```text
+required_bytes = trace_raw_bytes * 2
+budget_ms = ceil(required_bytes * 1000 / min_bytes_per_second)
+          + trace_primary_count * 2 * per_file_overhead_ms
+```
+
+El contrato publica bytes declarados y procesados, primarios, pasadas requeridas
+y completadas, budget y elapsed fisico. Deben reconciliarse exactamente con el
+modelo primario. Una lectura parcial, presupuesto imposible, exceso del limite
+fisico, overflow o discrepancia falla cerrado; verificar artefactos grandes no
+consume silenciosamente el tiempo destinado a inferencia semantica.
+
+El total raw y el payload semantico retenido son presupuestos distintos. Cada
+primary fisico individual puede llegar al cap producer inclusivo de 4 GiB y se
+prevalida por metadata/descriptor antes de dos pasadas streaming; DISCOVER no
+lo materializa entero ni confunde su limite de proyeccion semantica con el wire.
+Cero, N+1, mismatch, overflow o drift fisico fallan cerrados.
+
 Cuando TRACE es un directorio batch, DISCOVER valida ademas el
-`trace.contract_manifest.v1` all-target: membresia/orden, bytes y SHA-256 de
+`trace.contract_manifest.v2` all-target: membresia/orden, bytes y SHA-256 de
 cada primario, digest canonico de su coverage ledger, receipt de route graph y
-agregados. El `trace.materialization_manifest.v1`, cuando aplica, debe ser el
+agregados. El `trace.materialization_manifest.v2`, cuando aplica, debe ser el
 subset exacto ligado a esos mismos primarios. Ningun resumen del indice puede
 lavar deuda, sustituir un target o aportar evidencia semantica por si solo. Un
 receipt `over_approximation` completo puede acreditar cobertura MAY del subset,
-pero no exactitud, MUST ni ausencia.
+pero no exactitud, MUST ni ausencia. "Cuando aplica" significa exactamente
+`diagnostics_count > 0`: con cero diagnosticos el manifiesto debe estar ausente
+o ser `null`, y con uno o mas es obligatorio.
+
+Si un primario declara target-route, DISCOVER exige como unidad indivisible
+`trace.target_route_closure.v2`, dos evaluaciones v2 causal/economic y
+`trace.claim_authority.v2`, y recalcula sus digests, inventarios, fixpoints y
+flags. La deuda o incompletitud de representacion se mide y conserva
+review-only; nunca se eleva a evidencia negativa. La familia producer v1 es
+solo diagnostica.
 
 ## Proyeccion semantica del MAP
 
@@ -320,8 +363,18 @@ primero el espacio cartesiano completo. Llegar exactamente a un limite no crea d
 solo una omision observada, una busqueda incompleta o una etapa no iniciada
 degrada el modelo y queda cuantificada en el ledger.
 
-Cada coleccion acotada publica un recibo `semantic_coverage.v1`. Cuando la
-busqueda demuestra al menos una omision pero el presupuesto impide enumerar
+Cada coleccion acotada publica un recibo `semantic_coverage.v2`. Su campo
+`unit` es obligatorio y usa el enum cerrado `items`, `files`, `targets`,
+`contracts` o `debt_entries`. Solo los recibos `unit=items` contribuyen a
+`semantic_items_omitted`; las demas dimensiones conservan contadores separados.
+`source_files` usa `files`; seleccion TRACE y colapso de duplicados usan
+`targets`; disponibilidad/autoridad y admision contractual usan `contracts`;
+deuda de grafo upstream usa `debt_entries`; las etapas semanticas ordinarias
+usan `items`. Unit ausente/desconocida, aritmetica incoherente u overflow checked
+fallan cerrados. Un recibo v1 es incompatible, se rechaza y no se reinterpreta
+como v2; un artefacto pre-contract sin receipt solo puede ser diagnostico.
+
+Cuando la busqueda demuestra al menos una omision pero el presupuesto impide enumerar
 todo el espacio restante, `observation=lower_bound` evita fingir un total
 exacto. Si el deadline impide iniciar una etapa, se registra
 `observation=not_started`, el modelo queda degradado y cero elementos no se

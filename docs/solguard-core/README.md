@@ -154,7 +154,7 @@ evaluator. Mantiene el wire contract `solguard-product-priority-ranking.v2` y su
 semantica actual: separar el codigo no equivale a certificar el momento ni las
 capacidades con las que se ejecuto.
 
-`solguard-scan-execution-contract.v2` cierra exactamente 26 componentes: su
+`solguard-scan-execution-contract.v2` cierra exactamente 27 componentes: su
 constructor, runner, launcher, helper CLI productivo, runner de procesos y lock
 de autoridad de source, catalogo materializado, modulo de catalogo, compositor
 de snapshots, contrato de rutas portables, autoridad de cohortes, handoff,
@@ -167,11 +167,17 @@ rehashea los componentes y recomputa los 13 repositorios antes y despues. Esto
 detecta drift, no aislamiento de capacidades.
 
 El execution contract legacy de v1-v8 sigue siendo evidencia de regresion
-conocida, no blind, pero cierra exactamente 33 componentes para resume:
-descriptores de corpus/runtime y todos los modulos locales alcanzables por
+conocida, no blind, pero cierra exactamente 34 componentes para resume: 23
+modulos JavaScript alcanzables y 11 recursos corpus/runtime. Incluye sus
+descriptores y todos los modulos locales alcanzables por
 imports estaticos desde cada runner. El test de cierre vuelve a calcular ese
 grafo y falla ante una dependencia omitida; la libreria dinamica del evaluador
 permanece declarada de forma explicita.
+
+Los gates de pre-release no se falsean dentro de ese closure legacy: sus
+modulos se sellan mediante la captura completa del worktree, el prebuild y el
+lock de medicion. Un execution contract dedicado para ellos seria otra frontera
+versionada.
 
 `protocols-scan.mjs` es el runner scan-only comun y `scan-suite.mjs` su launcher
 por suite. Cada source se materializa y liga por `source_sha256` y por el tree

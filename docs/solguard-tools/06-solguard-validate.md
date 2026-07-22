@@ -103,13 +103,25 @@ contrato posterior.
 Metadata-only, source ausente/symlinked/inestable o un hash divergente invalida
 el input. VALIDATE recompone ademas `invariant.selection_manifest.v1` desde el
 source y `value/attack_paths.json` fisicos: inventarios completos, endpoints de
-relaciones, anchors, ranking, orden, hashes y seleccion deben ser exactos. Una
-omision de anchors o un manifest autosellado divergente falla cerrado.
+relaciones, anchors, ranking, orden, hashes y seleccion deben ser exactos.
+Shape, count o hash incoherente, manifest sustituido y overflow de aritmetica
+checked son fallos duros de input.
+
+Una vista bounded autentica puede declarar deuda coherente mediante
+`omitted_anchor_occurrences`, `omitted_evidence_occurrences` y
+`omitted_relationships`; el ultimo contador incluye relaciones que cruzan la
+frontera retained/omitted. Cualquier valor positivo fuerza globalmente todos los
+resultados a `inconclusive` con
+`bounded_invariant_anchor_coverage_debt`,
+`invariant_evidence_coverage_debt` o
+`bounded_invariant_relationship_coverage_debt`. FILTER conserva un output
+estructural valido, pero su conjunto de resultados terminales de admision queda
+vacio.
 
 En cambio, `retained_objects_verified=false` puede describir una
 vista bounded autentica cuya materializacion exacta —incluidas relaciones— no
-cabe en el limite: es deuda diagnostica, no soporte. VALIDATE fuerza los
-resultados afectados a `inconclusive`, FILTER no puede admitirlos como `pass` y
+cabe en el limite: es deuda diagnostica, no soporte. VALIDATE fuerza todos los
+resultados a `inconclusive`, FILTER no puede admitirlos como `pass` y
 release no puede quedar limpio. En modo
 directo `retained_objects_verified` debe ser `true`. En el modo bounded
 `false`, el inventario de IDs ya verificado se conserva por separado y los
@@ -119,17 +131,24 @@ exactamente; cualquier drift invalida el input antes de evaluar candidatos o
 reclamar salud de release.
 
 Cuando `--trace` es un batch, `index.json` es metadata sellada y
-`trace.contract_manifest.v1` es obligatorio. VALIDATE exige un binding en el
+`trace.contract_manifest.v2` es obligatorio. VALIDATE exige un binding en el
 mismo orden por cada `trace.v0.9`, rehashea sus bytes, compara el
 `trace.coverage_ledger.v1` y el receipt de route graph inline y vuelve a
 calcular el digest y los contadores agregados. Si el receipt agregado autoriza
 una clausura factorada completa y sin deuda, con resolucion `exact` u
 `over_approximation`, tambien exige que
-`trace.materialization_manifest.v1` sea exactamente el subset de targets con
-`trace.materialization_diagnostics.v1` y que cada diagnostico quede ligado al
+`trace.materialization_manifest.v2` sea exactamente el subset de targets con
+`trace.materialization_diagnostics.v2` y que cada diagnostico quede ligado al
 mismo primario. Esta admision solo acredita cobertura MAY: VALIDATE conserva
 `over_approximation` y no la convierte en exactitud, MUST o evidencia de
 ausencia. La linearizacion bounded no puede sustituir la autoridad del grafo.
+El materialization manifest debe estar ausente o ser `null` cuando ese subset
+esta vacio y es obligatorio cuando `diagnostics_count > 0`.
+
+Toda conclusion que dependa de TRACE exige ademas
+`trace.evidence_verification.v2` bajo la policy v3 actual. Un primary sin indice,
+un indice sin receipt, v1 legacy o un estado no verificado fuerza
+`inconclusive`; nunca se interpreta la ausencia de verificacion como autoridad.
 
 Estas lecturas son acotadas y quedan ligadas al descriptor y a la identidad
 fisica del fichero dentro del root declarado. Paths inseguros, symlinks o
@@ -138,20 +157,37 @@ cross-hash stale invalidan el input completo. Una seleccion TRACE
 `empty_allowed` valida sigue produciendo cobertura incompleta y resultados
 `inconclusive`; nunca soporte o refutacion por ausencia.
 
+Cada primary TRACE es no vacio y comparte el cap fisico producer inclusivo de
+4 GiB. VALIDATE contrasta `primary_bytes` con metadata estable antes de hashear
+o proyectar; sus limites menores de proyeccion son de memoria retenida y no
+rechazan por si solos un wire valido que puede verificarse en streaming.
+
 La admision limpia exige `trace.batch_selection.v3`; versiones 1 y 2 son
 diagnosticas y no pueden autorizar una decision terminal limpia. VALIDATE reabre
 el MAP y el source fisicos, recompone la identidad de cada target, el universo
 completo, los duplicados, el orden elegible y el inventario fisico completo, y
 verifica que cada descriptor selle los bytes source reales. Un receipt
 autosellado no puede inventar, ocultar ni reordenar targets.
+El `target.id` publicado debe ser exactamente el `map_function_id` seleccionado;
+un ID local del parser no puede sustituirlo. El slot `solguard_map_context`
+permanece separado y presente, aunque pueda valer `null`, y solo corrobora MAP.
 
 En v3, `--top` limita unicamente el subcontrato
 `trace.batch_deep_enrichment.v1`. VALIDATE verifica tambien cada marcador
 `trace.batch_target_enrichment.v1`; un target compacto conserva autoridad
 fisica, pero su omision profunda es no autoritativa y nunca evidencia negativa
 ni deuda de cobertura.
+VALIDATE exige exactamente un `physical_source_binding` en compact y ningun
+binding de funcion Python/Vyper. En deep `.vy` o `.py` exige exactamente el
+binding de funcion del lenguaje correspondiente y prohibe el del otro lenguaje.
 
-Cada resultado publica `trace.claim_authority.v1`. Para una decision que no usa
+VALIDATE valida tambien la familia del productor
+`trace.target_route_closure.v2` + dos `trace.target_route_evaluation.v2` +
+`trace.claim_authority.v2` cuando el target la declara. Deuda, incompletitud o
+review-only nunca se convierten en MUST, ausencia o soporte terminal.
+
+Cada resultado publica el contrato de decision separado
+`trace.claim_authority.v1`. Para una decision que no usa
 TRACE, `decision_authority=not_used` y `claim_quantifier=none` solo son
 coherentes cuando tanto el resultado como su candidato canonico hash-bound
 carecen de dependencia TRACE. El `primary_evidence_source` y todas las
@@ -170,6 +206,9 @@ Solo los namespaces nativos `trace-evidence-v1-<64hex>` y
 no se convierte en TRACE. Las referencias genericas deben resolver una sola
 ocurrencia path-bound; duplicar la misma pareja artefacto/ID invalida el claim
 en vez de perder multiplicidad durante la deduplicacion.
+Cada top-level `evidence_items[*]` debe declarar `source=solguard-trace` y un
+unico ID canonico; evidencia bajo `solguard_map_context` y los IDs semanticos
+`trace-economic-evidence-*` no satisfacen autoridad fisica TRACE.
 
 ## Criterio de `supported`
 

@@ -230,6 +230,11 @@ exacto puede actualizar la vista efectiva de attack paths. Los estados
 Un `evidence_id` que exista en MAP conserva origen MAP aunque TRACE lo copie a
 otra superficie o línea, y no puede aportar la mitad TRACE-native de
 `map_trace_reverified`.
+La mitad TRACE exige un item top-level nativo con `source=solguard-trace` y un
+ID canónico `trace-evidence-v1-*`; `solguard_map_context` permanece separado y
+solo corrobora MAP. Del mismo modo, `trace-economic-evidence-*` es identidad
+semántica de un check, no evidencia física: solo `source_evidence_ids` resueltos
+por ID, fichero y línea pueden aportar referencias físicas al proof.
 
 La integracion completa, sus artefactos y los campos de `AnalyzeOutputs` se
 documentan en

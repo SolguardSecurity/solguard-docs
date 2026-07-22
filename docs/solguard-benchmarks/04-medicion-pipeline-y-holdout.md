@@ -207,6 +207,13 @@ sidecar ligado por bytes/SHA-256, pero recompone desde el primario sus ledgers,
 audit summary, graph edge health, economic flow runtime health, clausura e
 identidades antes de evaluar deuda. La igualdad con el sidecar es obligatoria:
 el sidecar nunca es autoridad semantica independiente.
+El contrato actual es `solguard-coverage-manifest.v2` con
+`solguard-map-coverage.v2`; v1 solo puede aparecer como diagnostico legacy.
+Ademas de los ledgers historicos, el gate recompone
+`control_flow_coverage.v1` y `map_target_route_prerequisites.v1` desde los CFG,
+funciones, source, evidencia, calls y edges fisicos. Omision o identidad
+ausente bloquean; unresolved retenido conserva `over_approximation` MAY y nunca
+se convierte en MUST, ausencia o negativo.
 El mismo sidecar debe incluir
 `economic_route_graph_closure_manifest.v1`: el gate valida su digest
 content-addressed, cobertura, roots, clausura transitiva de fragments y
@@ -215,23 +222,64 @@ una region no seleccionada `over_approximation` no contamina un root exacto,
 pero una region MAY alcanzada nunca autoriza un claim exacto/MUST. Omision de
 cobertura y resolucion semantica se contabilizan por separado.
 
-TRACE debe sellar `trace.contract_manifest.v1` con un binding ordenado para
+TRACE debe sellar `trace.contract_manifest.v2` con un binding ordenado para
 cada target del batch. El gate rehashea cada `trace.v0.9`, compara su ledger y
 route receipt inline y recalcula deuda, roots y `manifest_digest`. Cuando la
 clausura factorada autoriza separar la linearizacion legacy, exige ademas que
-`trace.materialization_manifest.v1` sea el subset exacto de targets con
+`trace.materialization_manifest.v2` sea el subset exacto de targets con
 diagnosticos, ligado a los mismos bytes. Un target ausente/extra/intercambiado,
 un digest stale o diagnosticos clasificados sin clausura completa, debt-free y
 con roots bloquean `product_health`. Tanto `exact` como `over_approximation`
 pueden acreditar esa cobertura MAY; el gate conserva la segunda etiqueta y no
 la usa para probar exactitud, MUST o ausencia.
+El materialization manifest esta ausente o es `null` exactamente cuando no
+existen diagnosticos y es obligatorio, con el subset exacto, cuando
+`diagnostics_count > 0`.
 
-El inventario TRACE usa la whitelist
-`trace_v0_9_typed_evidence_paths_v1`. En particular, cada
+La autoridad de productor actual se prueba unicamente con
+`trace.evidence_verification.v2` bajo la policy v3. Un primary sin indice, un
+indice sin receipt, un receipt v1 o un estado desconocido puede aparecer en un
+informe diagnostico, pero bloquea `product_health` y cualquier decision FILTER
+terminal dependiente de TRACE.
+
+El `index.json` fisico actual tiene un cap inclusivo de 100 MiB. Canary,
+release, detection coverage y el replay FILTER offline aplican el mismo lector
+streaming estable y no retienen a la vez un `Buffer` crudo del fichero completo
+y el documento parseado. El receipt y stdout del verificador conservan un cap
+inclusivo independiente de 64 MiB; ese presupuesto no limita el indice.
+
+Con ocho workers simultaneos, el limite anterior acota la entrada fisica de
+indices a 800 MiB en total antes del overhead de parser, objetos y runtime. Es
+una envolvente aritmetica de bytes de entrada, no una medida ni una garantia de
+RSS del proceso.
+
+El target publicado debe usar exactamente el `map_function_id` seleccionado; un
+ID local del parser no es identidad de target. En
+`trace.batch_selection.v3`, `--top` solo separa deep de compact y
+`target_budget_omitted` esta prohibido. Compact exige un unico
+`physical_source_binding`; deep `.vy`/`.py` exige exactamente el binding de
+funcion del lenguaje correspondiente.
+
+El inventario TRACE usa la politica cerrada
+`trace.evidence_authority_paths.v1`. En particular, cada
 `evidence_items[*]` debe contener un unico `trace-evidence-v1-<sha256>` que el
 gate recompone con `trace.evidence_item.v1` desde target, rango y payload
 exactos. Cambiar target/detail/kind/source/file/line/range o re-sellar un ID
 arbitrario bloquea `product_health` tanto en primarios pequenos como grandes.
+Cada item declara `source=solguard-trace`; evidencia MAP queda en el slot
+separado y nullable `solguard_map_context` y no adquiere autoridad TRACE.
+`trace-economic-evidence-*` es identidad semantica y solo
+`source_evidence_ids` resueltos por ID/fichero/linea aportan evidencia fisica.
+
+Para un primario TRACE por encima de 100 MiB, la proyeccion directa recalcula
+desde un unico stream estable schema, target, ledgers, capabilities, receipt de
+grafo, materializacion, ocurrencias de evidencia, digest multiset y
+`binding_counts`, a la vez que sella todos los bytes y su SHA-256. Enums, orden,
+paridad y aritmetica checked deben cerrar; parcialidad, truncado, overflow,
+TOCTOU o digest drift fallan cerrados. No existe sidecar semantico TRACE.
+Cada primary debe ser no vacio y respetar el cap producer inclusivo de 4 GiB.
+El gate compara `primary_bytes` con metadata fisica antes del hash/proyeccion;
+los presupuestos menores de datos retenidos limitan memoria, no el wire valido.
 
 ECONOMIC solo queda completo si ambos `economic_collection_coverage.v1` son
 aritmeticamente coherentes y el ledger sintetizado preserva cada budget exacto
@@ -241,7 +289,7 @@ primario y exige igualdad exacta; no trata el tamano como fallo ni acepta un
 resumen sin autoridad. VALUE e INVARIANT siguen la misma regla con sus summaries,
 estados de materializacion/proof y stage coverage.
 
-DISCOVER publica siempre `discover_coverage_contract.v1`, no solo cuando el
+DISCOVER publica siempre `discover_coverage_contract.v2`, no solo cuando el
 modelo es grande. El gate liga `protocol_model.json` por bytes y SHA-256,
 recomputa su enum `coverage_reasons` desde los ledgers y contadores y exige
 coincidencia exacta con el primario cuando este cabe bajo el limite. Por encima
@@ -249,13 +297,27 @@ de 100 MiB recompone la proyeccion desde el primario y exige que el contrato
 hash-bound la reproduzca sin elevar el parse cap. Un contrato
 ausente, cobertura upstream `unknown`, deuda, una etapa semantica no exacta o
 aritmetica incoherente bloquean `product_health`.
+V1 es diagnostico legacy y no puede pasar la salud actual. V2 liga tambien los
+limites exactos y todos los contadores de uso. La integridad TRACE se mide con
+dos pasadas fisicas, un budget previo derivado de bytes, primarios, throughput
+minimo y overhead por fichero, y un reloj separado de la inferencia semantica;
+los bytes/pasadas incompletos o un budget excedido fallan cerrado.
+Cada etapa bounded publica `semantic_coverage.v2` con unit obligatorio
+`items|files|targets|contracts|debt_entries`; solo `items` agrega
+`semantic_items_omitted`. Unit desconocida/ausente, un receipt v1 incompatible,
+overflow o conteos incoherentes fallan cerrados; v1 nunca se reinterpreta como
+v2.
 
 INVARIANT puede llegar a VALIDATE/FILTER mediante
 `invariant.bounded_runtime.v1`, pero el gate exige el source
 `invariant.v0.8` byte-exacto, la seleccion de objetos completos y su coverage
-ledger. La omision valida solo puede quedar inconclusa. Core, VALIDATE, FILTER y
-el gate realizan comprobaciones fail-closed independientes; que una capa haya
-aceptado un artefacto no exime a la siguiente de revalidarlo.
+ledger. Deuda coherente en `omitted_anchor_occurrences`,
+`omitted_evidence_occurrences` u `omitted_relationships`, incluido el cruce
+retained/omitted, fuerza todos los verdictos a `inconclusive` y deja vacio el
+conjunto terminal FILTER. Tamper, shape/count incoherente u overflow checked son
+fallos duros. Core, VALIDATE, FILTER y el gate realizan comprobaciones
+fail-closed independientes; que una capa haya aceptado un artefacto no exime a
+la siguiente de revalidarlo.
 
 La lectura inline de Core cambia a proyeccion a partir de 96 MiB; el gate de
 Deploy conserva 100 MiB como limite inline. Los sidecars estan limitados a 100

@@ -69,6 +69,12 @@ conserva las decisiones que alcanzan ese paso. `lineage_id` agrupa procedencia
 común; no permite sustituir el `id` de ruta. Dos ramas alternativas comparten
 lineage si corresponde, pero tienen route digests e IDs distintos.
 
+`branch_path` conserva una secuencia causal única en orden de fuente, desde el
+guard exterior hasta el interior; no se ordena lexicográficamente. El
+`event.guard` asociado es el set canónico ordenado y sin duplicados. Un
+consumidor compara el guard con una copia canonizada del path y conserva el
+orden causal original dentro de la identidad firmada.
+
 Aunque confidence y evidence IDs no forman parte del SHA de ruta, un consumidor
 exacto los deriva de nuevo: confidence del flow es el mínimo de operaciones y
 aristas; evidence del flow es la unión canónica de operaciones, aristas y links;
@@ -160,6 +166,18 @@ un `flow_route_bindings[{flow_id,route_digest}]`; `flow_ids[]` y
 `solguard_map_context.economic_flows[]` debe contener una copia canónica,
 completa y `resolved` de esa identidad. Cualquier duplicado, drift o ausencia
 convierte el binding en no autoritativo.
+
+El target TRACE que publica ese binding usa exactamente el `map_function_id`
+seleccionado como `target.id`; un ID local del parser no puede sustituirlo. Los
+top-level `evidence_items[]` son exclusivamente nativos
+`source=solguard-trace`. El slot separado `solguard_map_context` está presente,
+puede valer `null` y conserva solo autoridad MAP.
+
+Los `trace-economic-evidence-*` incluidos en los `evidence_ids` del check son
+identidad semántica y solo pueden propagarse como `source_id`/`source_ids`.
+Evidencia física significa `source_evidence_ids` resueltos contra la tupla
+upstream exacta `{evidence_id,file,line}`; un ID semántico nunca se transforma
+en `EvidenceRef` ni autoridad TRACE.
 
 ## Ensamblado exacto en VALUE
 

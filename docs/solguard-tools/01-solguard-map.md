@@ -226,6 +226,12 @@ Los campos aditivos incluyen:
 - por step, `operation_id`, symbol/component/asset, value IDs de entrada y
   salida, `source_ordinal`, `branch_path`, resolución, confianza y evidence IDs.
 
+`branch_path` conserva una secuencia causal única en orden de fuente, desde el
+guard exterior hasta el interior; no se ordena lexicográficamente. El
+`event.guard` correspondiente es el set canónico ordenado y sin duplicados. Un
+consumidor reconcilia ambos canonizando una copia de `branch_path`, pero conserva
+el orden causal publicado en el step.
+
 Cada `asset_leg` usa `economic-asset-leg-v2-{digest}` sobre asset, dirección,
 source/sink symbol IDs, operation IDs y amount expressions ordenados. Ese ID, y
 no una etiqueta mutable, es el que participa en el digest de ruta. Los arrays
@@ -316,7 +322,7 @@ autorizar una ruta v2 exacta, un hecho MUST ni evidencia de ausencia.
 
 ## Presupuestos y cobertura observable
 
-`audit_map.json` incluye tres recibos/contratos aditivos:
+`audit_map.json` y su sidecar exponen cinco superficies de cobertura aditivas:
 
 - `economic_flow_coverage.v1`: limites y conteos de rutas por entrypoint, steps
   por ruta, flows/steps globales y cualquier ruta omitida;
@@ -324,12 +330,18 @@ autorizar una ruta v2 exacta, un hecho MUST ni evidencia de ausencia.
   factorado, retenido siempre por clausuras completas;
 - `map_collection_coverage.v1`: `observed`, `duplicates_collapsed`, identidades
   semanticas unicas, retenidas y truncadas para dependencias, call edges y graph
-  edges.
+  edges;
+- `control_flow_coverage.v1`: inventarios cerrados de CFG, nodes, edges, calls y
+  evidencia, con resolucion y motivos semanticos separados de la omision
+  fisica;
+- `map_target_route_prerequisites.v1`: binding content-addressed del MAP fisico,
+  cobertura de colecciones, CFG, identidad de funciones y proyeccion de source
+  que TRACE debe recomputar antes de evaluar rutas por target.
 
 MAP genera siempre `audit_map.coverage.json`. El envelope
-`solguard-coverage-manifest.v1` declara `producer=solguard-map`, liga el
+`solguard-coverage-manifest.v2` declara `producer=solguard-map`, liga el
 `audit_map.v0.10` instalado por basename, bytes y SHA-256 y proyecta copias
-exactas de los tres recibos bajo `solguard-map-coverage.v1`. El sidecar permite
+exactas del ledger bajo `solguard-map-coverage.v2`. El sidecar permite
 validar cobertura sin cargar un JSON mayor de 100 MiB; no sustituye el mapa ni
 autoriza relaciones semanticas por si mismo. Tambien proyecta el contrato
 exacto `solguard-map-runtime-summary.v1`: los contadores del audit, la salud de
@@ -337,6 +349,17 @@ resolucion de graph edges, `economic-flow-runtime-health.v1` y
 `economic-route-graph-health.v1`. Los consumidores
 reconcilian esos agregados con los ledgers; un contador falsificado, una
 categoria que no suma o un envelope de flujo invalido falla cerrado.
+Un sidecar v1 presente se conserva solo como diagnostico legacy y no puede
+autorizar un release actual.
+
+Los estados de cobertura fisica y resolucion semantica no son intercambiables.
+Una identidad, evidencia o coleccion omitida, o un digest incoherente, deja el
+prerequisito `incomplete` y falla cerrado. Un edge/call explicitamente retenido
+con `resolution=unresolved` conserva en cambio una over-approximation honesta:
+puede acreditar reachability `MAY` y revision, pero nunca `MUST`, ausencia ni
+evidencia negativa. Los consumidores no propagan ciegamente un estado global a
+todos los targets; reabren el primario y evalúan el CFG alcanzable de cada
+target con su recibo local.
 
 El ledger incluye tambien `map_function_identity_manifest.v1`, derivado de
 todas las funciones del primario. Cada entrada completa liga

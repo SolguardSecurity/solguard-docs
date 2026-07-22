@@ -138,6 +138,15 @@ fichero extranjero falla cerrada, y la frontera de publicacion rechaza cualquier
 descriptor que permanezca sin localizar. Esto impide atribuir evidencia de otro
 fichero al target por un fallback de linea.
 
+La frontera superior tambien es cerrada: cada `evidence_items[*]` declara
+`source=solguard-trace` y exactamente un ID canonico `trace-evidence-v1-*`. El
+slot top-level separado `solguard_map_context` esta presente pero puede ser
+`null`; sus copias conservan autoridad MAP y nunca entran en el ledger nativo.
+El `target.id` publicado coincide exactamente con el `map_function_id`
+seleccionado, no con un ID local del parser. Compact publica un unico
+`physical_source_binding`; deep Vyper/Python publica un unico binding de funcion
+del lenguaje correspondiente.
+
 ## Ceremonia de catalogo
 
 `source-authority-seal.mjs` separa cuatro acciones:

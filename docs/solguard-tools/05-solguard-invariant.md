@@ -78,6 +78,14 @@ procedencia tras deduplicacion determinista. Alcanzar exactamente el limite es
 completo; la primera identidad omitida genera `coverage_debt` con contadores
 observed/retained/omitted, no un recorte silencioso.
 
+La procedencia semantica y la evidencia fisica permanecen separadas. Un
+`trace-economic-evidence-*` recibido en
+`economic_checks[].evidence.evidence_ids` identifica el check y se conserva
+solo en `source_id`/`source_ids`. Los `EvidenceRef` se construyen exclusivamente
+desde `source_evidence_ids` y cada ID debe resolver exactamente la autoridad
+MAP/TRACE `{evidence_id,file,line}`. Un ID semantico no localizado no puede
+autorizar una invariante ni convertirse en evidencia TRACE.
+
 Core puede crear la vista de transporte `invariant.bounded_runtime.v1` con un
 maximo de 8.192 invariantes source-exact y 256 MiB de objetos retenidos,
 seleccionados mediante `candidate_attack_path_anchor_score_v1`. Esa cifra no es
@@ -93,14 +101,26 @@ extremos estan retenidos se rehidratan desde ese primario, nunca desde campos
 compactos. `invariant.selection_manifest.v1` recompone desde los dos inputs
 fisicos el inventario completo de invariantes y relaciones, el orden de ranking,
 los hashes de cada objeto seleccionado, los limites y los anchors. Una relacion
-con un extremo inexistente o cualquier anchor omitido falla cerrado antes de
-autorizar VALIDATE/FILTER. Invariantes y relaciones participan juntas en el
-limite de materializacion. Si esa materializacion exacta no cabe,
-`retained_objects_verified=false` es deuda bounded estructuralmente valida,
-pero no puede autorizar `supported` ni `refuted`; VALIDATE fuerza el resultado
-afectado a `inconclusive`, FILTER no admite soporte y release no puede quedar
-limpio. Un source ausente, externo, symlinked, inestable o divergente si
-invalida la vista.
+con un extremo inexistente, un contador incoherente, overflow de aritmetica
+checked o sustitucion del manifest invalida la vista y falla duro antes de
+evaluar. Invariantes y relaciones participan juntas en el limite de
+materializacion.
+
+Una deuda bounded coherente se cuantifica mediante
+`omitted_anchor_occurrences`, `omitted_evidence_occurrences` y
+`omitted_relationships`; este ultimo incluye relaciones que cruzan la frontera
+retained/omitted. Cualquier contador positivo conserva un diagnostico valido,
+pero obliga a que todos los resultados VALIDATE sean `inconclusive`, con la
+razon cerrada correspondiente:
+`bounded_invariant_anchor_coverage_debt`,
+`invariant_evidence_coverage_debt` o
+`bounded_invariant_relationship_coverage_debt`. FILTER debe publicar su output
+estructural, pero sin ningun resultado terminal de admision.
+
+Si la materializacion exacta no cabe, `retained_objects_verified=false` aplica
+la misma regla global y exige vectores de invariantes/relaciones vacios. Un
+source ausente, externo, symlinked, inestable o divergente invalida la vista;
+no se representa como deuda coherente.
 
 En los outputs downstream, `metadata.source_hashes.invariants` sella siempre el
 artefacto runtime realmente consumido y

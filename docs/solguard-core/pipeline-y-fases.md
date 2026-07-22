@@ -71,7 +71,7 @@ Deploy conserva un limite inline de 100 MiB y aplica el mismo parser JSON
 estricto a ambos lados: UTF-8 invalido, claves duplicadas, JSON truncado o con
 datos posteriores, links, escapes, sustitucion fisica y TOCTOU fallan cerrados.
 DISCOVER usa un contrato distinto: `coverage_contract.json` con schema
-`discover_coverage_contract.v1` es obligatorio por debajo y por encima del
+`discover_coverage_contract.v2` es obligatorio por debajo y por encima del
 umbral. TRACE no publica un sidecar semantico y se proyecta directamente desde
 cada primario. Para un primario grande, el gate recompone la proyeccion de MAP,
 DISCOVER, ECONOMIC, VALUE o INVARIANT y exige igualdad exacta con el contrato
@@ -87,6 +87,16 @@ revalida root/path canonicos, metadata e identidad fisica antes y despues. Asi
 un `trace.v0.9` por encima de 100 MiB sigue siendo consumible sin sidecar
 semantico; overflow de la vista, link, escape, sustitucion o drift TOCTOU fallan
 cerrados.
+El wire de cada primary es no vacio y comparte un cap fisico inclusivo de 4 GiB
+entre producer y consumidores. Antes de cualquier hash/proyeccion completa,
+Core contrasta `primary_bytes` con metadata estable. El techo menor de la vista
+retenida es un limite de memoria y no redefine esa frontera fisica.
+La proyeccion directa sella schema, target MAP-bound, `evidence_items`, el slot
+separado `solguard_map_context`, receipt economico, capabilities, coverage
+ledger, evaluaciones factoradas y diagnosticos de materializacion. Recalcula
+ocurrencias, digest multiset y `binding_counts` de evidencia. Enums, orden,
+capability/status/debt y aritmetica de conteos/bytes deben reconciliar de forma
+exacta; ausencia, parcialidad, truncado, overflow o digest drift fallan cerrados.
 
 Cada lectura estricta queda ligada a un descriptor regular y a su identidad
 fisica, con techo de bytes y comprobaciones antes y despues de EOF. Core exige
@@ -117,7 +127,8 @@ fuente soportados usa el modo rapido; si el modo profundo excede su ventana,
 reintenta de forma acotada y registra la degradacion.
 
 MAP publica `economic_flow_coverage.v1`, `economic_route_graph.v1` con su
-`economic_route_graph_coverage.v1`, y `map_collection_coverage.v1` dentro
+`economic_route_graph_coverage.v1`, `map_collection_coverage.v1` y
+`control_flow_coverage.v1` dentro
 de `audit_map.json`. Los recibos separan identidades semanticas unicas de
 duplicados colapsados y registran limites de rutas, steps, flows, dependencias y
 grafos. Un duplicado exacto no crea deuda; una identidad unica omitida, una ruta
@@ -135,13 +146,23 @@ Este contrato garantiza presencia estructural; no afirma por si solo cobertura
 semantica total ni deteccion de vulnerabilidades Python.
 
 MAP escribe ademas `audit_map.coverage.json` bajo
-`solguard-coverage-manifest.v1`. El sidecar liga nombre, schema, bytes y SHA-256
-de `audit_map.json` y conserva copias exactas de los tres ledgers. Core solo usa
+`solguard-coverage-manifest.v2` y `solguard-map-coverage.v2`. El sidecar liga
+nombre, schema, bytes y SHA-256 de `audit_map.json`, conserva los ledgers y
+añade `map_target_route_prerequisites.v1`, que sella CFG, source, funciones,
+evidencia y llamadas necesarias para TRACE. V1 queda como diagnostico legacy y
+no autoriza una ejecucion actual. Core solo usa
 esta proyeccion si el primario supera su limite de observabilidad; un sidecar
 ausente, stale, symlinked o con hash divergente hace fallar la fase. La
 proyeccion incluye ademas audit summary, resolucion de graph edges y salud
 runtime de flujos y del route graph; Core valida sus campos cerrados y coherencia aritmetica antes
 de conservar esos contadores en `analysis_funnel.v1`.
+
+Core distingue perdida fisica de incertidumbre semantica. Omision, identidad o
+evidencia ausente y digest incoherente producen `incomplete` y bloquean. Un
+edge/call unresolved que permanece identificado y retenido produce
+`over_approximation`: puede propagar rutas `MAY` y revision, pero nunca hechos
+`MUST`, ausencia o evidencia negativa. La decision se recompone por target; una
+deuda global ajena no se copia automaticamente sobre todos los CFG.
 
 Las rutas economicas deduplican identidades antes del presupuesto. Cada
 entrypoint prueba primero 64 rutas y recupera de forma adaptativa hasta el hard
@@ -228,6 +249,9 @@ primario compacto. Cada target e informe ligan modo y rank mediante
 en deuda fisica/semantica, evidencia de ausencia o resultado negativo. V3
 prohibe `target_budget_omitted`; los gaps fisicos describen solo rechazos reales
 anteriores a la elegibilidad.
+Compact publica exactamente un `physical_source_binding` y ningun binding de
+funcion Python/Vyper. Deep `.vy` y `.py` publican exactamente el binding de
+funcion correspondiente y prohiben el del otro lenguaje.
 
 Los filtros cerrados son `levels`, `top`, `include_tests` y
 `max_binding_source_bytes`. Cada consumidor
@@ -242,47 +266,69 @@ FILTER ligan el mismo `trace:index.json` por SHA-256, pero el indice sigue siend
 metadata: no cuenta como evidencia de un candidato. Un batch `empty_allowed`
 fuerza resultados inconclusos.
 
+El `index.json` fisico actual tiene un cap inclusivo propio de 100 MiB. Los
+consumidores de Deploy comprueban primero metadata estable y lo leen mediante
+streaming sin conservar simultaneamente un `Buffer` crudo de todo el fichero y
+el documento parseado. Este limite no se comparte con el receipt ni con stdout
+del verificador: ambos mantienen su cap inclusivo independiente de 64 MiB.
+
 Prebuild materializa una autoridad single-link del binario release
 `solguard-trace-evidence-verify`. Despues de TRACE, Core verifica sus bytes y
-SHA-256, crea con `create_new` una copia privada single-link por analisis bajo
-`trace/.runtime-tools` y publica de forma create-only
-`trace/evidence_verification.json`. La policy
-`physical_map_source_exact_evidence_multiset_v1` reabre MAP y source, reproduce
+SHA-256 y crea con `create_new` una copia privada single-link por analisis dentro
+de un `TempDir` del sistema, fuera del arbol `trace/` y de cualquier artefacto
+publicado. Core mantiene vivo ese directorio privado hasta que FILTER termina y
+lo elimina al cerrar su guard mediante `Drop`; ningun ejecutable queda bajo los
+artefactos. Core publica de forma create-only `trace/evidence_verification.json`.
+La policy
+`physical_map_sidecar_source_and_native_trace_exact_recomputation_v3` reabre MAP y source, reproduce
 la seleccion v3 completa y exige igualdad exacta de target y multiset de
 evidencia para todos los lenguajes. El receipt liga index, MAP, cada descriptor,
 source, primario TRACE, conteos/digests de evidencia y binding nativo mediante
 roles relocatables y un digest con framing fuerte. Core pasa esa misma copia
-privada a FILTER; FILTER la ejecuta otra vez desde un entorno vacio y scratch
+privada temporal a FILTER; FILTER la ejecuta otra vez desde un entorno vacio y scratch
 privado y compara receipt fresco, stdout y autoridad adyacente byte a byte. El
 receipt y stdout estan limitados inclusivamente a 64 MiB antes de leer, hashear
 o publicar. Hardlinks, symlinks, junctions/reparse points, sustituciones y drift
 TOCTOU fallan cerrados. El receipt adyacente por si solo nunca autoriza una
 decision.
 
-El indice actual incorpora siempre `trace.contract_manifest.v1`. Contiene un
+El indice actual incorpora siempre `trace.contract_manifest.v2`. Contiene un
 binding ordenado por cada target con path, bytes/SHA-256 exactos, coverage ledger
 y receipt del route graph, ambos con digest canonico. Su agregado reconcilia
-target count, deuda y union de roots; el `manifest_digest` usa el namespace
-content-addressed `trace-contract-manifest-v1`. Core lee en streaming cada primario una
+target count, deuda, union de roots, claims target-route y los contadores
+separados de representacion incompleta/con deuda; el `manifest_digest` usa el
+namespace content-addressed `trace-contract-manifest-v2`. Core lee en streaming cada primario una
 vez, compara los contratos inline y recalcula tanto el digest como los
 agregados. Un binding ausente/extra/intercambiado o una proyeccion forjada falla
 antes de CANDIDATES, VALIDATE o FILTER.
 
 Cada primario TRACE identifica su target mediante
-`{id,qualified_name,component,file,line_start}` y esa identidad debe resolver
-una unica funcion exacta del primario MAP y de su manifiesto completo.
-`solguard_map_context` es opcional y solo corrobora: su ausencia no invalida una
-resolucion primaria exacta, pero cualquier `function_id` o inventario declarado
-debe coincidir byte por byte con MAP. Un contexto forjado, un componente vacio
-o una identidad duplicada deja la autoridad en Review. Los primarios TRACE
+`{id,qualified_name,component,file,line_start}`. El `id` publicado es exactamente
+el `map_function_id` seleccionado; IDs locales del parser permanecen internos.
+Esa identidad debe resolver una unica funcion exacta del primario MAP y de su
+manifiesto completo. El slot top-level `solguard_map_context` esta separado y
+presente, aunque pueda valer `null`, y solo corrobora. Cualquier `function_id` o
+inventario declarado debe coincidir byte por byte con MAP. Un contexto forjado,
+un componente vacio o una identidad duplicada deja la autoridad en Review. Los
+primarios TRACE
 mayores de 100 MiB se recorren y hashean desde un unico descriptor con el mismo
 contrato; el tamano nunca los excluye silenciosamente del inventario de
 autoridad.
 
+Cuando un target deep tiene CFG autorizado, TRACE publica como unidad cerrada
+`trace.target_route_closure.v2`, exactamente dos evaluaciones
+`trace.target_route_evaluation.v2` (causal y economic) y
+`trace.claim_authority.v2`. Core recompone el cierre, los fixpoints MAY/MUST,
+la evidencia y los digests. La deuda o incompletitud de representacion se
+cuenta aparte de la deuda operacional de coleccion y deja el claim review-only;
+nunca autoriza MUST, ausencia o evidencia negativa. Este claim del productor es
+distinto del `trace.claim_authority.v1` que VALIDATE/FILTER publican para una
+decision downstream.
+
 Cada coleccion TRACE acotada conserva un receipt tipado unico por
 `{producer,collection}` con conteos observados, retenidos y omitidos, limite
 activo y politica de seleccion determinista. La aritmetica debe cerrar y
-`truncated` solo puede ser true cuando existe omision. Salvo las cuatro
+`truncated` solo puede ser true cuando existe omision. Salvo las cinco
 linearizaciones legacy clasificadas bajo la autoridad factorada descrita abajo,
 una omision permanece `coverage_debt`; Core no acepta truncados silenciosos ni
 recorridos de profundidad fija como cobertura completa.
@@ -296,14 +342,17 @@ desde el graph receipt y exige igualdad de `graph_digest`, proyeccion,
 `root_ids`, inventarios, contadores y digests, sin omisiones ni debt. Su
 `semantic_authority` liga graph receipt, ambos consumers y
 `trace.v0.9.target_evidence`. Con esa autoridad TRACE separa la linearizacion legacy
-de deep paths como `trace.materialization_diagnostics.v1` no autoritativo y
-publica `trace.materialization_manifest.v1`. Este segundo manifiesto no cubre
+de deep paths como `trace.materialization_diagnostics.v2` no autoritativo y
+publica `trace.materialization_manifest.v2`. Este segundo manifiesto no cubre
 todos los targets: debe ser exactamente el subset que contiene esos
 diagnosticos, ligado a los mismos bytes primarios del manifiesto all-target. Sin
 clausura completa, ambas evaluaciones completas y debt-free, esos receipts
 permanecen cobertura semantica normal y sus omisiones degradan la fase. Una clausura
 `semantic_resolution=over_approximation` puede cerrar el espacio MAY y usar el
 manifiesto, pero nunca prueba exactitud, MUST ni ausencia.
+El materialization manifest debe estar ausente o ser `null` exactamente cuando
+`diagnostics_count=0` y es obligatorio, con membresia exacta, cuando el contador
+es positivo.
 
 TRACE valida el route graph y publica en cada target un recibo
 `economic_route_graph_consumption.v1` de clausura; el indice publica la union
@@ -370,11 +419,23 @@ rutas emiten incrementalmente hacia colecciones deduplicadas y acotadas por
 bytes e items, sin materializar primero el espacio completo. El deadline cooperativo,
 una omision demostrada o una etapa no iniciada producen degradacion explicita.
 
-`discover_coverage_contract.v1` liga el modelo por schema, bytes y SHA-256 y
-proyecta exactamente summary, resource usage, diagnosticos y un enum ordenado de
+`discover_coverage_contract.v2` liga el modelo por schema, bytes y SHA-256 y
+proyecta exactamente summary, limites y uso de recursos, diagnosticos y un enum ordenado de
 causas. Core lo exige aun bajo su limite inline de 96 MiB y lo usa como
 proyeccion verificable por encima; cobertura MAP `unknown`, omisiones, contadores
 incoherentes o razones que no puedan recomputarse fallan cerrados.
+V1 es diagnostico legacy y no puede autorizar salud actual. La verificacion
+fisica TRACE usa un budget determinista separado del deadline semantico: dos
+pasadas completas sobre los bytes y primarios declarados, calculadas con
+throughput minimo y overhead por fichero. Bytes, pasadas, elapsed y budget se
+reconcilian con el primario; lectura parcial o exceso fallan cerrado.
+
+Cada coleccion bounded publica `semantic_coverage.v2` con `unit` obligatorio y
+cerrado: `items`, `files`, `targets`, `contracts` o `debt_entries`. Solo
+`unit=items` suma en `semantic_items_omitted`; source files, targets TRACE,
+autoridad contractual y debt entries de grafo conservan sus dimensiones. Unit
+ausente/desconocida, overflow o aritmetica incoherente fallan cerrados; un
+receipt v1 es incompatible, se rechaza y no se reinterpreta como v2.
 
 DISCOVER consume el route graph completo como world model factorado y publica
 un receipt full-graph tanto en el primario como en su coverage contract. Una
@@ -408,8 +469,11 @@ contratos exactos; un must no puede atravesar una alternativa incierta.
 Cuando MAP/TRACE declaran `economic_flow_identity.v2`, ECONOMIC conserva flow
 ID, route digest, operaciones, aristas y asset legs en sus transitions, y
 publica el mismo par singleton en `flow_route_bindings` de equations y scopes
-de invariantes. Un flow ID explícito solo se resuelve por coincidencia exacta;
-una ruta legacy o un binding fuzzy no se presenta como transition concreta.
+de invariantes. Un flow ID explícito solo se resuelve por coincidencia exacta.
+Cada `branch_path` conserva orden causal de fuente exterior-a-interior, mientras
+el `event.guard` correspondiente es el set canonico ordenado y sin duplicados.
+La reconciliacion canoniza una copia del path sin reordenar el path publicado.
+Una ruta legacy o un binding fuzzy no se presenta como transition concreta.
 La relación `actual_received_covers_credited_amount` exige una recepción o
 transferencia aplicable además del target acreditado. Una ruta solo contable no
 se eleva a concreta. La inferencia nativa queda limitada a una función payable
@@ -493,6 +557,12 @@ publicacion falla cerrada y conserva sus bytes; no mezcla una ejecucion nueva
 con residuos. Antes de seleccionar el bundle candidato, Core rechaza cualquier
 archivo de productor adicional o ausente.
 
+En esta frontera, `trace-economic-evidence-*` identifica semanticamente un
+check TRACE y solo puede conservarse como `source_id`/`source_ids`. Los
+`EvidenceRef` fisicos se derivan exclusivamente de `source_evidence_ids` y deben
+resolver autoridad MAP/TRACE exacta por `{evidence_id,file,line}`. Un ID
+semantico no se relabela como evidencia TRACE.
+
 `invariants.coverage.json` liga el primario, su `stage_coverage.v1` y los
 conteos materializados. Si Core genera `invariant.bounded_runtime.v1` para
 transporte, esa vista declara path, bytes, SHA-256 y schema del
@@ -506,7 +576,13 @@ endpoints, anchors, ranking, orden, hashes, limites, seleccion y omisiones. Las
 relaciones cuyos dos extremos estan retenidos se recuperan tambien desde el
 primario y participan en el limite conjunto que determina
 `retained_objects_verified`; no se confia en relaciones compactas. Cualquier
-anchor omitido impide autorizacion terminal. El fichero bounded completo no puede superar
+incoherencia, tamper u overflow de aritmetica checked invalida el input. Una
+deuda coherente usa `omitted_anchor_occurrences`,
+`omitted_evidence_occurrences` y `omitted_relationships`, incluido el cruce
+retained/omitted. Cualquier valor positivo fuerza globalmente todos los
+veredictos VALIDATE a `inconclusive`; FILTER publica un output estructural, pero
+su conjunto de resultados terminales queda vacio. El fichero bounded completo
+no puede superar
 335.544.320 bytes y debe publicar
 `summary.max_runtime_artifact_bytes=335544320`.
 
@@ -647,8 +723,11 @@ VALIDATE reabre, parsea y rehashea el source de una vista bounded desde el mismo
 descriptor, verifica su layout permitido y compara cada objeto retenido con el
 objeto source exacto. Source ausente, externo, symlinked, inestable o divergente
 invalida el input completo; no produce un resultado aparentemente normal con
-`source_verified=false`. Una invariante source valida omitida por el transporte
-solo puede dejar su resultado `inconclusive`. Del mismo modo, TRACE vacio
+`source_verified=false`. Deuda bounded coherente por anchors, evidencia o
+relaciones omitidas fuerza todos los resultados a `inconclusive` mediante
+`bounded_invariant_anchor_coverage_debt`,
+`invariant_evidence_coverage_debt` o
+`bounded_invariant_relationship_coverage_debt`. Del mismo modo, TRACE vacio
 explicito es cobertura incompleta, nunca soporte ni refutacion.
 
 VALIDATE publica exactamente dos bindings de procedencia INVARIANT en
@@ -657,7 +736,7 @@ y `invariants:source` el SHA-256 del primario inmutable seleccionado. Son
 iguales en modo directo y distintos en bounded. `metadata.invariant_runtime`
 debe reconciliar el mismo source, schema, bytes y modo. Una materializacion
 bounded autentica puede publicar `retained_objects_verified=false`; ese estado
-es deuda diagnostica que fuerza `inconclusive`, bloquea release limpio y nunca
+es deuda diagnostica que fuerza todos los resultados a `inconclusive` y nunca
 autoriza soporte. El inventario de IDs retenidos verificado se conserva separado
 de los objetos: false exige vectores de invariantes y relaciones vacios; true
 exige paridad exacta de IDs, orden, objetos y extremos de relaciones. En directo
@@ -665,8 +744,8 @@ el valor debe ser `true`. En ambos casos el selection manifest se recompone desd
 los inputs fisicos y no puede ocultar anchors truncados.
 
 VALIDATE valida tambien, con implementacion propia, el
-`trace.contract_manifest.v1` all-target y el subset
-`trace.materialization_manifest.v1`: membresia, orden, paths, bytes/hashes,
+`trace.contract_manifest.v2` all-target y el subset
+`trace.materialization_manifest.v2`: membresia, orden, paths, bytes/hashes,
 digests de ledger/receipt, agregados y cross-binding al mismo primario. No
 depende de que Core haya realizado esa comprobacion antes; una divergencia
 invalida el input y no produce verdicts parciales.
@@ -693,6 +772,13 @@ por defecto; el verificador dispone de 900 segundos (maximo 3.600) y la relacion
 exige al menos 300 segundos adicionales para reap, validacion y publicacion. Una
 configuracion N-1 falla antes de ejecutar el child.
 
+El receipt actual es `trace.evidence_verification.v2` bajo
+`physical_map_sidecar_source_and_native_trace_exact_recomputation_v3`. Core
+bifurca explicitamente la familia productora antes de aplicar validadores: v2
+usa el verificador fisico v2; v1 permanece solo como diagnostico legacy. Un
+primary suelto, indice/receipt ausente o estado de productor desconocido nunca
+autoriza una decision FILTER terminal.
+
 El servicio FILTER de Core y `solguard-filter` vuelven a verificar los dos
 manifiestos TRACE, el source bounded de INVARIANT y la identidad fisica de toda
 la clausura declarada. La salida `filter_results.json` solo es aceptada despues
@@ -718,18 +804,20 @@ separado. Exige que el conjunto de labels sea exacto y lo conserva tanto en
 `metadata.source_hashes` como en `metadata.validation_source_hashes`. Missing,
 extra, hash stale, igualdad bounded o desigualdad directa fallan cerrados. Un
 bounded con `retained_objects_verified=false` puede conservar integridad
-estructural y deuda diagnostica, pero no puede producir `pass` para un resultado
-soportado ni un estado limpio de release. FILTER recompone tambien el selection
+estructural y deuda diagnostica, pero publica un conjunto vacio de resultados
+terminales de admision. FILTER recompone tambien el selection
 manifest y los objetos/relaciones desde los inputs fisicos; no usa la proyeccion
 compacta como autoridad semantica.
 
-Cada resultado conserva `trace.claim_authority.v1`. `none/not_used` solo es
+Cada resultado conserva el contrato downstream de decision
+`trace.claim_authority.v1`, distinto del `trace.claim_authority.v2` que TRACE
+productor liga a una clausura target-route. `none/not_used` solo es
 terminal si ni VALIDATE ni el candidato canonico ligado por hash dependen de
 TRACE; `primary_evidence_source`, referencias genericas y referencias
 `trace:<path>` del candidato forman parte de esa comprobacion. Una decision
 TRACE exacta liga el conjunto completo de artefactos, hashes, receipts, roots e
 IDs de evidencia. Cada ID debe existir en un array canonico admitido por
-`trace_v0_9_typed_evidence_paths_v1` dentro del mismo primario TRACE ligado por
+`trace.evidence_authority_paths.v1` dentro del mismo primario TRACE ligado por
 path y SHA-256. La politica solo admite superficies tipadas de
 actor/autorizacion, contexto semantico, identidad, atomicidad, findings,
 deep paths, cadenas causales, secuencias temporales, evidencia economica y
@@ -741,6 +829,10 @@ primario no pueden aportarlo. Cada `evidence_items[*]` debe tener un unico
 tamper o re-sellado arbitrario invalida el inventario. Autoridad MAY, roots
 incompletas, manifiesto de funciones con deuda o binding ambiguo solo permiten
 `review`; nunca `pass`, `reject` o `duplicate` terminales.
+Todo `evidence_items[*]` debe ser nativo `source=solguard-trace`. La evidencia
+MAP queda en el slot separado y nullable `solguard_map_context`, y los IDs
+semanticos `trace-economic-evidence-*` no reemplazan `source_evidence_ids`
+fisicos.
 
 ## Fases posteriores
 

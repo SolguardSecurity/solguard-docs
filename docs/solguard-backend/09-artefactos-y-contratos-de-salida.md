@@ -39,7 +39,7 @@ El directorio `tool-outputs/` contiene una carpeta por fase y un journal global.
 | `map/`                                                     | Salidas de `solguard-map`.                                                                |
 | `diff/`                                                    | Salidas de `solguard-diff`.                                                               |
 | `trace/`                                                   | Salidas de `solguard-trace`.                                                              |
-| `trace/evidence_verification.json`                         | Receipt fisico create-only `trace.evidence_verification.v1`: obligatorio y verificado de nuevo para TRACE v3; opcional, historico y solo diagnostico en v2. |
+| `trace/evidence_verification.json`                         | Receipt fisico create-only `trace.evidence_verification.v2`: obligatorio y verificado de nuevo para TRACE selection v3 y contratos producer v2; versiones anteriores son solo diagnosticas. |
 | `discover/protocol_model.json`                             | Modelo semantico del protocolo.                                                           |
 | `discover/index.json`                                      | Indice/capacidades de discover.                                                           |
 | `economic/economic_model.json`                             | Modelo economico.                                                                         |

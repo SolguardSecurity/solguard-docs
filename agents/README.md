@@ -43,6 +43,10 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   Core consumes typed streaming projections under a 64-MiB materialized ceiling
   while hashing and revalidating the full physical primary, including above
   100 MiB
+- TRACE physical primaries are non-empty and share one inclusive 4-GiB producer
+  and consumer cap; consumers check manifest size against stable metadata before
+  hash/projection, while their retained semantic projections keep independent
+  smaller memory ceilings
 - `trace.factorized_graph_evaluation.v1` requires independently recomputable
   causal and economic profiles bound to the same graph digest/projection/roots;
   without both, bounded legacy linearizations remain coverage debt
@@ -54,6 +58,12 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   `.py` files and rejects MAP, TRACE or DISCOVER acceptance when MAP omits one.
   This is an intake-integrity contract, not a Python bug-coverage claim
 - `DISCOVER model packs v2 and candidate_value technical contract coverage`
+- current MAP health is sealed by `solguard-coverage-manifest.v2` with
+  `solguard-map-coverage.v2`; consumers rederive
+  `control_flow_coverage.v1` and `map_target_route_prerequisites.v1` from the
+  physical primary, while v1 is diagnostic-only. Retained unresolved edges are
+  MAY-only over-approximation; missing identity/evidence, omission or digest
+  drift is incomplete and fail-closed
 - MAP collection coverage is mode/language complete: 35 base producer receipts
   in `fast`, 42 in `deep`, plus activated language-conditional producers; source
   scope is package-directory aware for Go and file/component aware elsewhere,
@@ -68,12 +78,52 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   a present debt-free ledger, `coverage_debt` for a present ledger with debt,
   and `unknown` when the corresponding ledger is absent; this status does not
   claim complete bug coverage or overall DISCOVER health
+- every bounded DISCOVER collection publishes `semantic_coverage.v2` with the
+  mandatory closed unit `items|files|targets|contracts|debt_entries`; only
+  `items` contributes to `semantic_items_omitted`, and unknown/missing units,
+  incoherent counters or checked-arithmetic overflow fail closed
+- `discover_coverage_contract.v2` binds the exact model, 16 resource limits,
+  36 usage fields and recomputed reasons. TRACE physical integrity uses a
+  deterministic two-pass bytes/files budget and a clock separate from semantic
+  inference; v1 is diagnostic-only and cannot authorize current product health
+- TRACE producer authority is the closed v2 family:
+  `trace.contract_manifest.v2`, `trace.materialization_manifest.v2`,
+  `trace.materialization_diagnostics.v2`, `trace.target_route_closure.v2`,
+  exactly one causal and one economic `trace.target_route_evaluation.v2`, and
+  `trace.claim_authority.v2`. Consumers recompute every binding, digest,
+  counter and capability from the physical primaries. Collection omission is
+  operational debt; target-route representation debt/incompleteness is counted
+  separately, remains review-only and cannot authorize MUST, negative or exact
+  claims. Producer v1 inputs are diagnostic-only. Rust and Node consumers share
+  one exact UTF-8 canonical-JSON/content-address golden whose U+E000 and non-BMP
+  keys detect accidental JavaScript UTF-16 default ordering
+- every TRACE-dependent terminal decision requires an exactly verified
+  `trace.evidence_verification.v2` producer receipt under policy
+  `physical_map_sidecar_source_and_native_trace_exact_recomputation_v3`;
+  missing index/receipt, standalone primaries and v1 receipts remain review or
+  diagnostic input and unknown verification is never success
+- the current physical TRACE `index.json` has its own inclusive 100-MiB cap.
+  Deploy canary, release, detection-coverage and offline FILTER replay consume
+  it through the same stable streaming reader without retaining a raw whole-file
+  buffer beside the parsed document. Verifier receipt and stdout keep their
+  separate inclusive 64-MiB cap; that smaller budget never applies to the
+  index. Eight simultaneous workers therefore have a bounded raw-index input
+  envelope of 800 MiB before parser/runtime overhead; this is not an RSS claim
+- `trace.materialization_manifest.v2` may be absent or explicit `null` only when
+  no primary contains `trace.materialization_diagnostics.v2` and is mandatory with exact subset
+  membership when `diagnostics_count > 0`; an independently recomputable
+  `over_approximation` may close MAY coverage only, never exact/MUST/absence or
+  a terminal claim
 - MAP publishes the closed factorized `economic_route_graph.v1`; TRACE consumes
   target root closures while DISCOVER, ECONOMIC and VALUE consume the full
   graph. Every consumer publishes an exact MAP-digest-bound
   `economic_route_graph_consumption.v1` receipt, including hash-bound oversized
   projections. Coverage omission and semantic over-approximation are never
   relabelled or merged
+- economic route `branch_path` preserves the unique outer-to-inner causal
+  source order; the corresponding graph `event.guard` is a canonical sorted
+  unique set and is compared with a canonicalized copy, never by sorting the
+  published causal path itself
 - oversized MAP, DISCOVER, ECONOMIC, VALUE and INVARIANT primaries use compact
   producer contracts bound to basename, schema, byte count and streamed
   SHA-256. Deploy recomputes each stage-specific semantic projection from the
@@ -81,7 +131,11 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   an unprojectable primary, malformed/missing/substituted manifests fail closed.
   Strict UTF-8, duplicate-key, trailing/truncated JSON, link/root/physical
   identity and TOCTOU checks are identical below and above 100 MiB. Oversized
-  TRACE primaries use the equivalent direct projection and no semantic sidecar
+  TRACE primaries use the equivalent direct projection and no semantic sidecar.
+  That projection seals target, separate MAP context, native evidence
+  occurrences/multiset and binding digests, coverage/capability parity, graph
+  receipts and materialization diagnostics; partial, truncated, overflowed or
+  digest-divergent projections fail closed
 - MAP function resolution is sealed by the complete
   `map_function_identity_manifest.v1` (100000 entries, 24 MiB compact whole
   records). Function/symbol collisions or omissions are debt, and every route
@@ -101,11 +155,19 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   Closed status/reason enums and physical counter reconciliation make partial
   gaps and `empty_allowed` upstream debt consumed by Core, DISCOVER, VALIDATE,
   FILTER and Deploy. Version 1 is diagnostic-only and cannot authorize FILTER
-  or a clean release. `target_budget_omitted` is the exact eligible pre/post
-  `--top` delta
+  or a clean release. In v3 `target_budget_omitted` is forbidden/zero because
+  `--top` partitions deep versus compact enrichment without omitting a target
 - a TRACE target resolves first against exact MAP-primary identity including
-  component; optional `solguard_map_context` can only corroborate it. FILTER
-  evaluates `trace.claim_authority.v1` against both VALIDATE and the linked
+  component, and its published `target.id` equals the selected MAP
+  `map_function_id`; parser-local IDs remain internal. The separate top-level
+  `solguard_map_context` slot is present but may be null and can only
+  corroborate MAP authority. Every top-level `evidence_items[*]` is native
+  `source=solguard-trace` evidence with one canonical `trace-evidence-v1-*` ID;
+  MAP evidence remains under `solguard_map_context.evidence`. Compact targets
+  have exactly one `physical_source_binding` and no Python/Vyper function
+  binding; deep `.vy`/`.py` targets have exactly one matching language binding
+  and never the other. FILTER evaluates the separate downstream decision
+  contract `trace.claim_authority.v1` against both VALIDATE and the linked
   canonical candidate, so candidate TRACE provenance cannot be laundered as
   `none/not_used`. Claimed evidence IDs must occur under the closed
   `trace.evidence_authority_paths.v1` policy in canonical arrays on typed
@@ -123,13 +185,22 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   refs require one path-bound occurrence and duplicate occurrences fail.
   Streaming verifies every lexical parent directory before/after and rejects
   an in-root junction or parent identity drift
+- TRACE economic `trace-economic-evidence-*` IDs are semantic check identities
+  preserved downstream only as `source_id`/`source_ids`; physical authority
+  comes exclusively from `source_evidence_ids` resolved to exact upstream
+  `{evidence_id,file,line}` tuples
 - `invariant.bounded_runtime.v1` may retain at most 8,192 source-exact typed
   invariants and 256 MiB of materialized objects from its hash-bound
   `invariant.v0.8` primary. Its `invariant.selection_manifest.v1` is recomputed
   from the physical primary and exact `value/attack_paths.json`; it seals the
   full invariant/relationship inventories, ordered ranking, selected object
-  hashes, bounds and anchor accounting. Any omitted anchor occurrence is
-  non-authorizing debt. Retained relationships are rehydrated from the primary
+  hashes, bounds and anchor accounting. Checked arithmetic distinguishes hard
+  malformed/tampered/overflowed input from coherent diagnostic debt. The
+  latter is quantified by `omitted_anchor_occurrences`,
+  `omitted_evidence_occurrences` and `omitted_relationships`, including
+  relationships crossing the retained/omitted boundary, and globally forces
+  every VALIDATE verdict to `inconclusive`. Retained relationships are
+  rehydrated from the primary
   and participate in `retained_objects_verified`; the compact runtime never
   supplies relationship authority itself. Its complete JSON envelope is
   independently capped at 335544320 bytes and must declare exact
@@ -138,7 +209,9 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   primary (equal direct, distinct bounded). Missing, external, symlinked,
   unstable or mismatched source invalidates the input; bounded
   `retained_objects_verified=false` is diagnostic debt/inconclusive and can
-  never authorize support, PASS or clean release. The verified retained-ID
+  never authorize support or a terminal FILTER decision. FILTER still emits a
+  structurally valid artifact, but its terminal admission result set is empty.
+  The verified retained-ID
   inventory remains separate from materialized objects: false mode requires
   empty invariant/relationship vectors, while true mode requires exact object,
   order, ID and relationship parity
