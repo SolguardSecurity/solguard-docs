@@ -50,8 +50,9 @@ El manifiesto global sigue en `tool-outputs/pipeline.json`.
 
 ### `full`
 
-Recorre las quince fases. `run_exploit` solo puede habilitar ejecucion dentro de
-las reglas de admision e aislamiento ya existentes.
+Recorre las quince fases. `run_exploit` puede solicitar la fase EXPLOIT, pero la
+implementacion actual es plan-only: compilacion o ejecucion quedan
+`blocked/isolation_unavailable` y no existe fallback a proceso host.
 
 ### `audit_only`
 
@@ -64,9 +65,10 @@ conocida; no certifica por si mismo una frontera blind o pre-oracle.
 ## Estados
 
 `completed`, `degraded`, `completed_with_errors`, `fallback` y `skipped` son
-diagnosticos de ejecucion, no veredictos de seguridad. Core mantiene los mismos
-fallbacks y reglas de preservacion de artefactos que existian antes del
-traslado.
+diagnosticos de ejecucion, no veredictos de seguridad. Cada fallback permitido
+es tipado, conserva la deuda y se valida antes de publicar. FILTER no se
+sintetiza si falla su contrato, y una fase incompleta no adquiere autoridad por
+el mero hecho de que el proceso haya terminado.
 
 ## Replays offline
 
@@ -83,6 +85,10 @@ cargo run --locked --manifest-path "../solguard-core/Cargo.toml" --bin solguard-
 `rebuild-candidates`, en cambio, actualiza los candidatos canonicos y
 `tool-outputs/candidates` dentro del proyecto recibido; debe usarse sobre una
 copia o con cambios versionados. Ninguno lanza un release completo.
+
+Estos comandos con `cargo run` son superficies locales de diagnostico. Un run
+gestionado de release usa exclusivamente binarios release sellados por el
+prebuild y no recompila durante el analisis.
 
 El detalle de cada fase y artefacto se mantiene en
 [Pipeline, fases y artefactos de core](../solguard-core/pipeline-y-fases.md).

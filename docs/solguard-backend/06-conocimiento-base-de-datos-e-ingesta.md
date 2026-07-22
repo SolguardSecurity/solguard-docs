@@ -53,6 +53,13 @@ La ingesta debe ser idempotente respecto a hashes de fuente. Si un informe ya
 existe o no es soportado, debe aparecer como omitido o fallo parcial, no tumbar
 todo el proceso sin diagnostico.
 
+La ruta solo se admite bajo uno de `SOLGUARD_INGEST_ROOTS`. Core cierra primero
+el plan de inputs y usa un journal durable con staging, commit y cleanup
+idempotentes. Backend ejecuta `reconcile_pending_transactions` antes de abrir el
+socket HTTP: una transaccion recuperable se completa segun su estado durable;
+un journal desconocido, truncado, sustituido o fuera de root bloquea el arranque
+en vez de ser ignorado.
+
 ## Politica durante analisis
 
 El pipeline separa dos momentos:

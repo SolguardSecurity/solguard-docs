@@ -240,6 +240,18 @@ La integracion completa, sus artefactos y los campos de `AnalyzeOutputs` se
 documentan en
 [DISCOVER v2 y cierre candidate-directed VALUE](../solguard-core/discovery-v2-y-candidate-value.md).
 
+## Frontera operacional actual
+
+VALUE adquiere TRACE manifest-first, verifica perfil, signal origins, primarios
+y contrato producer v2. En `generic_blind`, `known_pattern` invalida el input.
+Un primario standalone se degrada y solo puede contribuir diagnostico positivo;
+no puede cerrar una prueba completa ni autorizar ausencia.
+
+Los inputs grandes mantienen hash del primario completo y una proyeccion
+bounded; los outputs se publican streaming y create-only. Candidate-directed
+VALUE conserva la misma frontera: una request nunca es evidencia y una respuesta
+solo entra en la vista efectiva tras el join MAP/TRACE/invariante exacto.
+
 ## Limites
 
 - VALUE no consume ground truth ni resultados del evaluator.

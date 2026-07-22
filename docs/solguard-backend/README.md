@@ -17,6 +17,12 @@ semanticamente: conserva ademas el `AnalysisResponseLease` no serializado hasta
 terminar la respuesta, para que otro request del mismo proyecto no pueda
 resetear sus fuentes u outputs durante la serializacion.
 
+La API externa requiere una credencial propia `EXTERNAL_API_KEY` mediante
+`x-solguard-api-key`. Debe ser distinta de `INTERNAL_API_KEY`, que queda
+reservada para Rust -> Node. Solo el preflight CORS y la vista publica minima de
+`GET /health` no requieren la clave externa. La attestation con paths y contrato
+de ejecucion se entrega unicamente a un caller autenticado.
+
 ## Alcance real
 
 El backend posee:
@@ -25,7 +31,8 @@ El backend posee:
 - validacion de requests y traduccion de errores;
 - bootstrap de proceso y adaptadores locales para Node/Ollama;
 - construccion de dependencias e invocacion de la API Rust del core;
-- transporte de progreso y respuestas al cliente.
+- transporte de progreso y respuestas al cliente;
+- autenticacion externa, allowlist CORS exacta y limites de body/concurrencia.
 
 El backend no posee:
 

@@ -26,6 +26,15 @@ cliente / solguard-deploy
 La dependencia es unidireccional: backend depende de core. Core no importa
 controllers, rutas ni DTO HTTP del backend.
 
+## Autoridad operacional
+
+Core aplica una frontera comun de filesystem y mantiene responsabilidades
+distintas para `projects_dir`, `local_source_roots` e `ingest_roots`. Los
+nombres de proyecto son canonicos o se rechazan, `init` y los bundles finales
+son create-only y la ingesta usa journal durable con recovery al arrancar. Los
+detalles, incluidos target local/ZIP/Git, ejecucion de procesos y perfiles
+TRACE, estan en [Autoridad operacional de Core](autoridad-operacional.md).
+
 ## Autoridad de source
 
 Un analisis de ZIP no confia solo en la URL o en el hash de transporte. Deploy
@@ -154,21 +163,21 @@ evaluator. Mantiene el wire contract `solguard-product-priority-ranking.v2` y su
 semantica actual: separar el codigo no equivale a certificar el momento ni las
 capacidades con las que se ejecuto.
 
-`solguard-scan-execution-contract.v2` cierra exactamente 27 componentes: su
-constructor, runner, launcher, helper CLI productivo, runner de procesos y lock
-de autoridad de source, catalogo materializado, modulo de catalogo, compositor
-de snapshots, contrato de rutas portables, autoridad de cohortes, handoff,
-reader y finalizacion de autoridad de source, trust root y clave publica
-fijadas, parser JSON estricto, product-priority, scan-contract, scan-boundary y
-seis schemas. El constructor
+`solguard-scan-execution-contract.v2` cierra exactamente 29 componentes: 20
+modulos JavaScript alcanzables por el worker y 9 recursos sellados. El cierre
+incluye la autoridad efimera de secretos Backend y el helper de autenticacion,
+ademas del constructor, runner, launcher, autoridad de source, catalogo,
+snapshots, paths portables, cohortes, trust root, contratos y schemas. El
+constructor
 rechaza ground truth, matcher, evaluator, splits y adjudications. El contrato
 embebe el estado completo `solguard-toolchain-fingerprint.v2`; el worker
 rehashea los componentes y recomputa los 13 repositorios antes y despues. Esto
 detecta drift, no aislamiento de capacidades.
 
 El execution contract legacy de v1-v8 sigue siendo evidencia de regresion
-conocida, no blind, pero cierra exactamente 34 componentes para resume: 23
-modulos JavaScript alcanzables y 11 recursos corpus/runtime. Incluye sus
+conocida, no blind, pero cierra exactamente 35 componentes para resume: 24
+modulos JavaScript alcanzables y 11 recursos corpus/runtime. El modulo adicional
+es la autenticacion Backend usada por los runners. Incluye sus
 descriptores y todos los modulos locales alcanzables por
 imports estaticos desde cada runner. El test de cierre vuelve a calcular ese
 grafo y falla ante una dependencia omitida; la libreria dinamica del evaluador
@@ -235,6 +244,7 @@ herramientas.
 Documentacion detallada:
 
 - [Servicios y responsabilidades](./servicios-y-responsabilidades.md)
+- [Autoridad operacional de Core](./autoridad-operacional.md)
 - [Pipeline, fases y artefactos](./pipeline-y-fases.md)
 - [Integridad de fuentes y cadena MAP -> TRACE -> FILTER](./integridad-de-fuentes.md)
 - [DISCOVER v2 y cierre candidate-directed VALUE](./discovery-v2-y-candidate-value.md)

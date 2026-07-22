@@ -452,6 +452,19 @@ El caso dirigido paso de 180.303 a 23.882 ms. Es evidencia diagnostica de
 contrato y runtime; por si sola no demuestra una mejora de precision, recall ni
 generalizacion.
 
+## Frontera operacional actual
+
+En modo orquestado, MAP recibe `--source-integrity`, vuelve a inventariar y
+hashear el arbol fisico antes y despues y publica `source_integrity.json` ligado
+a los bytes exactos de `audit_map.json`. Un symlink, reparse point, cambio de
+identidad o tree hash divergente falla cerrado. Sin el flag, el modo standalone
+es compatibilidad deliberada y no produce autoridad de salud orquestada.
+
+El primario y `audit_map.coverage.json` se preparan y verifican antes de
+instalarse create-only. Un destino preexistente no se sobrescribe; un fallo no
+deja un primario autoritativo sin su sidecar. Los limites y ledgers describen
+omision de representacion, no ausencia de vulnerabilidad.
+
 ## Limites
 
 - No ejecuta codigo.

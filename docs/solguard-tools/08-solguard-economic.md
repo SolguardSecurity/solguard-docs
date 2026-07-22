@@ -224,6 +224,19 @@ admite `value` solo en su forma nativa y se rechaza si existe un parámetro loca
 homónimo. Coincidencias por fichero ajeno, símbolo distinto, nombre genérico o
 línea fuera de la función permanecen no autoritativas.
 
+## Frontera operacional actual
+
+Un directorio TRACE se consume manifest-first: `index.json` fija membresia y
+orden, y cada primario se verifica por identidad, bytes, SHA-256 y contrato v2
+antes de aportar autoridad. `generic_blind` exige signal origins completos y
+rechaza `known_pattern`. Un `trace.v0.9` directo solo entra como compatibilidad
+standalone degradada: puede aportar diagnostico positivo, nunca completitud,
+evidencia negativa o claim terminal.
+
+MAP, DISCOVER y TRACE conservan paths fisicos bounded y los outputs ECONOMIC se
+publican create-only despues de validar primario, sidecar y digests. El motor no
+convierte deuda upstream en una ecuacion exacta ni una ecuacion en veredicto.
+
 ## Limites
 
 - No ejecuta simulaciones economicas.

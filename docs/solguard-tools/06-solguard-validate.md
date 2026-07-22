@@ -291,6 +291,20 @@ delta de estado. FILTER trata cualquier ID no vacio como un namespace
 autoritativo, incluso si contiene un solo finding: dos grupos distintos no se
 pueden volver a fusionar mediante una huella menos precisa aguas abajo.
 
+## Frontera operacional actual
+
+VALIDATE adquiere TRACE manifest-first: abre el indice bounded, verifica
+membresia exacta y recomputa el producer contract v2 desde primarios fisicos.
+El perfil debe coincidir entre batch y targets. `generic_blind` exige origins
+completos, prohíbe `known_pattern` y exige que el resumen de bug patterns derive
+exactamente de los mismatches admitidos.
+
+Source, candidatos, MAP, invariantes y suplementos se ligan por path, schema,
+bytes y SHA-256. La vista `invariant.bounded_runtime.v1` se verifica contra su
+primario y attack paths; cualquier omision coherente fuerza todos los verdicts
+a `inconclusive`, mientras tamper o overflow son fallo de input. El root de
+salida es create-only.
+
 ## Limites
 
 - No genera PoCs.

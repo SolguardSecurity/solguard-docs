@@ -6,37 +6,60 @@ La API externa corre en Rust/Axum y escucha en:
 http://127.0.0.1:{EXTERNAL_PORT}
 ```
 
-Los errores de validacion local devuelven `400` con `{ "error": "..." }`. Los
-errores al hablar con el servicio interno devuelven `502` con el mismo formato.
+Excepto el preflight CORS y la vista publica minima de `/health`, las rutas
+requieren exactamente una cabecera:
+
+```http
+x-solguard-api-key: <EXTERNAL_API_KEY>
+```
+
+Los errores usan `{ "code": "...", "error": "..." }`. Un fallo privado anade
+`incident_id` para correlacionar el log sin exponer paths, secretos o detalles
+internos; un upstream no disponible responde `502` con ese mismo envelope.
 
 ## GET `/health`
 
 Comprueba que el servidor Rust esta vivo.
 
-Respuesta:
+Respuesta publica sin credencial:
 
 ```json
 {
     "status": "ok",
     "service": "solguard-backend",
     "version": "...",
+    "backend_binary_sha256": "..."
+}
+```
+
+En un run gestionado, el mismo request con la clave externa correcta anade:
+
+```json
+{
     "execution_contract_sha256": "...",
     "execution_runtime": {
         "projects_dir": "...",
         "database_path": "...",
+        "local_source_roots": ["..."],
         "database_connector_dir": "...",
         "map_dir": "...",
+        "trace_dir": "...",
+        "diff_dir": "...",
+        "discover_dir": "...",
+        "economic_dir": "...",
+        "value_dir": "...",
+        "invariant_dir": "...",
+        "validate_dir": "...",
         "filter_dir": "...",
         "exploit_dir": "..."
     }
 }
 ```
 
-`execution_contract_sha256` solo aparece cuando el proceso fue arrancado con el
-handshake de deploy. Los runners lo comparan, junto con `execution_runtime`,
-contra el backend administrado que ellos mismos acaban de crear. Incluye las
-rutas canonicalizadas de las diez herramientas y evita conectar ese proceso a
-un source distinto del que ejecuta Core.
+`execution_contract_sha256` y `execution_runtime` solo aparecen si el proceso
+fue arrancado con el handshake de Deploy y el caller esta autenticado. Los
+runners los comparan contra el Backend que ellos mismos crearon. La vista
+publica nunca expone roots ni paths de herramientas.
 
 Este digest llega por entorno: no es una identidad de build calculada por el
 binario. Por eso `--no-backend` y `SOLGUARD_API_URL` estan deshabilitados hasta
@@ -92,7 +115,7 @@ Respuesta:
 
 ## POST `/projects/init`
 
-Crea o inicializa un proyecto.
+Crea un proyecto nuevo.
 
 Body:
 
@@ -103,8 +126,9 @@ Body:
 }
 ```
 
-El nombre se sanea para ser seguro en filesystem. Se crean `program.json`,
-`program.md`, `tool-outputs/` y `reports/`.
+El nombre debe llegar en su forma canonica. Backend no lo sanea ni crea aliases;
+Core publica `program.json`, `program.md`, `tool-outputs/` y `reports/` en modo
+create-only. Un destino preexistente o fisicamente ambiguo se rechaza.
 
 ## GET `/projects/:project/validation-results`
 
@@ -198,6 +222,7 @@ Body:
     "project": "Proyecto",
     "target": "https://github.com/org/repo",
     "mode": "full",
+    "analysis_profile": "generic_blind",
     "run_exploit": false
 }
 ```
@@ -205,9 +230,12 @@ Body:
 `target` puede ser una ruta local o una referencia remota soportada por el
 runtime. `mode` acepta `full` y `audit_only`; el segundo ejecuta hasta FILTER y
 omite de forma contractual las cinco fases posteriores. `run_exploit` no puede
-contradecir la politica del modo. La respuesta incluye:
+contradecir la politica del modo. `analysis_profile` acepta solo
+`compatibility` (default de transicion) y `generic_blind`; Backend lo transporta
+y refleja sin reinterpretar seeds ni resultados. La respuesta incluye:
 
 - `project`, `project_dir`, `source_dir`.
+- `analysis_profile` exactamente igual al enum aceptado.
 - `status`: `completed` o `completed_with_errors`.
 - `tool_runs`: ejecuciones externas con estado, codigo, duracion y excerpts.
 - `findings_path`: ruta a `findings.md`.

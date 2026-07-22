@@ -29,12 +29,17 @@ de producto son deliberadamente pequenas:
 
 - `routes/`: tabla de rutas Axum;
 - `controllers/`: validacion HTTP y traduccion de respuestas/errores;
-- `middlewares/`: CORS y trazas HTTP;
+- `middlewares/`: autenticacion externa, limites, CORS y trazas HTTP;
 - `main.rs`: bootstrap del proceso y wiring del core;
 - `node/`: host local para el adaptador de modelo.
 
 No debe aparecer una segunda implementacion de `analyze`, el journal o las
 fases en backend.
+
+La frontera HTTP usa DTOs cerrados, una allowlist de origen
+`scheme://host[:port]`, body bounded y una cuota de requests concurrentes. Los
+errores privados se registran con `incident_id`, pero la respuesta no refleja
+paths locales, secretos ni el diagnostico interno.
 
 ## Core
 
@@ -60,6 +65,7 @@ al backend autoridad sobre candidatos o veredictos.
 
 ## Compatibilidad
 
-La API externa, los puertos, las variables ya publicadas, el workspace de
-proyectos y las rutas de artefactos se preservan. La migracion cambia donde vive
-el codigo, no el significado de sus resultados.
+Las rutas y DTOs productivos se mantienen de forma compatible, con campos
+aditivos como `analysis_profile`. La seguridad de transporte si se endurece:
+una request no autenticada ya no puede usar los endpoints productivos y un
+nombre de proyecto no canonico se rechaza en vez de convertirse en otro nombre.

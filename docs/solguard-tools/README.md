@@ -14,6 +14,8 @@ Documentacion tecnica de las herramientas deterministas coordinadas por
 7. [SolGuard Discover](07-solguard-discover.md)
 8. [SolGuard Economic](08-solguard-economic.md)
 9. [SolGuard Value](09-solguard-value.md)
+10. [SolGuard Filter](10-solguard-filter.md)
+11. [SolGuard Exploit](11-solguard-exploit.md)
 
 ## Pipeline actual
 
@@ -35,7 +37,8 @@ solo invoca el core desde HTTP.
 - INVARIANT produce propiedades tipadas.
 - VALIDATE emite `supported`, `refuted` o `inconclusive`.
 - FILTER conserva una admision independiente y fail-closed en `filter.v0.1`.
-- EXPLOIT solo consume candidatos admitidos y emite `exploit.v0.2`.
+- EXPLOIT solo consume candidatos admitidos y emite `exploit.v0.2`; hoy es
+  plan-only y bloquea compilacion/ejecucion host por falta de aislamiento fuerte.
 - Core reconcilia y journaliza; no cambia la autoridad de cada herramienta.
 
 Ninguna afirmacion de rendimiento, recall o pagabilidad se deriva de esta
@@ -50,3 +53,6 @@ MAP, TRACE, ECONOMIC, VALUE y core comparten además la identidad aditiva
 `economic_flow_identity.v2`: una ruta content-addressed se conserva y se une por
 ID/digest exactos hasta el proof candidate-directed. El contrato completo está
 en [Identidad económica de flujo v2](../solguard-core/economic-flow-identity-v2.md).
+
+La autoridad de ejecucion, secretos, source roots, sealed Git y contracts de
+release pertenece a [SolGuard Deploy](../solguard-deploy/README.md).

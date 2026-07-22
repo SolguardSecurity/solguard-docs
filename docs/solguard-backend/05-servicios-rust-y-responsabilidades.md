@@ -6,14 +6,15 @@ La frontera Rust se divide entre el adaptador HTTP y el motor.
 
 ### Controllers
 
-Validan body, query y path; transforman el request al tipo de entrada del core;
-invocan la libreria; y convierten el resultado o error en HTTP. No ejecutan
-herramientas ni escriben artefactos de analisis.
+Reciben requests ya autenticadas y bounded, validan body, query y path,
+transforman el request al tipo de entrada del core, invocan la libreria y
+convierten el resultado o error en HTTP. No ejecutan herramientas ni escriben
+artefactos de analisis.
 
 ### Routes y middleware
 
-Definen la superficie Axum, CORS y observabilidad HTTP. Las rutas publicadas no
-cambian por la migracion.
+Definen la superficie Axum, autenticacion `x-solguard-api-key`, limite de body,
+concurrencia, CORS exacto y observabilidad HTTP.
 
 ### Bootstrap
 
@@ -35,6 +36,8 @@ como dependencia local inyectada, no como autoridad de deteccion.
   posteriores a FILTER.
 - `services/projects.rs`, `ingest.rs`, `knowledge.rs` e `internal_client.rs`:
   servicios no HTTP reutilizables.
+- `services/filesystem_boundary.rs` e `ingest_transaction.rs`: autoridad
+  fisica, publicacion create-only, journal y recovery.
 
 ## Regla de propiedad
 

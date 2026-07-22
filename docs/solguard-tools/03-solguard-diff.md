@@ -92,6 +92,19 @@ DIFF aporta dimension temporal. Ayuda a preguntar:
 - que superficies ya mapeadas fueron tocadas;
 - que invariantes o rutas deberian revisarse otra vez.
 
+## Frontera operacional actual
+
+DIFF inspecciona Git con un ejecutable canonico (o
+`SOLGUARD_GIT_BIN` absoluto), entorno minimo, home/config aislados y hooks,
+textconv y external diff deshabilitados. Los comandos tienen timeout, stdout y
+stderr bounded y terminacion del arbol de procesos. Configuracion host o del
+repositorio no puede convertirse en ejecucion implicita durante la inspeccion.
+
+La adquisicion publica estado completo o deuda tipada para commits/files; no
+presenta una muestra truncada como inventario total. El output requiere un root
+fresco o vacio, se vuelve a hashear y publica un manifest. GitHub sigue siendo
+opt-in y no cambia la autoridad del historial local.
+
 ## Limites
 
 - Necesita repo Git local para historial.

@@ -36,6 +36,23 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 ## Contracts
 
 - `documentation truthfulness`
+- Core owns the pipeline and filesystem authority. Documentation must preserve
+  the separation between managed `projects_dir`, readable
+  `local_source_roots` and readable `ingest_roots`, canonical project names,
+  create-only publication and crash-recoverable ingestion; Backend is only the
+  authenticated bounded HTTP adapter
+- Backend external routes use `EXTERNAL_API_KEY` through
+  `x-solguard-api-key`; public health is minimal and authenticated health may
+  attest the managed execution contract. Runtime config v2 never persists the
+  external or internal key
+- TRACE carries the closed `compatibility|generic_blind` profile and
+  `structural_generic|generic_rule|known_pattern` origins. Solidity cross-file
+  closure is derived from resolved MAP callable edges and stays bounded to 256
+  files/32 MiB per project, 16 projects/64 MiB LRU, 65,536 files/256 MiB global
+  catalog and 8 MiB per file
+- Deploy closure counts are 35 components for the legacy v1-v8 resume contract
+  (24 JavaScript plus 11 runtime/corpus) and 29 for scan v2 (20 JavaScript plus
+  9 sealed resources). Documentation must not retain historical closure counts
 - Solidity visibility comes only from direct AST declaration nodes or a masked
   fallback header and defaults to `internal`; comments and bodies cannot create
   entrypoint authority

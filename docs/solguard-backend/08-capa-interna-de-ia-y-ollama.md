@@ -153,6 +153,10 @@ Produccion o test:
 .env
 ```
 
+Esta carga es una comodidad del host local. En una ejecucion gestionada,
+`INTERNAL_API_KEY` y `EXTERNAL_API_KEY` proceden de la autoridad efimera de
+Deploy y no deben persistirse en `.env`, runtime config, receipts o logs.
+
 Variables leidas:
 
 - `INTERNAL_PORT`

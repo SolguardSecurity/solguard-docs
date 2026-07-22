@@ -236,6 +236,18 @@ pre-validacion y no debe introducir propiedades nuevas. El enriquecimiento
 historico post-candidate sirve para explicar y comparar resultados ya
 validados, no para modificar `invariants.json`.
 
+## Frontera operacional actual
+
+INVARIANT abre un directorio TRACE manifest-first y verifica el contrato v2,
+perfil y signal origins. `generic_blind` no admite `known_pattern`; un primario
+standalone queda degradado y no autoriza evidencia negativa o completitud.
+
+Todos los JSON autoritativos se leen con identidad estable y limites de bytes;
+links, reparse points, hardlinks, duplicate keys, trailing data y drift fallan
+cerrados. La herramienta publica el root create-only. La seleccion posterior de
+Core entre el bundle inicial y candidate-refinement queda ligada por
+`invariant.selection.v1`; no se mezcla un primario con otra vista runtime.
+
 ## Limites
 
 - No ejecuta codigo.

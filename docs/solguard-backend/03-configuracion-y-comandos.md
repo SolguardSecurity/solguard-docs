@@ -11,6 +11,10 @@ variables al arrancar.
 | `EXTERNAL_PORT`                      | `5000`                   | API Axum local.                                                                       |
 | `INTERNAL_PORT`                      | `4000`                   | Servicio Node local.                                                                  |
 | `INTERNAL_API_KEY`                   | obligatorio              | Autenticacion entre procesos locales.                                                 |
+| `EXTERNAL_API_KEY`                   | obligatorio              | API externa; 32-256 bytes ASCII imprimibles, sin whitespace y distinta de la interna. |
+| `EXTERNAL_ALLOWED_ORIGINS`           | origins Tauri locales     | Allowlist CORS exacta de origins canonicos; puede sustituirse de forma explicita.      |
+| `EXTERNAL_BODY_LIMIT_BYTES`          | `1048576`                | Limite de body JSON; nunca puede superar 16 MiB.                                      |
+| `EXTERNAL_MAX_IN_FLIGHT`             | `8`                      | Concurrencia externa; rango admitido 1-64.                                            |
 | `VERSION`                            | obligatorio              | Version publicada por health/info.                                                    |
 | `OLLAMA_MODEL`                       | obligatorio              | Modelo local.                                                                         |
 | `OLLAMA_HOST`                        | `http://127.0.0.1:11434` | Endpoint Ollama.                                                                      |
@@ -21,14 +25,31 @@ variables al arrancar.
 
 Ambos servidores escuchan solo en `127.0.0.1`.
 
+La allowlist CORS por defecto contiene `http://localhost:1420`,
+`http://tauri.localhost` y `tauri://localhost`. Si se sustituye, cada entrada
+debe ser un origin canonico exacto; wildcard, origin opaco, path, query o
+fragmento se rechazan.
+
 ## Workspace y conocimiento
 
 | Variable                          | Default                                     |
 | --------------------------------- | ------------------------------------------- |
 | `SOLGUARD_PROJECTS_DIR`           | `%USERPROFILE%/Documents/Solguard`          |
+| `SOLGUARD_LOCAL_SOURCE_ROOTS`     | sin default implicito seguro                |
+| `SOLGUARD_INGEST_ROOTS`           | sin default implicito seguro                |
 | `SOLGUARD_DATABASE_PATH`          | `../solguard-database/data/solguard.sqlite` |
 | `SOLGUARD_DATABASE_CONNECTOR_DIR` | `../solguard-database/apps/db-connector`    |
 | `SOLGUARD_BACKEND_DATA_DIR`       | `data`                                      |
+
+Las listas de roots contienen paths absolutos. `SOLGUARD_PROJECTS_DIR` concede
+autoridad para estado gestionado; no autoriza automaticamente targets locales
+ni informes. Core vuelve a comprobar contencion e identidad fisica bajo
+`SOLGUARD_LOCAL_SOURCE_ROOTS` o `SOLGUARD_INGEST_ROOTS`, respectivamente.
+
+`EXTERNAL_API_KEY` e `INTERNAL_API_KEY` no deben persistirse dentro del runtime
+config v2 de Deploy. Los runners las materializan en una autoridad efimera
+single-link y las inyectan solo al proceso Backend; el cleanup es obligatorio
+tanto tras un prepare fallido como tras run.
 
 ## Herramientas del core
 

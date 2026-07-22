@@ -8,8 +8,8 @@ request, llama a `solguard-core` y serializa el resultado.
 
 1. `POST /install` prepara el workspace local.
 2. `POST /projects/init` delega la inicializacion del proyecto.
-3. `POST /analyze` valida `project`, `target`, `mode` y `run_exploit`, y delega
-   la ejecucion al core.
+3. `POST /analyze` valida `project`, `target`, `mode`, `analysis_profile` y
+   `run_exploit`, y delega la ejecucion al core.
 4. Los endpoints de resultados leen o delegan las consultas sin recalcular
    veredictos.
 5. `POST /search` y `POST /ingest` conservan su contrato HTTP y delegan sus
@@ -18,6 +18,9 @@ request, llama a `solguard-core` y serializa el resultado.
 ## Principios de la frontera
 
 - Los controllers no conocen el orden del pipeline.
+- La API externa autentica con `EXTERNAL_API_KEY`; la credencial interna de
+  Node es distinta y no autoriza callers externos.
+- Body, concurrencia y CORS se limitan antes del controller.
 - Ninguna ruta genera candidatos, findings o reportes.
 - Los errores del core se traducen de forma estable al contrato HTTP.
 - `audit_only` sigue siendo una politica publica de `/analyze`; su ejecucion

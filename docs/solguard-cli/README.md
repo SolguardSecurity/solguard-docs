@@ -1,48 +1,64 @@
 # Solguard CLI
 
-`solguard-cli` es el cliente de escritorio de Solguard. Hoy su alcance es deliberadamente pequeño: funciona como una consola visual construida con React y Tauri que envía comandos al `solguard-backend` y muestra la respuesta dentro de una interfaz local tipo terminal.
+`solguard-cli` es la interfaz local de escritorio. Presenta una consola React
+dentro de Tauri, transporta comandos a `solguard-backend` y renderiza sus
+respuestas. No audita protocolos, no consulta SQLite, no ejecuta herramientas
+del pipeline y no habla con Ollama directamente.
 
-## Papel dentro del stack
+## Responsabilidad cerrada
 
-El CLI no audita protocolos por sí mismo, no parsea reportes, no consulta SQLite directamente y no se comunica con Ollama. Toda la lógica real vive fuera del cliente. Su responsabilidad es actuar como capa de interacción para el usuario, manteniendo una experiencia simple sobre la API local del backend.
+- Mostrar la consola, el proyecto seleccionado, progreso, resultados y errores.
+- Traducir los comandos de usuario a las rutas concretas de Backend.
+- Mantener configuracion local minima de la interfaz.
+- Conservar el secreto externo exclusivamente en el proceso nativo Tauri.
 
-En la práctica, el CLI es la puerta de entrada operativa al sistema. El usuario escribe comandos como `info`, `projects`, `search`, `ingest` o `analyze`, y la aplicación traduce esos comandos en peticiones HTTP contra `http://127.0.0.1:5000` por defecto.
+El frontend web no realiza `fetch` directo. Toda peticion pasa por el comando
+nativo `backend_request`; Rust obtiene `EXTERNAL_API_KEY` del entorno y anade
+`x-solguard-api-key` sin devolver el secreto al contexto web. La clave debe
+tener entre 32 y 256 bytes ASCII imprimibles y no puede contener whitespace.
 
-## Arquitectura actual
+## Frontera de red
 
-La aplicación tiene tres piezas principales:
+`SOLGUARD_API_URL` es opcional y su valor por defecto es
+`http://127.0.0.1:5000`. Si se configura, debe ser un origin HTTP canonico de
+loopback: `127.0.0.1`, `localhost` o `::1`, sin usuario, password, path, query ni
+fragmento. No se aceptan hosts remotos, redirects ni un proxy HTTP arbitrario.
 
-- una interfaz React en `src/`, que implementa la terminal visual;
-- un empaquetado de escritorio con Tauri en `src-tauri/`;
-- una conexión HTTP sencilla con el backend, sin capa compleja de estado ni comandos nativos relevantes por ahora.
+El proxy nativo:
 
-El frontend principal vive en [App.tsx](C:/Users/Roger Gómez Martínez/Documents/GitHub/solguard-cli/src/App.tsx). Ahí se mantiene el historial de líneas de consola, el proyecto seleccionado, el estado de ejecución y el parser básico de comandos. Cada comando reconocido termina llamando a un endpoint del backend con `fetch`.
+- admite solo `GET` y `POST` y una allowlist cerrada de rutas usadas por la UI;
+- rechaza body en `GET`, rutas desconocidas y queries no previstas;
+- limita el request JSON a 1 MiB y la respuesta JSON a 64 MiB;
+- exige `application/json` con un objeto como raiz;
+- limita el timeout a 100 ms-90 minutos y la conexion a 5 segundos;
+- opera bajo una CSP no nula y cerrada a recursos e IPC locales, con
+  `style-src 'unsafe-inline'` como excepcion visual documentada.
 
-La parte Tauri está todavía muy ligera. El código Rust nativo no contiene lógica de producto real en este momento; la aplicación usa Tauri sobre todo como contenedor de escritorio para la UI web.
+Estos limites reducen la superficie cliente-backend; no sustituyen la
+autorizacion y validacion del propio Backend. El transporte sigue siendo HTTP
+sobre loopback y depende de que el launcher entregue la clave al proceso Tauri
+de forma segura.
 
-## Comandos expuestos
-
-El cliente actual reconoce una superficie pequeña y directa:
+## Comandos de usuario
 
 - `help`
 - `install`
 - `info`
-- `init <program-name> [description]`
+- `init <nombre> [descripcion]`
 - `projects`
-- `project <program-name>`
-- `search "<query>"`
-- `ingest <file-or-folder>`
-- `analyze <git-url|local-folder|zip>`
+- `project <nombre>`
+- `search "<consulta>"`
+- `ingest <archivo-o-carpeta>`
+- `analyze "<target>"`
 - `exit`
 
-Todos estos comandos son interfaz de usuario. La ejecución efectiva pertenece al backend. El CLI no implementa por sí solo lógica de búsqueda, ingesta o análisis.
+Son comandos de interfaz. La ejecucion efectiva pertenece a Backend y Core; un
+fallo de red o un payload invalido no se convierte en una respuesta simulada de
+auditoria.
 
-## Estado actual del proyecto
+## Estado de evidencia
 
-El estado actual del CLI es el de un cliente mínimo, pero funcional, orientado a flujo local. Tiene una estética de terminal, persiste el proyecto seleccionado en `localStorage` y renderiza respuestas del backend como texto plano o JSON serializado.
-
-Todavía no hay una capa avanzada de widgets, seguimiento granular de progreso, tablas ricas o integración profunda con capacidades nativas de Tauri. Incluso hay componentes y plugins aún vacíos, como `progressbar.tsx` o `inputDetector.ts`, lo que confirma que el proyecto está en una fase temprana y que su foco actual es validar el flujo básico cliente-backend.
-
-## Resumen técnico
-
-`solguard-cli` debe entenderse como la cara local del sistema, no como su cerebro. Su valor está en ofrecer una interfaz cómoda y de escritorio para operar `solguard-backend` sin obligar al usuario a trabajar directamente con peticiones HTTP o scripts sueltos. En su estado actual, es un frontend terminalizado, sencillo y correctamente acotado en responsabilidades.
+Los tests locales del repositorio comprueban delegacion al proxy nativo,
+allowlists, limites y CSP. No miden recall, precision, velocidad ni
+generalizacion, y no sustituyen una prueba E2E con Backend ni la ejecucion
+remota de GitHub Actions.

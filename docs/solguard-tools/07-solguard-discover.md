@@ -86,7 +86,7 @@ Archivos:
 `coverage_contract.json` es el contrato de salud compacto, cerrado y obligatorio
 de DISCOVER. Liga `protocol_model.json` por basename, schema, bytes y SHA-256, y
 proyecta exactamente `tool_version`, `summary`, `degraded`, los 16 limites de
-recursos, los 34 contadores de uso, los diagnosticos y el recibo
+recursos, los 36 contadores de uso, los diagnosticos y el recibo
 `economic_route_graph_consumption.v1`. Se emite incluso cuando el modelo
 cabe bajo el limite de parseo: no es un fallback opcional para archivos grandes.
 El index lo anuncia con schema y capability explicitos
@@ -411,6 +411,24 @@ deduplicacion, orden de etapas y contabilidad fail-closed para este caso
 dirigido. No miden precision y no establecen una mejora de recall o
 generalizacion; esas afirmaciones requieren reruns comparables de los corpus
 conocidos y un holdout independiente sellado.
+
+## Frontera operacional actual
+
+El MAP requerido se consume mediante una proyeccion streaming que hashea y
+valida el fichero completo; duplicate keys, truncado, drift o overflow fallan
+sin publicar un modelo. Source opcional se recorre con limites de profundidad,
+entradas, bytes, paths y working set, rechazando links, reparse points,
+hardlinks y sustitucion fisica.
+
+TRACE se adquiere manifest-first desde `index.json`. DISCOVER verifica todos
+los primarios declarados en dos pasadas fisicas bounded y conserva por separado
+el reloj de integridad y el de inferencia. El perfil `generic_blind` exige
+`trace.signal_origins.v1` y prohíbe `known_pattern` en todos los canales
+puntuados; `compatibility` no puede introducir origins que su batch no sello.
+
+El output se publica create-only y transaccionalmente. Deuda coherente queda
+visible como cobertura; input malformado o fisicamente ambiguo es fallo, no
+fallback silencioso.
 
 ## Limites
 

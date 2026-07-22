@@ -13,15 +13,30 @@ resultados VALIDATE con filtros estrictos.
 
 ### `projects.rs`
 
-Gestiona `SOLGUARD_PROJECTS_DIR`: sanea nombres, crea `program.json`,
-`program.md`, `tool-outputs/` y `reports/`, enumera proyectos y repara metadata
-ausente o invalida sin salir del workspace configurado.
+Gestiona `projects_dir` mediante identidades canonicas. No sanea un nombre para
+convertirlo en otro: valida UTF-8/NFC, rechaza aliases y crea `program.json`,
+`program.md`, `tool-outputs/` y `reports/` solo en un destino ausente. Listado,
+reset y resolucion vuelven a comprobar contencion e identidad fisica.
+
+### `filesystem_boundary.rs`
+
+Centraliza componentes canonicos, contencion lexical/fisica, rechazo de links,
+reparse points y hardlinks no autorizados, lecturas estables bounded y
+publicacion create-only mediante staging hermano. La misma politica sirve a
+proyectos, sources locales, Git, ingesta y artefactos, sin mezclar sus roots.
 
 ### `ingest.rs`
 
 Recorre documentos soportados, usa el crate documental de
 `solguard-database` y entrega el payload al conector Bun. El alias Rust
 `solguard_ingest_core` distingue esa dependencia del motor de pipeline.
+
+### `ingest_transaction.rs`
+
+Cierra el plan de documentos bajo `ingest_roots` y ejecuta una transaccion con
+journal durable, staging, commit, cleanup y recovery idempotentes. Backend solo
+invoca la reconciliacion al arrancar; la maquina de estados pertenece a Core.
+Un journal ambiguo o sustituido falla cerrado.
 
 ### `knowledge.rs`
 
@@ -37,12 +52,14 @@ al backend.
 
 ## Motor de analisis
 
-### `analyzer/runtime.rs`
+### `analyzer/runtime.rs` y sus modulos de dominio
 
-Prepara el proyecto, resuelve el target, ejecuta las herramientas, registra el
-journal, construye candidatos y coordina VALIDATE, FILTER y las fases
-posteriores. Tambien conserva degradaciones como fast MAP, fallbacks tipados,
-timeouts y preservacion de receipts de herramienta.
+La fachada coordina modulos separados de validacion contractual, ejecucion,
+runtime bounded de INVARIANT, contratos economicos MAP, proyecciones oversized,
+observabilidad y tool execution. Prepara el proyecto, resuelve el target,
+registra el journal, construye candidatos y coordina VALIDATE, FILTER y fases
+posteriores. La particion reduce radio de cambio; no cambia por si misma
+schemas, scores ni deteccion.
 
 Dentro de CANDIDATES tambien construye los packs target-scoped
 `model_discovery_packs.v2`, ejecuta el model discovery acotado y coordina la

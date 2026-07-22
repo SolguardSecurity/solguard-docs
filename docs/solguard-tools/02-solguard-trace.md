@@ -41,10 +41,11 @@ Opciones:
 | `--out <dir>`                   | Directorio de salida. Default: `solguard-trace-output`.                   |
 | `--from-map <path>`             | Contexto de `audit_map.json`.                                             |
 | `--max-depth <n>`               | Profundidad de llamadas internas. Default: `2`.                           |
-| `--max-path-expansions <n>`     | Presupuesto de expansiones causales por target. Default: `192`.           |
-| `--max-deep-paths <n>`          | Máximo de deep paths retenidos por target. Default: `64`.                 |
+| `--max-path-expansions <n>`     | Presupuesto de expansiones por target. Default: `8192`; maximo: `65536`.  |
+| `--max-deep-paths <n>`          | Maximo de deep paths retenidos. Default y maximo: `4096`.                 |
 | `--top <n>`                     | Presupuesto del prefijo deep; los targets elegibles restantes son compact. |
 | `--levels S,A,...`              | Filtra batch por nivel SolGuard.                                          |
+| `--analysis-profile <perfil>`   | `compatibility` o `generic_blind`; default: `compatibility`.              |
 | `--allow-empty-batch-targets`   | Permite al orquestador registrar seleccion batch vacia como coverage gap. |
 | `--include-tests`               | Incluye tests/mocks Solidity omitidos por defecto.                        |
 | `--source-integrity <json>`     | Contrato orquestado del arbol fisico autorizado.                          |
@@ -143,6 +144,27 @@ TRACE puede incluir:
 - atomicity checks;
 - semantic context flows;
 - semantic findings con superficies, evidencia y confidence.
+
+## Perfil de analisis y signal origins
+
+Cada indice y primario actual sella un `analysis_profile`:
+
+- `compatibility` conserva canales estructurales, reglas genericas y senales de
+  compatibilidad existentes;
+- `generic_blind` admite solo hechos estructurales y reglas tipadas y elimina
+  de todos los canales puntuados cualquier senal con origen `known_pattern`.
+
+La capability `trace.signal_origins.v1` liga cada mismatch, invariante candidato
+y prioridad publicada a uno de tres origenes cerrados:
+`structural_generic`, `generic_rule` o `known_pattern`. En `generic_blind`, una
+entrada `known_pattern`, un ledger ausente, extra, reordenado o incoherente
+invalida el artefacto. `candidate_bug_patterns` debe ser la proyeccion exacta de
+los mismatches admitidos; no existe un catalogo paralelo que pueda reintroducir
+los patrones excluidos.
+
+El perfil controla procedencia dentro del producto. No demuestra que el host
+carezca de acceso a un oracle, ni que el resultado generalice a protocolos
+nuevos; esa afirmacion necesita una frontera y un holdout independientes.
 
 ## Batch mode
 
@@ -442,6 +464,25 @@ TRACE consume `audit_map.json` como fuente estructural. Usa:
 En batch, el MAP se deserializa una sola vez y se proyecta después al contexto
 source-backed de cada target. Esto evita que el coste de lectura crezca como
 `targets × tamaño del MAP` sin cambiar el contrato semántico.
+
+Para un target Solidity deep, TRACE no parsea solo el archivo seleccionado. A
+partir de las aristas MAP resueltas `internal_call`, `direct_call`,
+`external_call` y `library_call`, obtiene los simbolos participantes y construye
+una clausura cross-file de sus ficheros Solidity. Un simbolo ligado por MAP a
+dos ficheros distintos es ambiguo y falla cerrado.
+
+La clausura tiene limites inclusivos y verificables:
+
+- 256 ficheros y 32 MiB por proyecto Solidity deep;
+- cache LRU de 16 proyectos y 64 MiB de source retenido;
+- catalogo fisico global de 65.536 ficheros y 256 MiB;
+- 8 MiB por fichero de source.
+
+Cada fichero se abre mediante descriptor estable, se liga por path relativo,
+bytes y SHA-256 y se vuelve a verificar al reutilizarlo y al cerrar el batch.
+Symlink, reparse point, escape, sustitucion, drift o N+1 en cualquiera de los
+presupuestos falla cerrado. Esto restaura contexto de autorizacion e herencia
+entre ficheros sin volver a escanear un corpus Solidity ilimitado por target.
 
 Las relaciones `partial` o `unresolved` se conservan como preguntas de revision,
 no como llamadas confirmadas.

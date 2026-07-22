@@ -156,22 +156,22 @@ afirmacion del proveedor. Ninguno significa aislamiento verificado ni confianza
 de release.
 
 Existe ademas `solguard-scan-execution-contract.v2`. Su fingerprint scan-only
-cierra exactamente 27 componentes: su constructor, runner, launcher, helper CLI
-productivo, runner de procesos y lock de autoridad de source, catalogo
-materializado, modulo de catalogo, compositor de snapshots, contrato de rutas
-portables, autoridad de cohortes, handoff, reader y finalizacion de autoridad de
-source, trust root y clave publica fijadas, parser JSON estricto,
-product-priority, scan-contract, scan-boundary y seis schemas.
+cierra exactamente 29 componentes: 20 modulos JavaScript alcanzables por el
+worker y 9 recursos sellados. Incluye runtime config v2, autenticacion y
+autoridad efimera de secretos Backend, constructor, runner, launcher, autoridad
+de source, catalogo, snapshots, paths portables, cohortes, trust root,
+product-priority, scan-contract, scan-boundary y schemas.
 Ground truth, evaluator, matcher, splits y
 adjudications no forman parte de esa huella y sus nombres/rutas se rechazan. El
 contrato embebe tambien `solguard-toolchain-fingerprint.v2`: el worker rehashea
-los 27 componentes y recomputa los 13 repositorios antes y despues. Detectar
+los 29 componentes y recomputa los 13 repositorios antes y despues. Detectar
 drift no demuestra aislamiento de capacidades.
 
 El `solguard-benchmark-execution-contract.v1` legacy conserva capacidad de
 oracle y solo sirve como regresion conocida, pero su frontera de resume
-fingerprinta exactamente 34 componentes: 23 modulos JavaScript alcanzables y
-11 recursos corpus/runtime. Incluye los descriptores de
+fingerprinta exactamente 35 componentes: 24 modulos JavaScript alcanzables y
+11 recursos corpus/runtime. El modulo adicional es el helper de autenticacion
+Backend usado por los runners. Incluye los descriptores de
 corpus/runtime y todos los modulos locales alcanzables estaticamente desde los
 runners v1-v8: prioridad, snapshot/preflight, cohortes, rutas portables,
 seleccion, frontera/catalogo/contrato scan, handoff y la cadena completa de
@@ -179,7 +179,7 @@ autoridad de source. Un test recompone el grafo de imports relativos y rechaza
 cualquier dependencia alcanzable ausente; la libreria dinamica del evaluador se
 incluye expresamente.
 
-Esta clausura de 34 componentes pertenece al scanner legacy y a su resume; no
+Esta clausura de 35 componentes pertenece al scanner legacy y a su resume; no
 es un inventario universal de los gates posteriores. Los verificadores de
 pre-release, incluido el gate TRACE producer v2 y sus streamers, quedan fuera de
 esos 23 imports y se sellan mediante la captura completa del worktree, el
@@ -342,6 +342,18 @@ estan definidos, pero la politica no queda congelada para una cohorte real hasta
 que un custodio externo publique el commitment firmado; no se abre ni se
 ejecuta en esta fase. Los replays canonicos y la baseline actual siguen
 pendientes hasta completar los comandos de operador documentados.
+
+## Congelacion tras la macroauditoria
+
+El endurecimiento de Core, Backend, TRACE, FILTER y Deploy no autoriza por si
+solo otro resultado de producto. La siguiente ejecucion debe usar un root nuevo
+y solo puede prepararse tras conservar la barrera 8/8 con estados limpios,
+`filter_results.json` y product health aprobado. Despues deben ejecutarse
+v1-v8-release, labs-release, finalize y verify con la misma identidad sellada.
+
+Ninguno de esos pasos se ejecuto durante la macroauditoria documental. Los
+numeros historicos siguientes permanecen como historia de regresion conocida;
+no describen la calidad del codigo endurecido actual.
 
 ## Resultado historico de cierre v0.8.0
 
