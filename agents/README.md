@@ -27,7 +27,21 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 
 ## Upstream
 
-- `all product repos`
+- `solguard-map`
+- `solguard-trace`
+- `solguard-discover`
+- `solguard-economic`
+- `solguard-value`
+- `solguard-invariant`
+- `solguard-validate`
+- `solguard-filter`
+- `solguard-exploit`
+- `solguard-diff`
+- `solguard-database`
+- `solguard-core`
+- `solguard-backend`
+- `solguard-cli`
+- `solguard-deploy`
 
 ## Downstream
 
