@@ -65,6 +65,69 @@ no satisface el contrato de release actual. Esta exigencia describe la politica
 implementada; todavia no existe un canario ni replay nuevo que demuestre sus
 resultados.
 
+## Contrato runtime Ollama de la cadena r3
+
+Los planes release y measurement contienen
+`solguard-ollama-runtime-policy.v1` con cinco campos cerrados:
+
+- `context_length=32768`;
+- `gpu_required=true`;
+- `gpu_backend=vulkan`;
+- `host=http://127.0.0.1:11435`;
+- su `schema_version` exacta.
+
+Setup exige que el endpoint declarado por la policy sea exactamente
+`http://127.0.0.1:11435`. Esa identidad queda ademas sellada por `OLLAMA_HOST`
+en el entorno semantico, por la acceptance de canarios y por el lock de
+medicion.
+
+El entorno semantico allowlisted sella conjuntamente:
+
+- `OLLAMA_NUM_CTX=32768`, que Backend envia como `options.num_ctx` en cada
+  `/api/chat`;
+- `OLLAMA_CONTEXT_LENGTH=32768`, para el contexto por defecto del daemon;
+- `OLLAMA_VULKAN=true`, como backend GPU requerido;
+- `OLLAMA_NOPRUNE=true`, para no podar el model store compartido;
+- `OLLAMA_NUM_PARALLEL=1`, para una unica secuencia de inferencia por daemon.
+
+Faltar o cambiar cualquiera de los cinco valores incumple la politica.
+
+El orquestador exige el endpoint canonico dedicado
+`http://127.0.0.1:11435`. Verifica primero el prebuild receipt y solo despues
+ejecuta Git, comprueba que el puerto este libre o arranca el binario Ollama
+gestionado. No acepta ni reutiliza un daemon previo. El daemon y sus runners se
+asignan a un Job Object Windows kill-on-close; el listener debe pertenecer al
+PID gestionado y el cleanup debe volver a dejar libre el endpoint. Un fallo de
+cleanup impide informar exito y se conserva junto al fallo operacional, si lo
+hubo.
+
+Sobre ese proceso ejecuta un probe real `POST /api/generate` con
+`num_ctx=32768`, seguido por `GET /api/ps`. El preflight exige exactamente una
+entrada del modelo solicitado, `context_length=32768`, tamano total positivo y
+offload completo `size_vram == size`. Un mismatch aborta antes de los canarios.
+`/api/ps` no publica el nombre del backend GPU: la igualdad demuestra residencia
+completa del modelo observado en VRAM, mientras Vulkan queda sellado por el
+environment del daemon dedicado. Las respuestas del probe se consumen por
+streaming bajo un limite estricto de 1 MiB.
+
+Antes de iniciar la matriz, el mismo orquestador valida tambien la autoridad
+finalizada de `labs-v2`: 90 protocolos, 90 entradas de ground truth, un finding
+declarado por protocolo y commits/snapshots coherentes. Para cada entrada crea
+una autoridad Git efimera, hace fetch del SHA exacto, `rev-parse` y `fsck`, con
+concurrencia maxima cuatro y cleanup obligatorio. No genera todavia los 90 ZIP
+finales ni demuestra que la red siga disponible cuando llegue `labs-release`.
+
+El writer de identidad de canarios emite
+`solguard-canary-release-binding.v2`. Este binding anidado es distinto del
+envelope `solguard-canary-acceptance.v1`: v2 conserva las identidades de
+prebuild, repositorios, binarios, runtime, modelo y manifest y anade de forma
+cerrada `schema_version`, `ollama_context_length=32768` y
+`ollama_vulkan=true`; `ollama_host` sigue ligado y debe coincidir con la policy
+y el entorno. El lector puede abrir la forma legacy v1 sin esos tres campos para
+evidencia historica. Cuando el entorno contiene el contrato Ollama r3 completo,
+el lock exige exactamente el binding v2: legacy no se reetiqueta, no se
+completa por inferencia y no autoriza prepare, run o finalize actuales.
+
 ## Source roots y runtime disjunto
 
 Cada target recibe paths absolutos y frescos para projects, runtime mutable,
@@ -154,6 +217,15 @@ nuevo debe emitirse como v1.
   local `/api/ps` de Ollama;
 - filesystem del run: usados, libres y disponibles mediante `statfs`.
 
+Cuando el runtime Ollama actual esta observado, telemetry v3 conserva ademas
+`model_name`, `context_length`, `model_size_bytes`,
+`model_size_vram_bytes` y `observed_at_ms`; valida contexto `32768`, tamanos
+positivos y offload completo mediante igualdad entre tamano total y VRAM.
+Pipeline measurement v2
+proyecta `ollama_model_name`, `ollama_context_length`,
+`ollama_model_size_bytes` y `ollama_model_size_vram_bytes`. Estos campos son
+capacidad implementada; no existe todavia un receipt r3 real que los contenga.
+
 El runbook canonico muestrea el arbol cada 5 segundos y sistema/storage cada 30
 segundos. El ejecutable de tabla de procesos y el `nvidia-smi` opcional deben
 ser ficheros fisicos regulares: se fijan por realpath, bytes y SHA-256 antes de
@@ -170,6 +242,8 @@ deja la capacidad VRAM total como `null`; solo informa los contadores que el
 host expone. El muestreo puede perder procesos muy cortos, detached o
 reparented. Sensores no disponibles permanecen `null`/`unavailable`, nunca cero.
 V1 y v2 se pueden leer como receipts historicos; el nuevo runbook produce v3.
+La compatibilidad de lectura no permite que un receipt legacy sustituya la
+telemetria r3 exigida por el lock actual.
 
 `solguard-pipeline-measurement.v2` conserva recall de regresion conocida,
 volumen y ruido, y anade una vista operacional reproducible:
@@ -185,31 +259,51 @@ volumen y ruido, y anade una vista operacional reproducible:
 La precision real sigue siendo `null` sin adjudicacion independiente. El
 `known_bug_precision_proxy` y los ratios de ruido sobre v1-v8/labs no son
 precision de producto ni evidencia blind. El lector conserva compatibilidad
-con `solguard-pipeline-measurement.v1`, mientras finalize produce v2.
+con `solguard-pipeline-measurement.v1`, mientras finalize produce v2. Leer v1
+no lo reinterpreta como la medicion v2 producida y ligada por una cadena r3.
 
 ## Orquestador cerrado de release
 
 `scripts/measurement/setup-release.ps1` es la entrada canonica para el siguiente
-intento. Valida plan, prebuild receipt, binarios Node/Git/Git Bash exactos,
-repositorios limpios, modelo Ollama local, espacio libre y roots fisicamente
-ausentes/disjuntos antes de escribir. El minimo por defecto es 300 GiB libres en
-cada volumen de output relevante. `-ValidateOnly` ejecuta solo estas
-precondiciones.
+intento. Valida plan, prebuild receipt, binarios Node/Git/Git Bash/Ollama y
+`taskkill` exactos, repositorios limpios, modelo Ollama local, espacio libre y
+roots de evidencia fisicamente ausentes/disjuntos antes de publicar evidencia.
+El receipt queda verificado antes de ejecutar Git, arrancar el daemon gestionado
+o iniciar cualquier inferencia/scan. El minimo por defecto es 300 GiB libres en
+cada volumen de output relevante.
+
+`-ValidateOnly` ejecuta esas precondiciones, incluido daemon/modelo y el
+preflight de red. Puede crear logs diagnosticos no autoritativos bajo
+`$CanaryBase/_runtime-logs`. No crea ni modifica roots de evidencia de canarios
+o release, ni publica o cambia la acceptance. La existencia de esos logs no
+autoriza ningun paso posterior.
 
 La secuencia cerrada es:
 
-1. Verificar preliminarmente el prebuild receipt; cada canario recibe y valida
+1. Verificar preliminarmente el prebuild receipt antes del daemon gestionado y
+   de cualquier proceso de inferencia o scan; cada canario recibe y valida
    despues esa misma identidad sin recompilar.
-2. Ejecutar o revalidar, nunca en paralelo, exactamente estos ocho canarios:
+2. Fijar los cinco valores del entorno Ollama, exigir el endpoint dedicado
+   `127.0.0.1:11435`, arrancar el ejecutable receipt-bound y pasar el probe de
+   contexto/offload completo; despues ejecutar el preflight temprano del
+   catalogo y los 90 remotes de labs.
+3. Ejecutar o revalidar, nunca en paralelo, exactamente estos ocho canarios:
    `v1:Compound-Finance`, `v1:Monad`, `v2:Size`, `v2:LoopFi`,
    `v4:Morpheus`, `v5:Timeswap`, `v6:Morpheus` y `v8:Vyper`.
-3. Crear/revalidar `solguard-canary-acceptance.v1`; deben aprobar los ocho de
+4. Crear/revalidar `solguard-canary-acceptance.v1`; deben aprobar los ocho de
    ocho con product health y FILTER validos bajo una identidad comun.
-4. Preparar un root nuevo con lock v2 en modo bootstrap y el acceptance 8/8.
-5. Ejecutar `v1-v8-release` con las ocho suites y `--parallel 8`.
-6. Solo si el comando anterior termina correctamente, ejecutar
+5. Preparar un root nuevo con lock v2 en modo bootstrap y el acceptance 8/8.
+6. Ejecutar `v1-v8-release` con las ocho suites y `--parallel 8`.
+7. Solo si el comando anterior termina correctamente, ejecutar
    `labs-release` sobre los 90 labs.
-7. Ejecutar `finalize` y verificar la baseline firmada con `verify`.
+8. Ejecutar `finalize` y verificar la baseline firmada con `verify`.
+
+Durante la parte larga, el runbook mantiene
+`SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)` y restaura el
+estado al salir. Esto solicita a Windows que no suspenda el sistema mientras
+vive el proceso; no es una garantia absoluta de continuidad. No evita un corte
+electrico, reinicio forzado o Windows Update, fallo de driver/GPU ni una perdida
+de red posterior al preflight.
 
 ### Incidente del primer prebuild `r1`
 
@@ -226,6 +320,18 @@ FILTER y los vendors de VALUE, ECONOMIC e INVARIANT. El prebuild comprueba esas
 siete rutas fisicas antes de compilar y falla cerrado ante cualquier deriva.
 Haber cerrado esta paridad no constituye un acceptance 8/8 ni mide recall,
 precision, ruido, velocidad o generalizacion.
+
+### Retirada del prebuild `r2`
+
+El receipt `r2` se conserva como evidencia de la cadena que sello, pero precede
+al contexto por request de Backend y a la politica Ollama/GPU sellada de Deploy.
+Los cambios de source, plan y binarios hacen que sea incompatible con la cadena
+operativa `r3`: no debe reutilizarse, reetiquetarse ni emplearse para autorizar
+sus canarios. `r3` necesita un prebuild receipt create-only y roots nuevos.
+
+Esta retirada no afirma que `r2` fuera criptograficamente falso; limita su
+autoridad al contenido historico que realmente comprometio. Tampoco registra un
+prebuild `r3` como ejecutado o correcto.
 
 Un canario o root existente solo se reutiliza como input tras revalidarlo; un
 fallo no se reanuda en sitio. Si existe un acceptance pero falta cualquiera de
@@ -254,6 +360,8 @@ sigue congelada. A fecha de esta documentacion:
 - no se ha completado un nuevo `v1-v8-release` con estas mejoras;
 - no se han completado los 90 labs con esta identidad;
 - no existe una salida canonica de telemetry v3/pipeline measurement v2;
+- no existe prebuild receipt, probe preservado ni telemetry receipt de la
+  cadena r3;
 - finalize, baseline v2 y verify de ese futuro root no existen;
 - el holdout independiente no se ha abierto ni ejecutado.
 

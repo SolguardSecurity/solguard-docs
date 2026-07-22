@@ -47,6 +47,10 @@ ausente o falta un input. Precompromete:
   verificados contra su SHA-256;
 - argv, cwd, entorno explicito allowlisted, paralelismo, outputs requeridos y
   autoridad de firma;
+- politica Ollama exacta: `OLLAMA_NUM_CTX=32768`,
+  `OLLAMA_CONTEXT_LENGTH=32768`, `OLLAMA_VULKAN=true`, `OLLAMA_NOPRUNE=true`,
+  `OLLAMA_NUM_PARALLEL=1`, modelo, endpoint dedicado y evidencia runtime de
+  contexto/offload cuando la telemetria la observa;
 - historia de baseline en uno de dos modos cerrados: `bootstrap` sin evidencia
   historica verificable o `comparative` con measurement, loss ledger y manifest
   historicos byte-bound.
@@ -461,6 +465,8 @@ contadores expuestos por el host. El muestreo puede perder procesos cortos,
 detached o reparented. Un sensor no soportado o no observado queda
 `null`/`unavailable`, nunca se convierte en cero. Los lectores conservan
 compatibilidad explicita con telemetria v1/v2; el nuevo runbook produce v3.
+Esa lectura legacy conserva historia, pero no satisface los campos Ollama ni la
+cobertura r3 que exige el lock actual.
 
 El macro recall por protocolo solo tiene valor numerico cuando estan observados
 los 254 protocolos configurados. Si la cobertura es parcial queda `null` y se
@@ -510,8 +516,33 @@ exactamente `v1-v8-release` y `labs-release`; ambos solicitan y verifican
 El orquestador recibe un unico prebuild receipt ya creado y lo verifica antes
 de cualquier canario. Tambien valida repositorios limpios, binarios host
 exactos, modelo Ollama local, espacio libre, plan sellado y roots disjuntos y
-fisicamente ausentes. `-ValidateOnly` comprueba esas precondiciones sin crear ni
-cambiar outputs.
+fisicamente ausentes. `-ValidateOnly` comprueba esas precondiciones y puede
+crear logs diagnosticos no autoritativos en `$CanaryBase/_runtime-logs`, pero no
+crea ni modifica roots de evidencia canario/release ni la acceptance.
+
+El contrato r3 cierra una deriva que la cadena anterior no expresaba. Los planes
+release/measurement incluyen `solguard-ollama-runtime-policy.v1` con contexto
+`32768`, GPU requerida, backend configurado como `vulkan` y host exacto
+`http://127.0.0.1:11435`. Setup exige ese mismo endpoint y lo liga ademas al
+entorno semantico, acceptance y lock. El entorno allowlisted fija tambien
+`OLLAMA_CONTEXT_LENGTH=32768`, `OLLAMA_NOPRUNE=true` y
+`OLLAMA_NUM_PARALLEL=1`. Backend envia `OLLAMA_NUM_CTX=32768` en cada
+`/api/chat`, por lo que no depende del default del daemon.
+
+Deploy verifica el prebuild receipt antes de ejecutar Git, arrancar el daemon
+gestionado o iniciar cualquier inferencia/scan. Entonces exige libre el endpoint
+`http://127.0.0.1:11435` y arranca alli el ejecutable Ollama ligado al receipt;
+un daemon previo es un fallo. Un Job Object Windows kill-on-close contiene el
+daemon y sus runners, se verifica el PID listener y el cleanup debe liberar el
+puerto antes de informar exito. Ejecuta `/api/generate` con `num_ctx=32768` y
+consulta `/api/ps`; ambas respuestas se leen por streaming bajo 1 MiB. Debe
+observar una unica entrada del modelo, contexto exacto, tamano total positivo y
+offload completo `size_vram == size`. La API demuestra residencia completa del
+modelo observado en VRAM, mientras `vulkan` queda sellado por el environment.
+A continuacion, el preflight temprano de labs valida la autoridad finalizada de
+los 90 protocolos y 90 findings y, con concurrencia maxima cuatro, hace fetch
+del SHA exacto, `rev-parse` y `fsck` en autoridades Git efimeras con cleanup
+obligatorio. No genera los ZIP finales en ese punto.
 
 Antes del replay completo, el orquestador ejecuta o revalida una barrera
 dirigida sin ground truth como input del producto. `--require-product-health`
@@ -553,14 +584,25 @@ por su duracion, pertenece al operador:
   -SigningPrivateKey $privateKey `
   -SigningPublicKey $publicKey `
   -Model 'qwen2.5-coder:7b' `
-  -OllamaHost 'http://127.0.0.1:11434' `
+  -OllamaHost 'http://127.0.0.1:11435' `
+  -OllamaExecutable 'ollama.exe' `
+  -TaskkillExecutable 'C:\Windows\System32\taskkill.exe' `
   -OllamaModelsRoot 'D:\models'
 ```
+
+Al entrar en la ejecucion larga, el orquestador usa
+`SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)` y restaura ese
+estado en cleanup. La llamada evita la suspension ordinaria de Windows mientras
+vive el proceso, pero no cubre corte electrico, reinicio forzado o Windows
+Update, fallo de driver/GPU ni perdida de red posterior al preflight. El modo
+overnight no garantiza que la cadena termine.
 
 El prebuild receipt es input obligatorio. El orquestador realiza una
 verificacion preliminar y cada canario recibe y valida esa misma identidad; no
 se recompila entre canarios. `-ValidateOnly` aplica el preflight sin ejecutar la
-matriz ni crear outputs.
+matriz. Puede arrancar el daemon, cargar el modelo, consultar la red y escribir
+`$CanaryBase/_runtime-logs`; esos logs no son evidencia. No crea ni modifica
+roots canario/release ni acceptance.
 
 El primer intento `r1` posterior al commit Deploy `0d1f1df` no llego a producir
 ese receipt. Aunque los 14 repositorios requeridos estaban limpios, el prebuild
@@ -571,6 +613,13 @@ root no se reutiliza. La correccion emplea una forma estable y el prebuild
 compara ahora las siete copias byte-identicas de Core, Validate, Discover,
 FILTER y los vendors VALUE, ECONOMIC e INVARIANT antes de compilar. Esto es
 evidencia de paridad de input, no una medicion de deteccion.
+
+El prebuild `r2` posterior se conserva como evidencia historica de sus bytes,
+pero queda retirado para r3. Precede al envio de contexto por request de Backend
+y al sellado/preflight Ollama de Deploy; por tanto no puede autenticar el nuevo
+source, plan ni binarios y sus roots no deben reciclarse. Esta incompatibilidad
+no invalida retroactivamente lo que r2 comprometio, pero obliga a crear un
+prebuild receipt y roots nuevos para r3.
 
 Cada canario debe terminar con estado limpio, `filter_results.json` presente y
 product health aprobado; un error, deuda de cobertura, fallback o artefacto
@@ -595,6 +644,14 @@ descriptores fisicos, SHA-256 y mappings finding-candidate-FILTER por selector.
 Es local, no esta firmado y solo habilita preparar otro root ausente para el
 replay completo v1-v8; declara `release_eligible=false`,
 `generalization_evidence=false` y `blind_detection_evidence=false`.
+
+Dentro de ese envelope v1, el writer actual emite
+`solguard-canary-release-binding.v2`. V2 identifica explicitamente su schema,
+contexto Ollama `32768` y requisito Vulkan, ademas del host, prebuild,
+repositorios, binarios, runtime, modelo y manifest ya ligados. El reader mantiene
+la forma legacy v1 para verificar evidencia historica, pero la reconciliacion
+con un semantic environment r3 completo exige exactamente v2. Un binding legacy
+no se rellena con defaults, no se relabela y no puede autorizar el lock actual.
 
 Esta seccion define una condicion de aceptacion, no registra su cumplimiento.
 Hasta conservar los outputs y el informe product-health de cada canario, su
@@ -624,7 +681,8 @@ comparison=unavailable_bootstrap path=...` y `verified baseline=...`, junto con
 
 Nada de esta cadena se ha ejecutado todavia. No hay canarios aceptados 8/8, no
 hay replay nuevo de v1-v8, labs no se han iniciado, y no existen finalize ni
-verify de una baseline v2. La matriz, el orquestador y sus tests son capacidad
+verify de una baseline v2. Tampoco existe un prebuild receipt, probe preservado
+o telemetry receipt r3. La matriz, el orquestador y sus tests son capacidad
 operacional, no resultados de deteccion.
 
 ## Holdout futuro: politica y mecanismo, no cohorte real

@@ -18,12 +18,29 @@ variables al arrancar.
 | `VERSION`                            | obligatorio              | Version publicada por health/info.                                                    |
 | `OLLAMA_MODEL`                       | obligatorio              | Modelo local.                                                                         |
 | `OLLAMA_HOST`                        | `http://127.0.0.1:11434` | Endpoint Ollama.                                                                      |
+| `OLLAMA_NUM_CTX`                     | `32768`                  | Contexto enviado explicitamente como `options.num_ctx` en cada request `/api/chat`.   |
 | `OLLAMA_TIMEOUT_MS`                  | `600000`                 | Timeout del adaptador de modelo.                                                      |
 | `SOLGUARD_EXECUTION_CONTRACT_SHA256` | ausente                  | Attestation opcional de 64 hex que inyecta `solguard-deploy` en procesos gestionados. |
 | `SOLGUARD_BACKEND_BIN`               | ausente                  | Path absoluto al binario release canonico en ejecuciones gestionadas.                 |
 | `SOLGUARD_BACKEND_BIN_SHA256`        | ausente                  | SHA-256 lowercase esperado del binario release gestionado.                            |
 
 Ambos servidores escuchan solo en `127.0.0.1`.
+
+`OLLAMA_NUM_CTX` acepta unicamente un entero decimal canonico entre `1` y
+`1048576`. Rechaza cero, negativos, fracciones, notacion exponencial,
+whitespace, signo positivo y ceros a la izquierda. El servicio vuelve a
+validar el valor al construirse, por lo que un caller interno tampoco puede
+saltarse el contrato de configuracion. El default de desarrollo es `32768`; la
+cadena release debe sellar ese mismo valor de forma explicita y no depender del
+default del daemon.
+
+`OLLAMA_VULKAN` pertenece a la politica de arranque gestionado por Deploy, no a
+la configuracion semantica que Backend interpreta. Deploy fija
+`OLLAMA_VULKAN=true`, `OLLAMA_CONTEXT_LENGTH=32768`, `OLLAMA_NOPRUNE=true` y
+`OLLAMA_NUM_PARALLEL=1`; Backend fija de manera independiente el contexto
+efectivo de cada request mediante `OLLAMA_NUM_CTX`. La cadena r3 no reutiliza el
+daemon de desarrollo en `11434`: exige que `11435` este libre y arranca alli un
+daemon dedicado cuyo ejecutable esta ligado al prebuild receipt.
 
 La allowlist CORS por defecto contiene `http://localhost:1420`,
 `http://tauri.localhost` y `tauri://localhost`. Si se sustituye, cada entrada

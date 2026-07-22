@@ -103,6 +103,36 @@ aprobado. Esta documentacion no registra esos canarios como ejecutados o
 aceptados; incluso su exito no probaria release, deteccion blind ni
 generalizacion.
 
+La cadena operativa r3 agrega una precondicion independiente del corpus: los
+planes sellan por un lado los cinco campos de
+`solguard-ollama-runtime-policy.v1` y, por otro, cinco valores de entorno:
+`OLLAMA_NUM_CTX=32768`, `OLLAMA_CONTEXT_LENGTH=32768`,
+`OLLAMA_VULKAN=true`, `OLLAMA_NOPRUNE=true` y `OLLAMA_NUM_PARALLEL=1`. Tras
+verificar el prebuild receipt, Deploy exige libre el endpoint dedicado
+`127.0.0.1:11435`, arranca el ejecutable Ollama ligado al receipt y no reutiliza
+un daemon previo. Antes de cualquier canario carga el modelo mediante
+`/api/generate` con contexto `32768` y exige en `/api/ps` contexto exacto y
+offload completo `size_vram == size`. Despues comprueba tempranamente las 90
+filas de `labs-v2` y el acceso a sus 90 remotes. Esto reduce fallos
+operacionales tardios; no mide recall, precision ni generalizacion.
+
+El prebuild `r2` queda preservado pero retirado: fue creado antes de estos
+contratos y no puede autorizar el source, los binarios o los roots de r3. No hay
+todavia prebuild receipt, acceptance 8/8 ni replay r3 conservados.
+
+La nueva identidad anidada que escribe cada acceptance es
+`solguard-canary-release-binding.v2`, aunque el envelope agregado continue
+siendo `solguard-canary-acceptance.v1`. El reader admite la forma legacy v1 para
+conservar evidencia historica, pero el entorno Ollama r3 atestado exige v2 con
+host, contexto `32768` y Vulkan reconciliados. Legacy no puede convertirse en
+identidad r3 ni autorizar su lock.
+
+El modo overnight solicita con `SetThreadExecutionState` que Windows no suspenda
+el sistema mientras vive el orquestador. No protege frente a corte electrico,
+reinicio forzado o Windows Update, fallo de driver/GPU ni perdida de red despues
+del preflight; por tanto no convierte una ejecucion nocturna en garantia de
+finalizacion.
+
 ### Tercera ola E0: scan-only diagnostico disponible
 
 `solguard-deploy` ya contiene una cadena contractual separada para construir una

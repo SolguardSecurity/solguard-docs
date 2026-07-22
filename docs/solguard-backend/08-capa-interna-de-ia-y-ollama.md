@@ -124,14 +124,22 @@ Payload relevante:
     "top_p": 1,
     "top_k": 1,
     "seed": 0,
+    "num_ctx": 32768,
     "num_predict": 900
   }
 }
 ```
 
-Esto busca salidas reproducibles y acotadas. Si Ollama devuelve HTTP no exitoso,
-el error incluye status y un excerpt compacto. Si la respuesta viene vacia, la
-capa interna falla explicitamente.
+`num_ctx` no se hereda implicitamente del daemon: procede de
+`OLLAMA_NUM_CTX` y se incluye en cada request. Su default es `32768`; solo se
+aceptan enteros decimales canonicos entre `1` y `1048576`, con una segunda
+validacion en el constructor de `OllamaService`. El release actual exige
+exactamente `32768`. El rango es un limite de configuracion del adaptador y no
+afirma que todos los modelos soporten cualquier valor del rango.
+
+El resto de opciones busca salidas reproducibles y acotadas. Si Ollama devuelve
+HTTP no exitoso, el error incluye status y un excerpt compacto. Si la respuesta
+viene vacia, la capa interna falla explicitamente.
 
 ## Carga de entorno
 
@@ -164,8 +172,19 @@ Variables leidas:
 - `INTERNAL_API_KEY`
 - `OLLAMA_HOST`
 - `OLLAMA_MODEL`
+- `OLLAMA_NUM_CTX`
 - `OLLAMA_TIMEOUT_MS`
 - `VERSION`
+
+En una ejecucion gestionada, Deploy sella tambien `OLLAMA_VULKAN=true`,
+`OLLAMA_CONTEXT_LENGTH=32768`, `OLLAMA_NOPRUNE=true` y
+`OLLAMA_NUM_PARALLEL=1`. Arranca siempre un daemon dedicado ligado al prebuild
+receipt en `http://127.0.0.1:11435`; un listener previo en ese endpoint es un
+fallo, no un fallback. Estas variables gobiernan el daemon y no sustituyen
+`options.num_ctx`: Backend continua enviando el contexto exacto por request.
+El preflight exige contexto `32768` y offload completo en `/api/ps`. Tanto el
+preflight como la telemetria son controles operacionales externos al servicio
+Node; no convierten texto de modelo en evidencia de un finding.
 
 ## Errores
 
