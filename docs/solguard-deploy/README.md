@@ -224,7 +224,8 @@ positivos y offload completo mediante igualdad entre tamano total y VRAM.
 Pipeline measurement v2
 proyecta `ollama_model_name`, `ollama_context_length`,
 `ollama_model_size_bytes` y `ollama_model_size_vram_bytes`. Estos campos son
-capacidad implementada; no existe todavia un receipt r3 real que los contenga.
+capacidad implementada. El prebuild receipt historico `r3` no es un receipt de
+telemetria y su primer canario fallo antes de producir una medicion completa.
 
 El runbook canonico muestrea el arbol cada 5 segundos y sistema/storage cada 30
 segundos. El ejecutable de tabla de procesos y el `nvidia-smi` opcional deben
@@ -271,6 +272,16 @@ roots de evidencia fisicamente ausentes/disjuntos antes de publicar evidencia.
 El receipt queda verificado antes de ejecutar Git, arrancar el daemon gestionado
 o iniciar cualquier inferencia/scan. El minimo por defecto es 300 GiB libres en
 cada volumen de output relevante.
+
+Antes del daemon gestionado, setup comprueba tambien los veintidos endpoints
+IPv4 loopback de la cadena: benchmarks `4401-4408`/`5401-5408` y los tres
+workers de labs `4490-4492`/`5490-5492`. Las bases de los canarios quedan fijadas
+en `4400/5400`, por lo que valores ambientales residuales no los desplazan fuera
+del rango comprobado. El plan debe sellar `--parallel 8` para benchmarks y
+`--parallel 3` para labs; setup rechaza una deriva antes de confiar en los rangos
+correspondientes. Un listener residual falla temprano; esta comprobacion no
+elimina una posible carrera posterior, que sigue cerrada por el arranque
+gestionado de cada runner.
 
 `-ValidateOnly` ejecuta esas precondiciones, incluido daemon/modelo y el
 preflight de red. Puede crear logs diagnosticos no autoritativos bajo
@@ -327,16 +338,48 @@ El receipt `r2` se conserva como evidencia de la cadena que sello, pero precede
 al contexto por request de Backend y a la politica Ollama/GPU sellada de Deploy.
 Los cambios de source, plan y binarios hacen que sea incompatible con la cadena
 operativa `r3`: no debe reutilizarse, reetiquetarse ni emplearse para autorizar
-sus canarios. `r3` necesita un prebuild receipt create-only y roots nuevos.
+sus canarios. La cadena `r3` publico despues su propio prebuild receipt
+create-only y uso roots nuevos.
 
 Esta retirada no afirma que `r2` fuera criptograficamente falso; limita su
-autoridad al contenido historico que realmente comprometio. Tampoco registra un
-prebuild `r3` como ejecutado o correcto.
+autoridad al contenido historico que realmente comprometio.
+
+### Fallo del primer canario `r3`
+
+El prebuild `phase1-core-20260722-professional-r3` se completo y sello 14
+repositorios y 24 binarios. Setup verifico ese receipt antes del daemon, paso la
+sonda del Ollama dedicado con contexto `32768` y residencia GPU reportada
+completa, y valido los 90 commits fijados. El primer canario,
+`v1:Compound-Finance`, fallo antes de MAP con:
+
+```text
+local ZIP analysis source is disabled; configure SOLGUARD_LOCAL_SOURCE_ROOTS
+```
+
+El snapshot estaba materializado y validado. La causa era comun a los runners
+legacy v1-v8: conocian su `snapshotDir`, pero no lo concedian explicitamente al
+Backend. La correccion deriva una unica autoridad local absoluta y canonica de
+`<suite-root>/snapshots`, crea ese directorio antes de Backend e inyecta el
+valor despues del entorno heredado para que no pueda sustituirse. La salud
+autenticada debe devolver exactamente esa raiz.
+
+`snapshot_dir` y el array de un elemento `local_source_roots` quedan en la
+configuracion hasheada del contrato de ejecucion. La aceptacion 8/8 reconstruye
+el path esperado y rechaza ausencia, roots extra, siblings, prefijos parecidos,
+formas con `.`/`..` y contratos coherentemente rehasheados. Solo despues de
+validar cada canario elimina los paths especificos del root para comparar la
+identidad comun. La implementacion reutiliza un modulo ya sellado, por lo que la
+clausura legacy sigue teniendo exactamente 35 componentes y el schema no
+cambia.
+
+El root fallido de Compound y el receipt `r3` se conservan como evidencia
+historica. `r3` queda retirado y no se reanuda ni reutiliza. Los otros siete
+canarios no se ejecutaron.
 
 Un canario o root existente solo se reutiliza como input tras revalidarlo; un
 fallo no se reanuda en sitio. Si existe un acceptance pero falta cualquiera de
-sus ocho roots, el orquestador falla. No se ha ejecutado todavia esta secuencia:
-no existen acceptance 8/8, replay, baseline v2 final ni verificacion que puedan
+sus ocho roots, el orquestador falla. No se ha completado esta secuencia: no
+existen acceptance 8/8, replay, baseline v2 final ni verificacion que puedan
 sostener resultados de producto.
 
 ## Publicacion y gates
@@ -360,8 +403,9 @@ sigue congelada. A fecha de esta documentacion:
 - no se ha completado un nuevo `v1-v8-release` con estas mejoras;
 - no se han completado los 90 labs con esta identidad;
 - no existe una salida canonica de telemetry v3/pipeline measurement v2;
-- no existe prebuild receipt, probe preservado ni telemetry receipt de la
-  cadena r3;
+- existe el prebuild receipt historico `r3`, pero su primer canario fallo antes
+  de MAP y la cadena esta retirada;
+- no existe telemetry receipt completo de la cadena `r3`;
 - finalize, baseline v2 y verify de ese futuro root no existen;
 - el holdout independiente no se ha abierto ni ejecutado.
 

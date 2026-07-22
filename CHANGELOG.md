@@ -3,6 +3,33 @@
 Este changelog registra cambios comprobables de la documentacion. No convierte
 tests de contratos en evidencia de calidad de deteccion.
 
+## 2026-07-22 - Incidente r3 y autoridad local exacta de benchmarks
+
+- Se registro que el prebuild `professional-r3` si se completo y sello 14
+  repositorios y 24 binarios. El setup verifico su receipt, el Ollama dedicado,
+  el modelo con contexto 32768 y residencia GPU reportada completa, y los 90
+  commits fijados antes de iniciar el primer canario.
+- Se documento que `v1:Compound-Finance` fallo antes de MAP porque los runners
+  legacy v1-v8 no trasladaban su snapshot sellado a
+  `SOLGUARD_LOCAL_SOURCE_ROOTS`. Backend aplico correctamente la frontera de
+  Core y rechazo el ZIP sin autoridad local explicita.
+- Los runners derivan ahora exactamente una raiz local de
+  `<suite-root>/snapshots`, la crean antes de Backend, la sellan junto a
+  `snapshot_dir`, y exigen igualdad exacta en la salud autenticada. La
+  aceptacion rechaza ausencia, roots extra, paths hermanos o no canonicos y
+  contratos rehasheados de forma coherente.
+- La clausura legacy permanece en 35 componentes y no cambia el schema del
+  contrato. La cadena `r3` queda preservada y retirada; no se reintenta ni se
+  reutiliza.
+- Setup falla temprano si esta ocupado un endpoint de benchmarks
+  (`4401-4408`/`5401-5408`) o de los tres workers de labs
+  (`4490-4492`/`5490-5492`), antes de iniciar la inferencia gestionada. Las bases
+  de los canarios se fijan en `4400/5400` y no se heredan de un entorno residual;
+  el plan debe sellar exactamente tres workers de labs.
+- No se documenta como ejecutado ningun otro canario, la aceptacion 8/8,
+  v1-v8, labs, `finalize`, `verify` o holdout. Tampoco se afirma ninguna mejora
+  de recall, precision, ruido, tiempo o generalizacion.
+
 ## 2026-07-22 - Contrato operativo r3 para Ollama
 
 - Se documento que Backend fija `OLLAMA_NUM_CTX` por request en
