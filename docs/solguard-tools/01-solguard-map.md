@@ -465,11 +465,28 @@ instalarse create-only. Un destino preexistente no se sobrescribe; un fallo no
 deja un primario autoritativo sin su sidecar. Los limites y ledgers describen
 omision de representacion, no ausencia de vulnerabilidad.
 
+### Autoridad de evidencia y aristas exactas
+
+Solo los `EvidenceItem` de los paths producer cerrados crean autoridad MAP.
+Cada item tiene exactamente `id,file,line,kind,parser_mode,detail`; MAP
+recompone `ev-<fnv64>` y rechaza owners sin membresia, objetos anidados,
+campos/enums desconocidos y colisiones. Copiar un ID no copia su autoridad.
+
+Una arista callable `resolved` contiene las identidades exactas de funcion y
+simbolo de ambos extremos. Una sobrecarga homonima o un target ambiguo permanece
+unresolved. Los consumers pueden verificar esa ligadura sin volver a elegir por
+nombre visible.
+
+En Windows, el root local se clasifica por API fisica y se bloquea por su cadena
+de directorios. UNC, devices, mapped drives y formas drive-relative no son
+autoridad local. Los aliases admitidos deben conservar identidad antes y
+despues.
+
 ## Limites
 
 - No ejecuta codigo.
 - No demuestra explotabilidad.
 - Puede emitir relaciones `partial` o `unresolved`; los consumidores no deben
   tratarlas como hechos confirmados.
-- `--build-probe` es best-effort: un fallo de probe se registra como evidencia,
-  no debe tumbar MAP.
+- `--build-probe` se rechaza: ejecutar el toolchain del auditado no pertenece a
+  MAP y requiere una autoridad sandbox externa.

@@ -86,15 +86,38 @@ valida la membresia completa y publica con un rename:
 
 - `filter_results.json` / `filter_results.md` en modo orquestado;
 - variantes `.untrusted` en modo standalone;
-- `summary.txt`, `phase.json` y, en producto, `source_integrity.json`.
+- `summary.txt`, `tool_phase.json` y, cuando Core entrega autoridad de fuente,
+  `source_integrity.json`.
+
+Core y FILTER exigen el mismo inventario exacto. El receipt Core se publica
+fuera del root FILTER y no se confunde con un artefacto de la herramienta.
 
 Cada review se clasifica como `checker_missing`, `proof_inconclusive` o
 `probe_required`. Un probe plan sigue siendo review y nunca concede
 `exploit_eligibility`.
 
+`metadata.source_hashes` debe coincidir exactamente con todos los inputs de
+producto, incluido el `value/attack_paths.json` físico. Una key ausente, stale
+o extra bloquea la admisión.
+
+Cuando el bundle incluye autoridad de fuente, antes de leer TRACE FILTER
+verifica con `source-integrity.v1` el receipt TRACE ya publicado, su índice
+físico, el root fuente y el receipt MAP upstream. Ese verificador comparte
+bytes exactos con MAP y TRACE. Cierra identidad y linaje físico, pero no
+autoriza por sí solo evidencia ni findings.
+
+Para aristas callables MAP resueltas, FILTER aplica el mismo contrato que
+VALIDATE: ambos endpoints deben estar ligados por identidades de símbolo
+exactas y no pueden aliasar IDs de evidencia.
+
+Un grafo TRACE exact-empty solo autoriza cobertura negativa: no puede soportar
+un finding, evidence ref o decisión terminal. Un primario compacto conserva
+autoridad source-local, no deep graph authority no materializada.
+
 ## Limites de la evidencia
 
 Los tests de FILTER cubren contratos, controles vulnerables/seguros, paths,
-hashes, oversized inputs y fallos simulados. Durante esta macroauditoria no se
-ejecutaron canarios, protocolos, benchmarks, labs ni holdout. No se ha medido
-una mejora de precision, recall, ruido o velocidad.
+hashes, oversized inputs y fallos simulados. Compound `r6` publicó el bundle
+FILTER completo y terminó la fase, pero es un único protocolo de regresión
+conocida. No se han ejecutado aceptación 8/8, benchmarks completos, labs ni
+holdout y no se ha medido una mejora de precisión, ruido o generalización.

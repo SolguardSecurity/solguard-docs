@@ -252,6 +252,28 @@ bounded; los outputs se publican streaming y create-only. Candidate-directed
 VALUE conserva la misma frontera: una request nunca es evidencia y una respuesta
 solo entra en la vista efectiva tras el join MAP/TRACE/invariante exacto.
 
+### Frontera de candidato y proof closure
+
+VALUE factoriza alternativas solo por
+`{candidate_id,canonical_issue_key}` y no mezcla rutas diferentes. Un modelo
+`technical_only` con `proof_rank<2` se clasifica como no candidato, pero sigue
+siendo localizable por una request dirigida. Technical rank 2+, actionable y
+review siguen siendo elegibles.
+
+El budget separa `raw_paths_observed`,
+`technical_models_classified_non_candidate`, `eligible_attack_paths`,
+retained y `eligible_omitted`. Solo la omisión elegible por encima de 4.096
+crea deuda.
+
+Una obligación `invariant_relation` requiere el ID solicitado, un scope único
+`{flow_id,route_digest}` y evidencia MAP/TRACE física no vacía. Linaje
+`source-*`, `native-source-*` o `trace-economic-evidence-*` no cierra la
+prueba.
+
+Los límites TRACE físicos son 100 MiB de índice, 4 GiB por primario, 100.000
+miembros y 64 GiB agregados; la proyección semántica retained se limita a
+64 MiB por primario/256 MiB por batch. Son límites de admisión.
+
 ## Limites
 
 - VALUE no consume ground truth ni resultados del evaluator.

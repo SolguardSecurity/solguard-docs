@@ -50,6 +50,17 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 ## Contracts
 
 - `documentation truthfulness`
+- document physical evidence and semantic lineage separately. Canonical MAP
+  `EvidenceItem` and native TRACE `evidence_items` are authority; copied IDs,
+  owner references and `source-*` lineage are not
+- document TRACE physical acquisition ceilings separately from retained
+  semantic ceilings; neither is measured RSS
+- FILTER product documentation must include the physical
+  `value/attack_paths.json` hash and conditional `source_integrity.json` bundle
+  member
+- a zero candidate-directed request cohort still publishes a canonical empty
+  `proof_responses.json`
+- record Compound r6 only as known-regression diagnostic, never acceptance 8/8
 - Core owns the pipeline and filesystem authority. Documentation must preserve
   the separation between managed `projects_dir`, readable
   `local_source_roots` and readable `ingest_roots`, canonical project names,

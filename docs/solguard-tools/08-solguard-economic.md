@@ -237,6 +237,20 @@ MAP, DISCOVER y TRACE conservan paths fisicos bounded y los outputs ECONOMIC se
 publican create-only despues de validar primario, sidecar y digests. El motor no
 convierte deuda upstream en una ecuacion exacta ni una ecuacion en veredicto.
 
+### Ledger MAP y budgets TRACE separados
+
+ECONOMIC recompone cada `EvidenceItem` MAP canónico. Los owner IDs, objetos
+nested y look-alikes no crean autoridad. La ruta inline y la proyección MAP
+grande deben construir el mismo ledger y autorizar el mismo output.
+
+La adquisición TRACE admite índice de 100 MiB, primarios físicos de hasta
+4 GiB, 100.000 miembros y 64 GiB físicos agregados. Solo la proyección semántica
+retenida está limitada a 64 MiB por primario y 256 MiB por batch. Verificar
+muchos bytes no equivale a retenerlos ni a una medición de RSS.
+
+Un grafo exact-empty válido conserva cobertura negativa y cero subjects; no
+puede convertirse en evidencia de una ecuación o finding.
+
 ## Limites
 
 - No ejecuta simulaciones economicas.

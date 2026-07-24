@@ -665,6 +665,11 @@ analysis_funnel.json
 Los candidatos incompletos se conservan como leads con etapa, razon, requisitos
 faltantes y evidencia; no se eliminan silenciosamente.
 
+Si no existe ninguna request candidate-directed, Core publica igualmente un
+`solguard-value-proof-responses.v1` canónico con `responses=[]`. El fichero se
+crea una sola vez dentro de un root ausente; un root preexistente o un destino
+no regular falla cerrado. Cero requests no significa artefacto ausente.
+
 Antes de escribir los artefactos, Core finaliza las promociones sobre el
 inventario canonico completo. `validation_candidates.json` es despues un
 subconjunto exacto por ID y por cuerpo: no puede reescribir una fila al moverla
@@ -753,12 +758,19 @@ invalida el input y no produce verdicts parciales.
 ### FILTER
 
 Consume source, VALIDATE, candidatos exactos, invariantes, MAP, policy, output y
-el conjunto TRACE exacto que VALIDATE uso. Verifica `filter.v0.1` de forma
+el conjunto TRACE exacto que VALIDATE uso, además del
+`tool-outputs/value/attack_paths.json` físico original. Verifica `filter.v0.1` de forma
 fail-closed y vuelve a ligar cada miembro TRACE por ruta relativa normalizada y
 SHA-256. Subsets, miembros extra, sustituciones de path, bytes stale, symlinks,
 rutas inseguras o componentes ambiguos fallan cerrados. DISCOVER, ECONOMIC y
-VALUE no se anaden como inputs suplementarios sin un contrato de consumo
-semantico nuevo y medido.
+el modelo VALUE no se añaden como inputs suplementarios sin un contrato de
+consumo semántico nuevo y medido; `attack_paths.json` es una autoridad física
+explícita, no una incorporación implícita del modelo.
+
+Cuando Core entrega source authority, el bundle FILTER contiene exactamente
+`filter_results.json`, `filter_results.md`, `summary.txt`, `tool_phase.json` y
+`source_integrity.json`. El receipt Core vive fuera del root FILTER. Productor,
+tool phase, receipt y Core deben declarar la misma membresía.
 
 `trace:index.json` se verifica como metadata root hash-bound y debe coincidir
 con `metadata.source_hashes` de VALIDATE. No aparece en
@@ -811,7 +823,10 @@ compacta como autoridad semantica.
 
 Cada resultado conserva el contrato downstream de decision
 `trace.claim_authority.v1`, distinto del `trace.claim_authority.v2` que TRACE
-productor liga a una clausura target-route. `none/not_used` solo es
+productor liga a una clausura target-route.
+
+El set `metadata.source_hashes` es cerrado e incluye `attack_paths`; missing,
+stale o extra falla cerrado. `none/not_used` solo es
 terminal si ni VALIDATE ni el candidato canonico ligado por hash dependen de
 TRACE; `primary_evidence_source`, referencias genericas y referencias
 `trace:<path>` del candidato forman parte de esa comprobacion. Una decision

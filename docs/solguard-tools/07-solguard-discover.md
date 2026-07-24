@@ -430,6 +430,21 @@ El output se publica create-only y transaccionalmente. Deuda coherente queda
 visible como cobertura; input malformado o fisicamente ambiguo es fallo, no
 fallback silencioso.
 
+### Autoridad del world model
+
+TRACE es obligatorio y manifest-first. Un directorio con solo `phase.json`, un
+índice legacy o JSON sueltos falla cerrado; no se interpreta como un batch
+vacío sano.
+
+El modelo admite evidencia MAP solo desde el ledger `EvidenceItem` canónico.
+Un owner reference o `ev-*` nested no puede crear actor, asset, superficie o
+hipótesis con autoridad física.
+
+Exact-empty expresa una colección negativa completa, no evidencia positiva. En
+`generic_blind`, el orden ignora scores heredados legacy y prioriza estructura
+pública/runtime. Bytes físicos, dos pasadas TRACE y recursos semánticos
+retained se contabilizan por separado.
+
 ## Limites
 
 - No valida reachability completa.

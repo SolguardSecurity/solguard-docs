@@ -550,6 +550,22 @@ Los artefactos MAP legacy siguen siendo aceptados por compatibilidad, pero un
 flow sin identidad v2 no puede adquirir autoridad exacta por el mero hecho de
 haber pasado por TRACE.
 
+### Exact-empty, bindings y publicación compacta
+
+Una clausura económica exactamente vacía es autoridad de cobertura negativa
+solo cuando roots, fragments, choices, events, alternativas, omisiones y deuda
+son cero y la resolución es `exact/complete`. No produce evaluations,
+materialization subjects, evidence refs ni autoridad de finding.
+
+La clausura Solidity usa la identidad MAP exacta de cada endpoint callable. El
+nombre visible no resuelve overloads: identidad ausente, duplicada o ambigua
+falla cerrado.
+
+Cada `trace-evidence-v1-*` se recompone sobre el target y el item completo. Los
+primarios se publican en JSON compacto con streaming acotado hasta 4 GiB. El
+Markdown legacy no autoritativo usa muestras deterministas con contadores
+`observed/rendered/omitted`; el primario conserva la evidencia completa.
+
 ## Limites
 
 - No ejecuta transacciones ni tests.

@@ -248,6 +248,24 @@ cerrados. La herramienta publica el root create-only. La seleccion posterior de
 Core entre el bundle inicial y candidate-refinement queda ligada por
 `invariant.selection.v1`; no se mezcla un primario con otra vista runtime.
 
+### Linaje no es evidencia
+
+`source-*` y `native-source-*` se conservan solo en `source_ids`. Para cerrar
+una referencia candidate-derived deben existir items `ev-*` MAP en la misma
+linea y una única función evidence-backed que posea ese punto por fichero,
+rango y símbolo exactos. La evidencia de definición en otra línea no sirve de
+fallback.
+
+Un path absoluto solo es autoridad dentro de `repository.root`; uno relativo
+debe ser canónico. Una referencia unknown, unbound, ambigua o parcial deja el
+invariante unresolved aunque otra referencia válida sobreviva. El merge de
+duplicados propaga siempre la resolución más débil.
+
+El consumo TRACE separa adquisición y retención: índice 100 MiB, primario
+físico 4 GiB, 100.000 primarios y 64 GiB físicos agregados; la proyección
+semántica se limita a 64 MiB por primario y 256 MiB por batch. Estos valores son
+techos de admisión, no memoria medida.
+
 ## Limites
 
 - No ejecuta codigo.

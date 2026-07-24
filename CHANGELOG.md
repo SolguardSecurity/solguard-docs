@@ -3,6 +3,55 @@
 Este changelog registra cambios comprobables de la documentacion. No convierte
 tests de contratos en evidencia de calidad de deteccion.
 
+## 2026-07-24 - Autoridad física end-to-end y estado real Compound r6
+
+- Se alinearon las páginas de MAP, TRACE, DISCOVER, ECONOMIC, VALUE, INVARIANT,
+  VALIDATE y FILTER con el ledger MAP canónico, evidence IDs TRACE, exact-empty,
+  proyecciones bounded y separación entre linaje y autoridad.
+- Se documentaron los límites TRACE actuales de los consumidores: índice de
+  100 MiB, primario físico de 4 GiB, inventario de 100.000, adquisición física
+  agregada de 64 GiB y proyección semántica de 64 MiB por primario/256 MiB por
+  batch. Son ceilings, no consumo medido.
+- Se cerró la frontera FILTER: el bundle orquestado incluye
+  `source_integrity.json` cuando Core entrega esa autoridad, y
+  `metadata.source_hashes` debe ligar el
+  `value/attack_paths.json` físico exacto.
+- Se registró que una cohorte candidate-directed vacía produce un
+  `proof_responses.json` canónico y no reutiliza roots preexistentes.
+- Se documentó la secuencia Compound posterior a la macroauditoría:
+  - r3 completó analyzer y falló con 10 errores de gate;
+  - r4 fue rechazado tras el pase candidate-derived;
+  - r5 completó analyzer y falló por inventario FILTER;
+  - r6 completó todas las fases y publicó `filter_results.json`, pero su reporte
+    persistido falló por un set Deploy que omitía `attack_paths`.
+- La reevaluación offline del root r6 con el gate corregido pasó measurement
+  integrity y product health. El root y su reporte histórico se mantienen
+  inmutables; no se promueven retroactivamente.
+- Se actualizaron los conteos reales de Deploy a 1.114 tests descubiertos,
+  1.106 correctos, 0 fallos y 8 omitidos.
+- Se alineó `source-integrity.v1`: MAP, TRACE y FILTER comparten los mismos
+  bytes, incluido el verificador input-side del receipt TRACE y su upstream
+  MAP. La coordinación fija el SHA-256 del contrato; verificar la cadena no
+  concede autoridad de finding.
+- Se registraron las identidades actuales de las siete copias TRACE y se
+  realineó el consumidor de rutas MAP de VALIDATE/FILTER. Una arista callable
+  resuelta requiere ahora identidades exactas de símbolo en ambos extremos y
+  no puede reutilizar un ID de evidencia como endpoint.
+
+### Datos reales y alcance
+
+Compound r6 tardó 1:02:25 de runner, produjo 559 candidatos, 5 findings
+soportados, 225 entradas de review y 1/1 match conocido. Es un protocolo de
+regresión conocida. No se interpreta como precisión, mejora global,
+generalización blind ni aceptación release.
+
+### Límites y riesgos residuales
+
+No existe todavía prebuild definitivo de esta identidad, aceptación 8/8,
+v1-v8/labs finalizados, `finalize`, `verify`, CI remoto u holdout. La medición
+completa de tiempo, RAM, CPU, GPU, IO, storage, ruido, precisión y recall sigue
+abierta.
+
 ## 2026-07-22 - Fallo r4 y smoke real de atestacion Backend
 
 - La cadena `professional-r4` publico un prebuild receipt que sello 14

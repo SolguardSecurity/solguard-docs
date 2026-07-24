@@ -305,6 +305,27 @@ primario y attack paths; cualquier omision coherente fuerza todos los verdicts
 a `inconclusive`, mientras tamper o overflow son fallo de input. El root de
 salida es create-only.
 
+### Cierre de autoridad del veredicto
+
+VALIDATE recompone el ledger MAP desde `EvidenceItem` de paths producer
+cerrados y verifica su ID, forma y location. Owners, documentos supplemental,
+source IDs y copias nested aportan claims o linaje, nunca autoridad física por
+sí mismos.
+
+El consumidor de rutas MAP compartido con FILTER exige `source_symbol_id` y
+`target_symbol_id` en toda arista callable resuelta. Un endpoint vacío,
+ambiguo o que reutiliza un `evidence_id` no autoriza una ruta de validación.
+Las dos copias se verifican por identidad byte-exacta.
+
+La ruta MAP inline y la proyección bounded deben generar exactamente el mismo
+ledger; duplicate keys, drift o cambio después de proyectar invalidan el input.
+TRACE se liga a su manifest, selección, source-integrity y receipts actuales.
+Exact-empty solo puede cerrar cobertura negativa.
+
+El artefacto INVARIANT seleccionado y el `value/attack_paths.json` físico se
+recomputan antes de decidir. Un scope o ID correcto sin evidencia física no
+basta para `supported`.
+
 ## Limites
 
 - No genera PoCs.

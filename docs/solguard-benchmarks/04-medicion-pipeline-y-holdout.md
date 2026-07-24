@@ -496,6 +496,26 @@ ausencias de la baseline historica; una aparicion, desaparicion o mutacion
 invalida la comparacion. Baseline v1 queda admitida solo para verificacion
 historica; el productor actual firma v2.
 
+### Estado diagnóstico previo al replay
+
+Compound fue el único canario ejecutado hasta completar todas las fases en el
+root `dirty-contract-r6`. El runner tardó 1:02:25, publicó
+`filter_results.json`, produjo 559 candidatos, 5 soportados, 225 elementos de
+review y 1/1 match conocido.
+
+El reporte persistido falló por un único defecto del evaluator: el set físico
+esperado de FILTER omitía `value/attack_paths.json`. Core y FILTER sí lo habían
+sellado. La reevaluación offline con el código corregido pasó ambos gates, pero
+no reescribe el root ni crea acceptance.
+
+Por tanto:
+
+- el fallo causal del gate está corregido y cubierto por tests;
+- Compound aporta evidencia de integración sobre regresión conocida;
+- no existen todavía prebuild definitivo, aceptación 8/8, v1-v8, labs,
+  finalize/verify o holdout de esta identidad;
+- no puede calcularse una comparación release ni afirmarse generalización.
+
 ## Replay de fase 1
 
 Los runners productivos no se duplican:
