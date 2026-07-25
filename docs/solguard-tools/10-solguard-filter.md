@@ -117,7 +117,6 @@ autoridad source-local, no deep graph authority no materializada.
 ## Limites de la evidencia
 
 Los tests de FILTER cubren contratos, controles vulnerables/seguros, paths,
-hashes, oversized inputs y fallos simulados. Compound `r6` publicó el bundle
-FILTER completo y terminó la fase, pero es un único protocolo de regresión
-conocida. No se han ejecutado aceptación 8/8, benchmarks completos, labs ni
-holdout y no se ha medido una mejora de precisión, ruido o generalización.
+hashes, oversized inputs y fallos simulados. No se han ejecutado aceptación
+8/8, benchmarks completos, labs ni holdout y no se ha medido una mejora de
+precisión, ruido o generalización.

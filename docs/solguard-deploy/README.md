@@ -426,37 +426,6 @@ rendimiento de deteccion.
 El root y receipt r4 se preservan sin reintento ni reutilizacion. Los otros siete
 canarios y toda la cadena posterior no se ejecutaron.
 
-### Diagnóstico Compound `dirty-contract-r3` a `r6`
-
-Tras la macroauditoría se ejecutaron cuatro roots diagnósticos nuevos, siempre
-preservados y no reutilizados:
-
-- `r3` completó el analyzer en 1:24:34, pero FILTER falló con un gate set
-  anterior; product health registró 10 errores.
-- `r4` completó MAP, TRACE, DISCOVER, ECONOMIC, VALUE e INVARIANT y fue
-  rechazado después del pase candidate-derived. Core cerró el caso de cero
-  requests publicando un `proof_responses.json` vacío canónico.
-- `r5` completó analyzer en 1:06:52 y alcanzó 1/1 match conocido, pero Core
-  rechazó el artifact set FILTER porque el productor incluía
-  `source_integrity.json`; product health registró cinco errores.
-- `r6` completó el runner en 1:02:25, dejó todas las fases `completed` y publicó
-  el bundle FILTER completo. Reportó 559 candidatos, 5 soportados, 225 en review
-  y 1/1 match conocido.
-
-El gate persistido de `r6` conservó un error:
-`FILTER does not preserve exact physical input authority`. La causa estaba en
-Deploy: el set esperado omitía el `value/attack_paths.json` que Core y FILTER
-sí habían ligado. El evaluador exige ahora missing/stale/extra de ese hash y la
-reevaluación offline read-only del root pasó measurement integrity y product
-health sin issues. El reporte histórico no se sobrescribe y el root no se
-promueve retroactivamente.
-
-La suite Deploy posterior descubrió 1.114 tests: 1.106 pasaron, 0 fallaron y 8
-quedaron omitidos por entorno.
-
-Este diagnóstico no es acceptance 8/8, replay, precisión ni generalización.
-
-
 Un canario o root existente solo se reutiliza como input tras revalidarlo; un
 fallo no se reanuda en sitio. Si existe un acceptance pero falta cualquiera de
 sus ocho roots, el orquestador falla. No se ha completado esta secuencia: no
@@ -484,10 +453,6 @@ sigue congelada. A fecha de esta documentacion:
 - no se ha completado un nuevo `v1-v8-release` con estas mejoras;
 - no se han completado los 90 labs con esta identidad;
 - no existe una salida canonica de telemetry v3/pipeline measurement v2;
-- los roots históricos profesionales r3/r4 y los diagnósticos
-  dirty-contract-r3/r4/r5/r6 están consumidos;
-- `r6` demuestra un único Compound completo y una reevaluación offline limpia,
-  no una aceptación canaria;
 - finalize, baseline v2 y verify de ese futuro root no existen;
 - el holdout independiente no se ha abierto ni ejecutado.
 

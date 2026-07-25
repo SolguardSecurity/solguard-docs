@@ -60,7 +60,6 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   member
 - a zero candidate-directed request cohort still publishes a canonical empty
   `proof_responses.json`
-- record Compound r6 only as known-regression diagnostic, never acceptance 8/8
 - Core owns the pipeline and filesystem authority. Documentation must preserve
   the separation between managed `projects_dir`, readable
   `local_source_roots` and readable `ingest_roots`, canonical project names,
