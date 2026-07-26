@@ -16,10 +16,11 @@ The output is a disposable, non-authoritative view:
   inconsistent derived state and unsafe physical inputs.
 
 The reader pins the C0-012 contract publication at
-`solguard-agents@f093848824173f6c5cdb1a7a89dd4acbe5d90ab2` and the independent
+`solguard-agents@9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778` and the independent
 C0-013 validation reader at
-`solguard-deploy@36ca97b6f8117df77039eea397763b5a3a35a310`. It does not republish or
-change either contract.
+`solguard-deploy@5d8d0a3609b0b191cae89461c7c5946d1c6b3f89`. It does not republish or
+change either contract. Its LF-normalized source SHA-256 is
+`a9c1339f7c80d09465593bdcfe6329adab026278641e3cd89c909f2ec8771409`.
 
 Render the frozen revision-zero plan snapshot with all current trust anchors:
 

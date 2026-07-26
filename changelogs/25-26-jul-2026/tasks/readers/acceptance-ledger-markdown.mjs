@@ -13,12 +13,12 @@ export const ACCEPTANCE_LEDGER_READER_PINS = Object.freeze({
     schemaPublisher: Object.freeze({
         repository: "solguard-agents",
         taskId: "C0-012",
-        commit: "f093848824173f6c5cdb1a7a89dd4acbe5d90ab2",
+        commit: "9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778",
     }),
     validatingReader: Object.freeze({
         repository: "solguard-deploy",
         taskId: "C0-013",
-        commit: "36ca97b6f8117df77039eea397763b5a3a35a310",
+        commit: "5d8d0a3609b0b191cae89461c7c5946d1c6b3f89",
     }),
 });
 
