@@ -50,6 +50,10 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 ## Contracts
 
 - `documentation truthfulness`
+- acceptance-ledger Markdown is a derived, non-authoritative view. The Docs
+  reader validates explicit v1 state, counts, ID/DAG roots and immutable
+  acceptance material before rendering; commits, branches, pull requests and
+  planned subjects never imply acceptance, and the reader has no writer mode
 - document physical evidence and semantic lineage separately. Canonical MAP
   `EvidenceItem` and native TRACE `evidence_items` are authority; copied IDs,
   owner references and `source-*` lineage are not
