@@ -1,0 +1,1784 @@
+# Checklist maestra ejecutable
+
+Esta vista se genera exclusivamente desde `acceptance-ledger.v1.json`; no se marca a mano. Cambiar ID, versión, owner, arista, fórmula, schema, cardinalidad o closure exige una nueva versión y regeneración completa.
+
+## 1. Identidad canónica
+
+| Campo | Valor |
+|---|---|
+| Programa | `solguard-detection-maturity-2026-07-25` |
+| Versión | `solguard-detection-maturity-2026-07-25.3` |
+| Revisión seed | `0` |
+| Node ID-set root | `77dd0c5ac31ccee4347a4a3ef391c9c298e86fd5fe6f56acf7600aab7ffc0cfd` |
+| Contribution ID-set root | `64b77b67ddde6638784544b45b9f7b8ed7f6631669026a663ffdece56ee0961c` |
+| All-counted-item ID-set root | `6dde0cc088977a833b1badbc3312798aca9a101bb8bf981fe267e24d0762e6bf` |
+| Primaries | **440** |
+| Derived | **128** |
+| Contributions | **1103** |
+| Ítems contados | **1671** |
+
+Todos los sets usan JCS/RFC 8785, separación de dominio y rechazo de claves lógicas duplicadas. Las closures fijan `member_kind + member_id + subject_version`, no sólo strings de ID.
+
+## 2. Reglas de progreso
+
+1. `pending` significa no aceptado; implementación o tests locales no cambian el ledger.
+2. Cada transición exige evidencia content-addressed, verificador independiente y commit receipt linealizable.
+3. Una contribution no acepta su primary; el integrador exige el set exacto y E2E.
+4. Un derived se materializa como `satisfied|unsatisfied` con operands exactos; nunca se marca a mano.
+5. Sólo un primary `terminalizable=true` admite nonpass tipado o `terminal_not_run` demostrado en el mismo epoch.
+6. El close particiona la evaluation closure: terminal bindings para miembros no-claim y claim observations para los pass-claim targets exactos.
+7. `FINAL-007` cuantifica sólo sobre el release train exacto de `RC-FULL-1`.
+
+## 3. Rollup verificable
+
+| Clase | Total | Accepted/satisfied | Pending/unsatisfied | Reopened | Terminal nonpass |
+|---|---:|---:|---:|---:|---:|
+| Primary | 440 | 0 | 440 | 0 | 0 |
+| Derived | 128 | 0 | 128 | 0 | 128 |
+| Contribution | 1103 | 0 | 1103 | 0 | 0 |
+
+### 3.1 Candidate closures
+
+| Candidate | Evaluation | Release train | Required pass | Pass claims | Observations | Gates | Tooling | Close |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `RC-V-EVM-1` | 537 | 538 | 536 | 1 | 26 | 28 | 409 | `VERTICAL-EVM-CONTAMINATION-CLOSE-001` |
+| `RC-FULL-1` | 1633 | 1644 | 1627 | 6 | 144 | 151 | 1103 | `RC-FULL-1-CLOSE` |
+
+## 4. Checklist de nodos
+
+### 4.1 Primary
+
+- [ ] `BASELINE-009` — mode=`implementation`; owner=`solguard-deploy`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `BOM-903` — mode=`freeze_attestation`; owner=`solguard-deploy`; hard=10; contracts=2; contribs=0; terminalizable=true.
+- [ ] `BOM-CAP-903` — mode=`implementation`; owner=`solguard-deploy`; hard=2; contracts=0; contribs=2; terminalizable=false.
+- [ ] `C-BRIDGE-FINALITY-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `C-BRIDGE-FINALITY-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `C-BRIDGE-FINALITY-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `C-BRIDGE-FINALITY-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `C-BRIDGE-FINALITY-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `C-BRIDGE-FINALITY-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `C-BRIDGE-FINALITY-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `C-UTXO-CONSENSUS-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `C-UTXO-CONSENSUS-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `C-UTXO-CONSENSUS-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `C-UTXO-CONSENSUS-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `C-UTXO-CONSENSUS-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `C-UTXO-CONSENSUS-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `C-UTXO-CONSENSUS-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `C-WALLET-CUSTODY-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `C-WALLET-CUSTODY-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `C-WALLET-CUSTODY-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `C-WALLET-CUSTODY-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `C-WALLET-CUSTODY-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `C-WALLET-CUSTODY-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `C-WALLET-CUSTODY-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `CANARY-909` — mode=`measurement`; owner=`solguard-deploy`; hard=3; contracts=2; contribs=0; terminalizable=true.
+- [ ] `CANARY-CAP-909` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `CORPUS-905` — mode=`campaign`; owner=`solguard-deploy/evaluator`; hard=3; contracts=5; contribs=0; terminalizable=true.
+- [ ] `CORPUS-CAP-905` — mode=`implementation`; owner=`solguard-deploy/evaluator`; hard=2; contracts=0; contribs=2; terminalizable=false.
+- [ ] `CPP-BRIDGE-FINALITY-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `CPP-BRIDGE-FINALITY-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `CPP-BRIDGE-FINALITY-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `CPP-BRIDGE-FINALITY-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `CPP-BRIDGE-FINALITY-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `CPP-BRIDGE-FINALITY-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `CPP-BRIDGE-FINALITY-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `CPP-UTXO-CONSENSUS-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `CPP-UTXO-CONSENSUS-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `CPP-UTXO-CONSENSUS-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `CPP-UTXO-CONSENSUS-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `CPP-UTXO-CONSENSUS-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `CPP-UTXO-CONSENSUS-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `CPP-UTXO-CONSENSUS-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `CPP-WALLET-CUSTODY-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `CPP-WALLET-CUSTODY-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `CPP-WALLET-CUSTODY-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `CPP-WALLET-CUSTODY-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `CPP-WALLET-CUSTODY-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `CPP-WALLET-CUSTODY-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `CPP-WALLET-CUSTODY-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `DB-902` — mode=`database_cutover`; owner=`solguard-database`; hard=3; contracts=2; contribs=0; terminalizable=true.
+- [ ] `DB-CAP-902` — mode=`implementation`; owner=`solguard-database`; hard=1; contracts=9; contribs=5; terminalizable=false.
+- [ ] `DECIDE-601` — mode=`implementation`; owner=`solguard-validate`; hard=0; contracts=16; contribs=3; terminalizable=false.
+- [ ] `DECIDE-602` — mode=`implementation`; owner=`solguard-filter`; hard=1; contracts=4; contribs=3; terminalizable=false.
+- [ ] `DECIDE-603-CORE` — mode=`implementation`; owner=`solguard-core`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `DECIDE-603-DEPLOY` — mode=`implementation`; owner=`solguard-deploy`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `DECIDE-603-E2E` — mode=`implementation`; owner=`solguard-deploy`; hard=4; contracts=0; contribs=1; terminalizable=false.
+- [ ] `DECIDE-603-VALIDATE` — mode=`implementation`; owner=`solguard-validate`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `DECIDE-604` — mode=`implementation`; owner=`solguard-core`; hard=0; contracts=5; contribs=3; terminalizable=false.
+- [ ] `DECIDE-605` — mode=`implementation`; owner=`solguard-filter`; hard=0; contracts=1; contribs=2; terminalizable=false.
+- [ ] `DECIDE-606` — mode=`implementation`; owner=`solguard-validate`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `DECIDE-607` — mode=`implementation`; owner=`solguard-core`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `DECIDE-608` — mode=`implementation`; owner=`solguard-filter`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `EVAL-908` — mode=`implementation`; owner=`solguard-deploy/evaluator`; hard=0; contracts=11; contribs=5; terminalizable=false.
+- [ ] `FINAL-001` — mode=`final_evidence`; owner=`solguard-docs`; hard=24; contracts=4; contribs=0; terminalizable=false.
+- [ ] `FINAL-002` — mode=`final_evidence`; owner=`solguard-agents`; hard=2; contracts=6; contribs=0; terminalizable=false.
+- [ ] `FINAL-002-CAP` — mode=`implementation`; owner=`solguard-agents`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `FINAL-003` — mode=`final_evidence`; owner=`solguard-deploy/clean-room-reproducer`; hard=3; contracts=8; contribs=0; terminalizable=false.
+- [ ] `FINAL-003-CAP` — mode=`implementation`; owner=`solguard-deploy/clean-room-reproducer`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `FINAL-004` — mode=`final_evidence`; owner=`solguard-docs`; hard=1; contracts=5; contribs=0; terminalizable=false.
+- [ ] `FINAL-005` — mode=`final_evidence`; owner=`solguard-deploy/isolation-tester`; hard=2; contracts=4; contribs=0; terminalizable=false.
+- [ ] `FINAL-006` — mode=`release_pre_tag`; owner=`solguard-deploy/release-dossier-builder`; hard=1; contracts=8; contribs=0; terminalizable=false.
+- [ ] `FINAL-007` — mode=`post_tag_terminal`; owner=`solguard-agents`; hard=2; contracts=4; contribs=0; terminalizable=false.
+- [ ] `GO-COSMOS-SDK-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `GO-COSMOS-SDK-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `GO-COSMOS-SDK-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `GO-COSMOS-SDK-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `GO-COSMOS-SDK-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `GO-COSMOS-SDK-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `GO-COSMOS-SDK-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `GO-GETH-CLIENT-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `GO-GETH-CLIENT-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `GO-GETH-CLIENT-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `GO-GETH-CLIENT-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `GO-GETH-CLIENT-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `GO-GETH-CLIENT-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `GO-GETH-CLIENT-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `GO-RELAYER-ORACLE-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `GO-RELAYER-ORACLE-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `GO-RELAYER-ORACLE-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `GO-RELAYER-ORACLE-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `GO-RELAYER-ORACLE-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `GO-RELAYER-ORACLE-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `GO-RELAYER-ORACLE-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `GOV-001` — mode=`bootstrap`; owner=`solguard-deploy`; hard=0; contracts=0; contribs=1; terminalizable=false.
+- [ ] `GOV-002` — mode=`implementation`; owner=`solguard-docs`; hard=0; contracts=0; contribs=2; terminalizable=false.
+- [ ] `GOV-003` — mode=`bootstrap`; owner=`solguard-agents`; hard=0; contracts=0; contribs=1; terminalizable=false.
+- [ ] `GOV-004` — mode=`bootstrap`; owner=`solguard-agents`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `GOV-005` — mode=`implementation`; owner=`solguard-docs`; hard=1; contracts=1; contribs=15; terminalizable=false.
+- [ ] `GOV-006` — mode=`implementation`; owner=`solguard-agents`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `GOV-007` — mode=`implementation`; owner=`solguard-agents`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `GOV-008` — mode=`implementation`; owner=`solguard-agents`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `HOLDOUT-906` — mode=`campaign`; owner=`solguard-deploy/custodian`; hard=3; contracts=5; contribs=0; terminalizable=true.
+- [ ] `HOLDOUT-CAP-906` — mode=`implementation`; owner=`solguard-deploy/custodian`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `IR-301` — mode=`implementation`; owner=`solguard-map`; hard=1; contracts=2; contribs=12; terminalizable=false.
+- [ ] `IR-302` — mode=`implementation`; owner=`solguard-map`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `IR-303` — mode=`implementation`; owner=`solguard-trace`; hard=1; contracts=5; contribs=19; terminalizable=false.
+- [ ] `IR-304` — mode=`implementation`; owner=`solguard-map`; hard=1; contracts=0; contribs=13; terminalizable=false.
+- [ ] `IR-305` — mode=`implementation`; owner=`solguard-diff`; hard=0; contracts=5; contribs=1; terminalizable=false.
+- [ ] `IR-306` — mode=`implementation`; owner=`solguard-diff`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `IR-307` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=0; contribs=8; terminalizable=false.
+- [ ] `IR-308` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=3; terminalizable=false.
+- [ ] `ISO-904` — mode=`freeze_attestation`; owner=`solguard-deploy`; hard=9; contracts=3; contribs=0; terminalizable=true.
+- [ ] `ISO-CAP-904` — mode=`implementation`; owner=`solguard-deploy`; hard=2; contracts=0; contribs=3; terminalizable=false.
+- [ ] `JS-NODE-KEEPER-ORACLE-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-KEEPER-ORACLE-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-KEEPER-ORACLE-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-KEEPER-ORACLE-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-KEEPER-ORACLE-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `JS-NODE-KEEPER-ORACLE-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `JS-NODE-KEEPER-ORACLE-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `JS-NODE-RELAYER-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-RELAYER-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-RELAYER-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-RELAYER-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-RELAYER-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `JS-NODE-RELAYER-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `JS-NODE-RELAYER-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `JS-NODE-TX-BUILDER-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-TX-BUILDER-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-TX-BUILDER-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-TX-BUILDER-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `JS-NODE-TX-BUILDER-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `JS-NODE-TX-BUILDER-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `JS-NODE-TX-BUILDER-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `KNOWN-910` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=5; contribs=0; terminalizable=true.
+- [ ] `KNOWN-CAP-910` — mode=`implementation`; owner=`solguard-deploy/evaluator`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-000` — mode=`implementation`; owner=`solguard-docs`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-010-HARNESS` — mode=`implementation`; owner=`solguard-map`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-020-HARNESS` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=0; contribs=13; terminalizable=false.
+- [ ] `LANG-030-HARNESS` — mode=`implementation`; owner=`solguard-deploy`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-040-HARNESS` — mode=`implementation`; owner=`solguard-trace`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-050A` — mode=`implementation`; owner=`solguard-map`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-050B` — mode=`implementation`; owner=`solguard-discover`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-050C` — mode=`implementation`; owner=`solguard-core`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-060` — mode=`implementation`; owner=`solguard-economic`; hard=4; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-070` — mode=`implementation`; owner=`solguard-core`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-080-FILTER` — mode=`implementation`; owner=`solguard-filter`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-080-VALIDATE` — mode=`implementation`; owner=`solguard-validate`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-090-HARNESS` — mode=`implementation`; owner=`solguard-diff`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-190-HARNESS` — mode=`implementation`; owner=`solguard-deploy`; hard=1; contracts=1; contribs=1; terminalizable=false.
+- [ ] `LANG-200-HARNESS` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=3; contribs=1; terminalizable=false.
+- [ ] `LANG-C-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-C-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `LANG-C-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=5; terminalizable=false.
+- [ ] `LANG-C-04-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=3; terminalizable=false.
+- [ ] `LANG-C-05-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `LANG-CPP-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=3; terminalizable=false.
+- [ ] `LANG-CPP-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=8; terminalizable=false.
+- [ ] `LANG-CPP-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `LANG-GO-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-GO-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-GO-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-GO-04-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-GO-05-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=7; terminalizable=false.
+- [ ] `LANG-JS-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=3; terminalizable=false.
+- [ ] `LANG-JS-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=7; terminalizable=false.
+- [ ] `LANG-JS-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `LANG-RUST-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-RUST-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-RUST-03A-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-RUST-03B-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-RUST-04-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-RUST-05-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=9; terminalizable=false.
+- [ ] `LANG-RUST-06-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `LANG-SOL-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-SOL-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `LANG-SOL-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=6; terminalizable=false.
+- [ ] `LANG-SOL-04-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `LANG-SOL-05-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `LANG-TS-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=3; terminalizable=false.
+- [ ] `LANG-TS-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=7; terminalizable=false.
+- [ ] `LANG-TS-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `LANG-VYP-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `LANG-VYP-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-VYP-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-VYP-04-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=8; terminalizable=false.
+- [ ] `LANG-X-01-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-X-02-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `LANG-X-03-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `LANG-X-04-INTEGRATION` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=5; terminalizable=false.
+- [ ] `LEDGER-001` — mode=`bootstrap`; owner=`solguard-agents`; hard=0; contracts=2; contribs=6; terminalizable=false.
+- [ ] `LIVE-913` — mode=`measurement`; owner=`solguard-deploy/operator`; hard=4; contracts=6; contribs=0; terminalizable=true.
+- [ ] `LIVE-CAP-913` — mode=`implementation`; owner=`solguard-deploy/operator`; hard=3; contracts=1; contribs=6; terminalizable=false.
+- [ ] `MEASURE-901` — mode=`implementation`; owner=`solguard-deploy/evaluator`; hard=2; contracts=0; contribs=24; terminalizable=false.
+- [ ] `MODEL-401` — mode=`implementation`; owner=`solguard-discover`; hard=0; contracts=6; contribs=8; terminalizable=false.
+- [ ] `MODEL-402` — mode=`implementation`; owner=`solguard-discover`; hard=2; contracts=0; contribs=2; terminalizable=false.
+- [ ] `MODEL-403` — mode=`implementation`; owner=`solguard-economic`; hard=0; contracts=6; contribs=8; terminalizable=false.
+- [ ] `MODEL-404` — mode=`implementation`; owner=`solguard-economic`; hard=1; contracts=0; contribs=8; terminalizable=false.
+- [ ] `MODEL-405` — mode=`implementation`; owner=`solguard-invariant`; hard=0; contracts=7; contribs=8; terminalizable=false.
+- [ ] `MODEL-406` — mode=`implementation`; owner=`solguard-discover`; hard=2; contracts=1; contribs=12; terminalizable=false.
+- [ ] `MODEL-407` — mode=`implementation`; owner=`solguard-core`; hard=0; contracts=10; contribs=7; terminalizable=false.
+- [ ] `MODEL-408-DISCOVER` — mode=`implementation`; owner=`solguard-discover`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `MODEL-408-E2E` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=1; terminalizable=false.
+- [ ] `MODEL-408-ECONOMIC` — mode=`implementation`; owner=`solguard-economic`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `MODEL-408-TRACE` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `MODEL-409` — mode=`implementation`; owner=`solguard-deploy`; hard=10; contracts=0; contribs=2; terminalizable=false.
+- [ ] `MODEL-410` — mode=`implementation`; owner=`solguard-economic`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `MODEL-411` — mode=`implementation`; owner=`solguard-economic`; hard=3; contracts=0; contribs=7; terminalizable=false.
+- [ ] `NOVEL-907` — mode=`campaign`; owner=`solguard-deploy/custodian`; hard=3; contracts=6; contribs=0; terminalizable=true.
+- [ ] `NOVEL-CAP-907` — mode=`implementation`; owner=`solguard-deploy/custodian`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `NOVELRUN-912` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=6; contribs=0; terminalizable=true.
+- [ ] `PLAT-801` — mode=`implementation`; owner=`solguard-database`; hard=1; contracts=16; contribs=5; terminalizable=false.
+- [ ] `PLAT-802` — mode=`implementation`; owner=`solguard-database`; hard=1; contracts=1; contribs=3; terminalizable=false.
+- [ ] `PLAT-803-BACKEND` — mode=`implementation`; owner=`solguard-backend`; hard=1; contracts=16; contribs=2; terminalizable=false.
+- [ ] `PLAT-803-CORE` — mode=`implementation`; owner=`solguard-core`; hard=7; contracts=0; contribs=1; terminalizable=false.
+- [ ] `PLAT-803-E2E` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=11; contribs=3; terminalizable=false.
+- [ ] `PLAT-804` — mode=`implementation`; owner=`solguard-backend`; hard=1; contracts=18; contribs=2; terminalizable=false.
+- [ ] `PLAT-805` — mode=`implementation`; owner=`solguard-agents`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `PLAT-806` — mode=`implementation`; owner=`solguard-docs`; hard=2; contracts=0; contribs=3; terminalizable=false.
+- [ ] `PLAT-807` — mode=`implementation`; owner=`solguard-backend`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `PLAT-808` — mode=`implementation`; owner=`solguard-backend`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `PLAT-809` — mode=`implementation`; owner=`solguard-database`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `PLAT-810` — mode=`implementation`; owner=`solguard-backend`; hard=2; contracts=0; contribs=2; terminalizable=false.
+- [ ] `PROOF-501` — mode=`implementation`; owner=`solguard-value`; hard=0; contracts=10; contribs=11; terminalizable=false.
+- [ ] `PROOF-502` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=2; contribs=10; terminalizable=false.
+- [ ] `PROOF-503-E2E` — mode=`implementation`; owner=`solguard-deploy`; hard=1; contracts=5; contribs=1; terminalizable=false.
+- [ ] `PROOF-503-ECONOMIC` — mode=`implementation`; owner=`solguard-economic`; hard=1; contracts=2; contribs=1; terminalizable=false.
+- [ ] `PROOF-503-INVARIANT` — mode=`implementation`; owner=`solguard-invariant`; hard=1; contracts=2; contribs=1; terminalizable=false.
+- [ ] `PROOF-503-MAP` — mode=`implementation`; owner=`solguard-map`; hard=1; contracts=2; contribs=1; terminalizable=false.
+- [ ] `PROOF-503-TRACE` — mode=`implementation`; owner=`solguard-trace`; hard=1; contracts=2; contribs=1; terminalizable=false.
+- [ ] `PROOF-503-VALUE` — mode=`implementation`; owner=`solguard-value`; hard=0; contracts=2; contribs=1; terminalizable=false.
+- [ ] `PROOF-504` — mode=`implementation`; owner=`solguard-core`; hard=2; contracts=6; contribs=2; terminalizable=false.
+- [ ] `PROOF-505` — mode=`implementation`; owner=`solguard-value`; hard=3; contracts=0; contribs=2; terminalizable=false.
+- [ ] `PROOF-506` — mode=`implementation`; owner=`solguard-value`; hard=2; contracts=0; contribs=7; terminalizable=false.
+- [ ] `PROOF-507` — mode=`implementation`; owner=`solguard-value`; hard=2; contracts=6; contribs=5; terminalizable=false.
+- [ ] `PROOF-508` — mode=`implementation`; owner=`solguard-value`; hard=0; contracts=1; contribs=3; terminalizable=false.
+- [ ] `PROOF-509` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `PROOF-510` — mode=`implementation`; owner=`solguard-deploy`; hard=2; contracts=0; contribs=2; terminalizable=false.
+- [ ] `RC-FULL-1` — mode=`candidate_epoch`; owner=`solguard-deploy/release-authority`; hard=45; contracts=1; contribs=0; terminalizable=false.
+- [ ] `RC-FULL-1-CLOSE` — mode=`candidate_epoch_close`; owner=`solguard-deploy/release-authority`; hard=1; contracts=2; contribs=0; terminalizable=false.
+- [ ] `RC-V-EVM-1` — mode=`candidate_epoch`; owner=`solguard-deploy/release-authority`; hard=14; contracts=1; contribs=0; terminalizable=false.
+- [ ] `RST-COSMWASM-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-COSMWASM-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `RST-COSMWASM-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-COSMWASM-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RST-COSMWASM-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `RST-COSMWASM-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-COSMWASM-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-NATIVE-CLIENT-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-NATIVE-CLIENT-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `RST-NATIVE-CLIENT-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-NATIVE-CLIENT-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RST-NATIVE-CLIENT-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `RST-NATIVE-CLIENT-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-NATIVE-CLIENT-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-NEAR-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-NEAR-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `RST-NEAR-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-NEAR-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RST-NEAR-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `RST-NEAR-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-NEAR-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-SOLANA-ANCHOR-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-SOLANA-ANCHOR-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `RST-SOLANA-ANCHOR-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-SOLANA-ANCHOR-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RST-SOLANA-ANCHOR-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `RST-SOLANA-ANCHOR-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-SOLANA-ANCHOR-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-SUBSTRATE-FRAME-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-SUBSTRATE-FRAME-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `RST-SUBSTRATE-FRAME-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RST-SUBSTRATE-FRAME-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RST-SUBSTRATE-FRAME-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `RST-SUBSTRATE-FRAME-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RST-SUBSTRATE-FRAME-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `RUN-201` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=0; contribs=31; terminalizable=false.
+- [ ] `RUN-202` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=0; contribs=15; terminalizable=false.
+- [ ] `RUN-203` — mode=`implementation`; owner=`solguard-core`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-204` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RUN-205` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RUN-206` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `RUN-207-BACKEND` — mode=`implementation`; owner=`solguard-backend`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RUN-207-CORE-CUTOVER` — mode=`implementation`; owner=`solguard-core`; hard=4; contracts=9; contribs=2; terminalizable=false.
+- [ ] `RUN-207-CORE-READER` — mode=`implementation`; owner=`solguard-core`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RUN-207-DATABASE` — mode=`implementation`; owner=`solguard-database`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `RUN-207-DEPLOY` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-DIFF` — mode=`implementation`; owner=`solguard-diff`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-DISCOVER` — mode=`implementation`; owner=`solguard-discover`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-E2E` — mode=`implementation`; owner=`solguard-deploy`; hard=4; contracts=11; contribs=1; terminalizable=false.
+- [ ] `RUN-207-ECONOMIC` — mode=`implementation`; owner=`solguard-economic`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-FILTER` — mode=`implementation`; owner=`solguard-filter`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-INVARIANT` — mode=`implementation`; owner=`solguard-invariant`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-MAP` — mode=`implementation`; owner=`solguard-map`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-TRACE` — mode=`implementation`; owner=`solguard-trace`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-VALIDATE` — mode=`implementation`; owner=`solguard-validate`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-207-VALUE` — mode=`implementation`; owner=`solguard-value`; hard=3; contracts=1; contribs=1; terminalizable=false.
+- [ ] `RUN-208` — mode=`implementation`; owner=`solguard-core`; hard=4; contracts=10; contribs=9; terminalizable=false.
+- [ ] `RUN-209` — mode=`implementation`; owner=`solguard-core`; hard=2; contracts=0; contribs=2; terminalizable=false.
+- [ ] `RUN-210` — mode=`implementation`; owner=`solguard-core`; hard=2; contracts=0; contribs=2; terminalizable=false.
+- [ ] `SCOPE-900` — mode=`freeze_attestation`; owner=`solguard-deploy`; hard=11; contracts=32; contribs=0; terminalizable=true.
+- [ ] `SCOPE-CAP-900` — mode=`implementation`; owner=`solguard-deploy`; hard=3; contracts=0; contribs=4; terminalizable=false.
+- [ ] `SOL-EVM-DEFI-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `SOL-EVM-DEFI-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `SOL-EVM-DEFI-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `SOL-EVM-DEFI-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `SOL-EVM-DEFI-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `SOL-EVM-DEFI-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `SOL-EVM-DEFI-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `TEST-CHAOS` — mode=`measurement`; owner=`solguard-deploy`; hard=4; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-META` — mode=`validation`; owner=`solguard-deploy`; hard=4; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-NEG` — mode=`validation`; owner=`solguard-deploy`; hard=3; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-V0` — mode=`validation`; owner=`solguard-deploy`; hard=2; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-V1` — mode=`validation`; owner=`solguard-deploy`; hard=4; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-V2` — mode=`validation`; owner=`solguard-deploy`; hard=4; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-V3` — mode=`validation`; owner=`solguard-deploy`; hard=3; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-V4` — mode=`validation`; owner=`solguard-deploy`; hard=6; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-V5` — mode=`measurement`; owner=`solguard-deploy`; hard=4; contracts=1; contribs=0; terminalizable=true.
+- [ ] `TEST-V6` — mode=`measurement`; owner=`solguard-deploy`; hard=62; contracts=2; contribs=0; terminalizable=true.
+- [ ] `TEST-V7` — mode=`measurement`; owner=`solguard-deploy`; hard=4; contracts=2; contribs=0; terminalizable=true.
+- [ ] `TEST-V8` — mode=`measurement`; owner=`solguard-deploy`; hard=3; contracts=3; contribs=0; terminalizable=true.
+- [ ] `TRUTH-101` — mode=`implementation`; owner=`solguard-validate`; hard=1; contracts=0; contribs=9; terminalizable=false.
+- [ ] `TRUTH-102` — mode=`implementation`; owner=`solguard-validate`; hard=1; contracts=0; contribs=1; terminalizable=false.
+- [ ] `TRUTH-103` — mode=`implementation`; owner=`solguard-filter`; hard=1; contracts=1; contribs=8; terminalizable=false.
+- [ ] `TRUTH-104` — mode=`implementation`; owner=`solguard-core`; hard=1; contracts=0; contribs=3; terminalizable=false.
+- [ ] `TRUTH-105` — mode=`implementation`; owner=`solguard-core`; hard=0; contracts=2; contribs=11; terminalizable=false.
+- [ ] `TRUTH-106` — mode=`implementation`; owner=`solguard-deploy`; hard=1; contracts=0; contribs=2; terminalizable=false.
+- [ ] `TRUTH-107` — mode=`implementation`; owner=`solguard-deploy`; hard=1; contracts=0; contribs=3; terminalizable=false.
+- [ ] `TRUTH-108` — mode=`implementation`; owner=`solguard-backend`; hard=1; contracts=2; contribs=4; terminalizable=false.
+- [ ] `TRUTH-109` — mode=`implementation`; owner=`solguard-database`; hard=2; contracts=2; contribs=2; terminalizable=false.
+- [ ] `TRUTH-110` — mode=`implementation`; owner=`solguard-deploy`; hard=7; contracts=2; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-KEEPER-ORACLE-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-KEEPER-ORACLE-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-KEEPER-ORACLE-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-KEEPER-ORACLE-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-KEEPER-ORACLE-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `TS-NODE-KEEPER-ORACLE-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `TS-NODE-KEEPER-ORACLE-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `TS-NODE-RELAYER-SDK-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-RELAYER-SDK-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-RELAYER-SDK-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-RELAYER-SDK-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-RELAYER-SDK-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `TS-NODE-RELAYER-SDK-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `TS-NODE-RELAYER-SDK-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `TS-NODE-TX-BUILDER-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-TX-BUILDER-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-TX-BUILDER-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-TX-BUILDER-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `TS-NODE-TX-BUILDER-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `TS-NODE-TX-BUILDER-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `TS-NODE-TX-BUILDER-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `VALIDATION-CAP-900` — mode=`implementation`; owner=`solguard-agents`; hard=2; contracts=0; contribs=4; terminalizable=false.
+- [ ] `VERTICAL-EVM-BOM-001` — mode=`freeze_attestation`; owner=`solguard-deploy/custodian`; hard=9; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-CANARY-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-CHAOS-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=7; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-CONTAMINATION-CLOSE-001` — mode=`candidate_epoch_close`; owner=`solguard-deploy/contamination-authority`; hard=1; contracts=2; contribs=0; terminalizable=false.
+- [ ] `VERTICAL-EVM-CORPUS-001` — mode=`campaign`; owner=`solguard-deploy/evaluator`; hard=4; contracts=3; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-HGEN-A-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=7; contracts=4; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-HGEN-B-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=7; contracts=4; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-HGEN-SEAL-001` — mode=`campaign`; owner=`solguard-deploy/custodian`; hard=5; contracts=3; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-HNOVEL-A-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=7; contracts=4; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-HNOVEL-B-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=7; contracts=4; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-HNOVEL-SEAL-001` — mode=`campaign`; owner=`solguard-deploy/custodian`; hard=5; contracts=3; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-ISO-001` — mode=`freeze_attestation`; owner=`solguard-deploy/custodian`; hard=9; contracts=3; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-KNOWN-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=4; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-LIVE-001` — mode=`measurement`; owner=`solguard-deploy/operator`; hard=8; contracts=5; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-PROFILE-001` — mode=`campaign`; owner=`solguard-deploy/custodian`; hard=15; contracts=4; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-SCOPE-001` — mode=`freeze_attestation`; owner=`solguard-deploy/custodian`; hard=9; contracts=3; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-TEST-META-001` — mode=`validation`; owner=`solguard-agents/independent-validator`; hard=2; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-TEST-NEG-001` — mode=`validation`; owner=`solguard-agents/independent-validator`; hard=2; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-TEST-V0-001` — mode=`validation`; owner=`solguard-agents/independent-validator`; hard=2; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-TEST-V1-001` — mode=`validation`; owner=`solguard-agents/independent-validator`; hard=2; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-TEST-V2-001` — mode=`validation`; owner=`solguard-agents/independent-validator`; hard=2; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-TEST-V3-001` — mode=`validation`; owner=`solguard-agents/independent-validator`; hard=2; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-TEST-V4-001` — mode=`validation`; owner=`solguard-agents/independent-validator`; hard=2; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VERTICAL-EVM-V5-001` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=4; contracts=2; contribs=0; terminalizable=true.
+- [ ] `VYP-EVM-DEFI-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `VYP-EVM-DEFI-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `VYP-EVM-DEFI-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `VYP-EVM-DEFI-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `VYP-EVM-DEFI-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `VYP-EVM-DEFI-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `VYP-EVM-DEFI-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-COSMWASM-GO-RELAYER-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-COSMWASM-GO-RELAYER-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-COSMWASM-GO-RELAYER-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-COSMWASM-GO-RELAYER-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-COSMWASM-GO-RELAYER-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-COSMWASM-GO-RELAYER-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-COSMWASM-GO-RELAYER-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-GO-C-FFI-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-GO-C-FFI-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-GO-C-FFI-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-GO-C-FFI-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-GO-C-FFI-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-GO-C-FFI-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-GO-C-FFI-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-GO-CPP-FFI-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-GO-CPP-FFI-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-GO-CPP-FFI-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-GO-CPP-FFI-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-GO-CPP-FFI-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-GO-CPP-FFI-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-GO-CPP-FFI-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-NEAR-JS-CLIENT-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-NEAR-JS-CLIENT-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-NEAR-JS-CLIENT-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-NEAR-JS-CLIENT-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-NEAR-JS-CLIENT-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-NEAR-JS-CLIENT-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-NEAR-JS-CLIENT-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-SOL-TS-RELAYER-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-SOL-TS-RELAYER-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-SOL-TS-RELAYER-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-SOL-TS-RELAYER-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-SOL-TS-RELAYER-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-SOL-TS-RELAYER-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-SOL-TS-RELAYER-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-SOLANA-TS-CLIENT-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-SOLANA-TS-CLIENT-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-SOLANA-TS-CLIENT-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-SOLANA-TS-CLIENT-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-SOLANA-TS-CLIENT-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-SOLANA-TS-CLIENT-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-SOLANA-TS-CLIENT-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-TS-DATA-SOL-TX-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-TS-DATA-SOL-TX-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-TS-DATA-SOL-TX-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-TS-DATA-SOL-TX-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-TS-DATA-SOL-TX-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-TS-DATA-SOL-TX-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-TS-DATA-SOL-TX-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-VYP-JS-KEEPER-C0` — mode=`implementation`; owner=`solguard-deploy`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-VYP-JS-KEEPER-C1` — mode=`implementation`; owner=`solguard-map`; hard=2; contracts=2; contribs=1; terminalizable=false.
+- [ ] `X-VYP-JS-KEEPER-C2` — mode=`implementation`; owner=`solguard-map`; hard=0; contracts=1; contribs=1; terminalizable=false.
+- [ ] `X-VYP-JS-KEEPER-C3` — mode=`implementation`; owner=`solguard-trace`; hard=2; contracts=0; contribs=1; terminalizable=false.
+- [ ] `X-VYP-JS-KEEPER-C4` — mode=`implementation`; owner=`solguard-deploy`; hard=9; contracts=0; contribs=11; terminalizable=false.
+- [ ] `X-VYP-JS-KEEPER-C5A` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+- [ ] `X-VYP-JS-KEEPER-C5B` — mode=`measurement`; owner=`solguard-deploy/evaluator`; hard=3; contracts=4; contribs=0; terminalizable=true.
+
+### 4.2 Derived
+
+- [ ] `BLIND-911` — formula=`AND`; operands=64; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `C-BRIDGE-FINALITY-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `C-UTXO-CONSENSUS-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `C-WALLET-CUSTODY-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-001` — formula=`AND`; operands=4; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-002` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-003` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-004` — formula=`AND`; operands=2; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-005` — formula=`AND`; operands=2; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-006` — formula=`AND`; operands=5; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-007` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-008` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CLAIM-VERTICAL-EVM-001` — formula=`AND`; operands=5; computed=`unsatisfied`; candidate=`RC-V-EVM-1`.
+- [ ] `CPP-BRIDGE-FINALITY-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CPP-UTXO-CONSENSUS-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `CPP-WALLET-CUSTODY-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `DECIDE-603` — formula=`AND`; operands=4; computed=`unsatisfied`; candidate=`common`.
+- [ ] `GO-COSMOS-SDK-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `GO-GETH-CLIENT-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `GO-RELAYER-ORACLE-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `JS-NODE-KEEPER-ORACLE-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `JS-NODE-RELAYER-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `JS-NODE-TX-BUILDER-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-010` — formula=`AND`; operands=31; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-020` — formula=`AND`; operands=31; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-030` — formula=`AND`; operands=32; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-040` — formula=`AND`; operands=31; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-050` — formula=`AND`; operands=34; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-080` — formula=`AND`; operands=33; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-090` — formula=`AND`; operands=32; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-100` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-110` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-120` — formula=`AND`; operands=5; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-130` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-140` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-150` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-160` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-170` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-180` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-190` — formula=`AND`; operands=33; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-200` — formula=`AND`; operands=11; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `LANG-C-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-C-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-C-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-C-04` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-C-05` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-CPP-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-CPP-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-CPP-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-GO-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-GO-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-GO-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-GO-04` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-GO-05` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-JS-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-JS-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-JS-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-RUST-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-RUST-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-RUST-03A` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-RUST-03B` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-RUST-04` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-RUST-05` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-RUST-06` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-SOL-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-SOL-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-SOL-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-SOL-04` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-SOL-05` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-TS-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-TS-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-TS-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-VYP-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-VYP-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-VYP-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-VYP-04` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-X-01` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-X-02` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-X-03` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `LANG-X-04` — formula=`AND`; operands=1; computed=`unsatisfied`; candidate=`common`.
+- [ ] `MODEL-408` — formula=`AND`; operands=4; computed=`unsatisfied`; candidate=`common`.
+- [ ] `PLAT-803` — formula=`AND`; operands=3; computed=`unsatisfied`; candidate=`common`.
+- [ ] `PROOF-503` — formula=`AND`; operands=6; computed=`unsatisfied`; candidate=`common`.
+- [ ] `RELEASE-914` — formula=`AND`; operands=20; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-AGENTS` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-BACKEND` — formula=`AND`; operands=13; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-CORE` — formula=`AND`; operands=24; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-DATABASE` — formula=`AND`; operands=13; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-DEPLOY` — formula=`AND`; operands=32; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-DIFF` — formula=`AND`; operands=7; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-DISCOVER` — formula=`AND`; operands=10; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-DOCS` — formula=`AND`; operands=7; computed=`unsatisfied`; candidate=`common`.
+- [ ] `REPO-ECONOMIC` — formula=`AND`; operands=11; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-FILTER` — formula=`AND`; operands=10; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-INVARIANT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-MAP` — formula=`AND`; operands=12; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-TRACE` — formula=`AND`; operands=11; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-VALIDATE` — formula=`AND`; operands=12; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `REPO-VALUE` — formula=`AND`; operands=12; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `RST-COSMWASM-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `RST-NATIVE-CLIENT-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `RST-NEAR-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `RST-SOLANA-ANCHOR-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `RST-SUBSTRATE-FRAME-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `RUN-207` — formula=`AND`; operands=15; computed=`unsatisfied`; candidate=`common`.
+- [ ] `SOL-EVM-DEFI-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `TRAIN-C0` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`common`.
+- [ ] `TRAIN-C1` — formula=`AND`; operands=10; computed=`unsatisfied`; candidate=`common`.
+- [ ] `TRAIN-C2` — formula=`AND`; operands=10; computed=`unsatisfied`; candidate=`common`.
+- [ ] `TRAIN-C3` — formula=`AND`; operands=18; computed=`unsatisfied`; candidate=`common`.
+- [ ] `TRAIN-C4` — formula=`AND`; operands=18; computed=`unsatisfied`; candidate=`common`.
+- [ ] `TRAIN-C5` — formula=`AND`; operands=10; computed=`unsatisfied`; candidate=`common`.
+- [ ] `TRAIN-C6` — formula=`AND`; operands=69; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `TRAIN-C7` — formula=`AND`; operands=21; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `TS-NODE-KEEPER-ORACLE-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `TS-NODE-RELAYER-SDK-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `TS-NODE-TX-BUILDER-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `VERTICAL-EVM-BLIND-001` — formula=`AND`; operands=4; computed=`unsatisfied`; candidate=`RC-V-EVM-1`.
+- [ ] `VERTICAL-EVM-NOVEL-001` — formula=`AND`; operands=4; computed=`unsatisfied`; candidate=`RC-V-EVM-1`.
+- [ ] `VYP-EVM-DEFI-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-COSMWASM-GO-RELAYER-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-GO-C-FFI-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-GO-CPP-FFI-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-NEAR-JS-CLIENT-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-SOL-TS-RELAYER-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-SOLANA-TS-CLIENT-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-TS-DATA-SOL-TX-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+- [ ] `X-VYP-JS-KEEPER-CERT` — formula=`AND`; operands=8; computed=`unsatisfied`; candidate=`RC-FULL-1`.
+
+## 5. Checklist de contributions
+
+### 5.1 solguard-agents
+
+- [ ] `C0-003` — parent=`GOV-003`; declared=`GOV-003`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-004` — parent=`GOV-004`; declared=`GOV-004`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-007` — parent=`GOV-008`; declared=`GOV-008`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C0-009` — parent=`GOV-006`; declared=`GOV-006`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C0-010` — parent=`GOV-007`; declared=`GOV-007`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C0-011` — parent=`GOV-008`; declared=`GOV-008`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-012` — parent=`LEDGER-001`; declared=`LEDGER-001`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-016` — parent=`LEDGER-001`; declared=`LEDGER-001`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-115` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-017` — parent=`TRUTH-108`; declared=`TRUTH-108`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C2-CON-01` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-15` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-15` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-16` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-009` — parent=`PLAT-805`; declared=`PLAT-805`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-001A` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001E` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001G` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-012` — parent=`ISO-CAP-904`; declared=`ISO-CAP-904`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-015A` — parent=`FINAL-002-CAP`; declared=`FINAL-002-CAP`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-015B` — parent=`FINAL-002-CAP`; declared=`FINAL-002-CAP`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.2 solguard-backend
+
+- [ ] `C0-114` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-000VC` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-003C` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-009A` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-010` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-015` — parent=`TRUTH-108`; declared=`TRUTH-108`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-022` — parent=`TRUTH-108`; declared=`TRUTH-108`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-009` — parent=`RUN-206`; declared=`RUN-206`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-009C` — parent=`RUN-207-BACKEND`; declared=`RUN-207-BACKEND`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-020B` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-022` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-13` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-12` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-11` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-001A` — parent=`PLAT-801`; declared=`PLAT-801`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-005A` — parent=`PLAT-803-BACKEND`; declared=`PLAT-803-BACKEND`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-006` — parent=`PLAT-803-BACKEND`; declared=`PLAT-803-BACKEND`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-007` — parent=`PLAT-804`; declared=`PLAT-804`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-008` — parent=`PLAT-804`; declared=`PLAT-804`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-016` — parent=`PLAT-807`; declared=`PLAT-807`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-017` — parent=`PLAT-808`; declared=`PLAT-808`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-019` — parent=`PLAT-810`; declared=`PLAT-810`; hard-contrib-deps=0; source=`concrete_row`.
+
+### 5.3 solguard-core
+
+- [ ] `C0-005` — parent=`SCOPE-CAP-900`; declared=`SCOPE-CAP-900`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C0-113` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-000VB` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-003B` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-008` — parent=`TRUTH-104`; declared=`TRUTH-104`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-009` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-009G` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-020` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-003` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-004` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-005` — parent=`RUN-203`; declared=`RUN-203`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-006` — parent=`RUN-204`; declared=`RUN-204`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-007` — parent=`RUN-205`; declared=`RUN-205`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-008` — parent=`RUN-206`; declared=`RUN-206`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-009A` — parent=`RUN-207-CORE-READER`; declared=`RUN-207-CORE-READER`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-019` — parent=`RUN-207-CORE-CUTOVER`; declared=`RUN-207-CORE-CUTOVER`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-020` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-021` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-025` — parent=`RUN-209`; declared=`RUN-209`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-027` — parent=`RUN-210`; declared=`RUN-210`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-030` — parent=`RUN-207-CORE-CUTOVER`; declared=`RUN-207-CORE-CUTOVER`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-02` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-01` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-01` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-SCOPE-11` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001H` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004` — parent=`IR-302`; declared=`IR-302`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004G` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007A` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-008` — parent=`IR-308`; declared=`IR-308`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-009AE` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-010D` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-012D` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013M` — parent=`MODEL-411`; declared=`MODEL-411`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-014C` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015A` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015D` — parent=`MODEL-407`; declared=`MODEL-407`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-016` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-016B` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C3-016D` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-017` — parent=`MODEL-407`; declared=`MODEL-407`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-000B` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-002F` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-008` — parent=`PROOF-504`; declared=`PROOF-504`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-008A` — parent=`PROOF-509`; declared=`PROOF-509`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-014B` — parent=`PROOF-507`; declared=`PROOF-507`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-020` — parent=`DECIDE-603-CORE`; declared=`DECIDE-603-CORE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-023` — parent=`DECIDE-604`; declared=`DECIDE-604`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-023B` — parent=`DECIDE-604`; declared=`DECIDE-604`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-029A` — parent=`DECIDE-607`; declared=`DECIDE-607`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-005` — parent=`PLAT-803-CORE`; declared=`PLAT-803-CORE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-COM-06C` — parent=`LANG-050C`; declared=`LANG-050C`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-COM-08` — parent=`LANG-070`; declared=`LANG-070`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-GO-15` — parent=`LANG-GO-05-INTEGRATION`; declared=`LANG-GO-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-CORE` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-CORE` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-CORE` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-CORE` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-CORE` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-CORE` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-CORE` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-CORE` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-CORE` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-CORE` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-CORE` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-CORE` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-CORE` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-CORE` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-CORE` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-CORE` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-CORE` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-CORE` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-CORE` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-CORE` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-CORE` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-CORE` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-CORE` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-CORE` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-CORE` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-CORE` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-CORE` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-CORE` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-CORE` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-CORE` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=3; source=`c6_scope_expansion`.
+
+### 5.4 solguard-database
+
+- [ ] `C0-112` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-000VD` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-003D` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-009B` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-011` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-013` — parent=`TRUTH-106`; declared=`TRUTH-106`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-009B` — parent=`RUN-207-DATABASE`; declared=`RUN-207-DATABASE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-020A` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-12` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-11` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-001` — parent=`PLAT-801`; declared=`PLAT-801`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-002` — parent=`PLAT-801`; declared=`PLAT-801`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-003` — parent=`PLAT-802`; declared=`PLAT-802`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-004` — parent=`PLAT-802`; declared=`PLAT-802`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-004B` — parent=`TRUTH-109`; declared=`TRUTH-109`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-018` — parent=`PLAT-809`; declared=`PLAT-809`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-002` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C7-003` — parent=`DB-CAP-902`; declared=`DB-CAP-902`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-003A` — parent=`DB-CAP-902`; declared=`DB-CAP-902`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-003C` — parent=`DB-CAP-902`; declared=`DB-CAP-902`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-003D` — parent=`DB-CAP-902`; declared=`DB-CAP-902`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.5 solguard-deploy
+
+- [ ] `C0-001` — parent=`GOV-001`; declared=`GOV-001`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C0-001A` — parent=`BASELINE-009`; declared=`BASELINE-009`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-001B` — parent=`BASELINE-009`; declared=`BASELINE-009`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-006` — parent=`SCOPE-CAP-900`; declared=`SCOPE-CAP-900`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-013` — parent=`LEDGER-001`; declared=`LEDGER-001`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-015` — parent=`LEDGER-001`; declared=`LEDGER-001`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C0-017` — parent=`LEDGER-001`; declared=`LEDGER-001`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-111` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-000VE` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-000VF` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-003E` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-003F` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-009C` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-009E` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-009F` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-012` — parent=`TRUTH-106`; declared=`TRUTH-106`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-014` — parent=`TRUTH-107`; declared=`TRUTH-107`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-016` — parent=`TRUTH-107`; declared=`TRUTH-107`; hard-contrib-deps=15; source=`concrete_row`.
+- [ ] `C1-021` — parent=`TRUTH-107`; declared=`TRUTH-107`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-009D` — parent=`RUN-207-DEPLOY`; declared=`RUN-207-DEPLOY`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-019A` — parent=`RUN-207-E2E`; declared=`RUN-207-E2E`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-020C` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-020D` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-023` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-026` — parent=`RUN-209`; declared=`RUN-209`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-028` — parent=`RUN-210`; declared=`RUN-210`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-14` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-13` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-12` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-13` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-01` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-SCOPE-12` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-13` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001I` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-002A` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004H` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-006A` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-006C` — parent=`IR-308`; declared=`IR-308`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007I` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007IA` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007L` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-009AF` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-009C` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-010DA` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-010F` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-012DA` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-012F` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013B` — parent=`MODEL-410`; declared=`MODEL-410`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013N` — parent=`MODEL-411`; declared=`MODEL-411`; hard-contrib-deps=3; source=`concrete_row`.
+- [ ] `C3-013P` — parent=`MODEL-411`; declared=`MODEL-411`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-014DA` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-014F` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015AA` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015C` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015H` — parent=`MODEL-407`; declared=`MODEL-407`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-016C` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C3-016F` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-017A` — parent=`MODEL-407`; declared=`MODEL-407`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-021` — parent=`MODEL-408-E2E`; declared=`MODEL-408-E2E`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-022` — parent=`MODEL-409`; declared=`MODEL-409`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-023` — parent=`MODEL-409`; declared=`MODEL-409`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-000I` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-001A` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002I` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-007A` — parent=`PROOF-503-E2E`; declared=`PROOF-503-E2E`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-008B` — parent=`PROOF-509`; declared=`PROOF-509`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-008C` — parent=`PROOF-504`; declared=`PROOF-504`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-011E` — parent=`PROOF-506`; declared=`PROOF-506`; hard-contrib-deps=4; source=`concrete_row`.
+- [ ] `C4-012` — parent=`PROOF-506`; declared=`PROOF-506`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C4-014C` — parent=`PROOF-507`; declared=`PROOF-507`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-019B` — parent=`DECIDE-602`; declared=`DECIDE-602`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-022` — parent=`DECIDE-603-DEPLOY`; declared=`DECIDE-603-DEPLOY`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-022A` — parent=`DECIDE-603-E2E`; declared=`DECIDE-603-E2E`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-023A` — parent=`DECIDE-604`; declared=`DECIDE-604`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-026` — parent=`PROOF-508`; declared=`PROOF-508`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-027` — parent=`PROOF-510`; declared=`PROOF-510`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-028` — parent=`PROOF-510`; declared=`PROOF-510`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-029C` — parent=`DECIDE-606`; declared=`DECIDE-606`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-001B` — parent=`PLAT-801`; declared=`PLAT-801`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-001C` — parent=`PLAT-801`; declared=`PLAT-801`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-004A` — parent=`PLAT-802`; declared=`PLAT-802`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-004C` — parent=`TRUTH-109`; declared=`TRUTH-109`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-004F` — parent=`TRUTH-110`; declared=`TRUTH-110`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-005B` — parent=`PLAT-803-E2E`; declared=`PLAT-803-E2E`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-005C` — parent=`PLAT-803-E2E`; declared=`PLAT-803-E2E`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-006A` — parent=`PLAT-803-E2E`; declared=`PLAT-803-E2E`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-010` — parent=`PLAT-805`; declared=`PLAT-805`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-013` — parent=`BOM-CAP-903`; declared=`BOM-CAP-903`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-014` — parent=`ISO-CAP-904`; declared=`ISO-CAP-904`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-015` — parent=`PLAT-806`; declared=`PLAT-806`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-020` — parent=`PLAT-810`; declared=`PLAT-810`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-C-08` — parent=`LANG-C-05-INTEGRATION`; declared=`LANG-C-05`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-C-08A` — parent=`LANG-C-05-INTEGRATION`; declared=`LANG-C-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-04` — parent=`LANG-030-HARNESS`; declared=`LANG-030-HARNESS`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-COM-12` — parent=`LANG-190-HARNESS`; declared=`LANG-190-HARNESS`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-COM-13` — parent=`LANG-200-HARNESS`; declared=`LANG-200-HARNESS`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-09` — parent=`LANG-CPP-03-INTEGRATION`; declared=`LANG-CPP-03`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-CPP-09A` — parent=`LANG-CPP-03-INTEGRATION`; declared=`LANG-CPP-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-18` — parent=`LANG-GO-05-INTEGRATION`; declared=`LANG-GO-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-08` — parent=`LANG-JS-03-INTEGRATION`; declared=`LANG-JS-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-09` — parent=`LANG-JS-03-INTEGRATION`; declared=`LANG-JS-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-18` — parent=`LANG-RUST-06-INTEGRATION`; declared=`LANG-RUST-06`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-CANDIDATE` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-01-PROFILE` — parent=`SOL-EVM-DEFI-C0`; declared=`SOL-EVM-DEFI-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-01-REPLAY` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-CANDIDATE` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-PROFILE` — parent=`VYP-EVM-DEFI-C0`; declared=`VYP-EVM-DEFI-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-REPLAY` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-CANDIDATE` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-PROFILE` — parent=`RST-SOLANA-ANCHOR-C0`; declared=`RST-SOLANA-ANCHOR-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-REPLAY` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-CANDIDATE` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-PROFILE` — parent=`RST-COSMWASM-C0`; declared=`RST-COSMWASM-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-REPLAY` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-CANDIDATE` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-PROFILE` — parent=`RST-NEAR-C0`; declared=`RST-NEAR-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-REPLAY` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-CANDIDATE` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-PROFILE` — parent=`RST-SUBSTRATE-FRAME-C0`; declared=`RST-SUBSTRATE-FRAME-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-REPLAY` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-CANDIDATE` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-PROFILE` — parent=`RST-NATIVE-CLIENT-C0`; declared=`RST-NATIVE-CLIENT-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-REPLAY` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-CANDIDATE` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-PROFILE` — parent=`GO-COSMOS-SDK-C0`; declared=`GO-COSMOS-SDK-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-REPLAY` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-CANDIDATE` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-PROFILE` — parent=`GO-GETH-CLIENT-C0`; declared=`GO-GETH-CLIENT-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-REPLAY` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-CANDIDATE` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-PROFILE` — parent=`GO-RELAYER-ORACLE-C0`; declared=`GO-RELAYER-ORACLE-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-REPLAY` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-CANDIDATE` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-PROFILE` — parent=`C-UTXO-CONSENSUS-C0`; declared=`C-UTXO-CONSENSUS-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-REPLAY` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-CANDIDATE` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-PROFILE` — parent=`C-BRIDGE-FINALITY-C0`; declared=`C-BRIDGE-FINALITY-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-REPLAY` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-CANDIDATE` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-PROFILE` — parent=`C-WALLET-CUSTODY-C0`; declared=`C-WALLET-CUSTODY-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-REPLAY` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-CANDIDATE` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-PROFILE` — parent=`CPP-UTXO-CONSENSUS-C0`; declared=`CPP-UTXO-CONSENSUS-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-REPLAY` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-CANDIDATE` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-PROFILE` — parent=`CPP-BRIDGE-FINALITY-C0`; declared=`CPP-BRIDGE-FINALITY-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-REPLAY` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-CANDIDATE` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-PROFILE` — parent=`CPP-WALLET-CUSTODY-C0`; declared=`CPP-WALLET-CUSTODY-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-REPLAY` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-CANDIDATE` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-PROFILE` — parent=`JS-NODE-RELAYER-C0`; declared=`JS-NODE-RELAYER-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-REPLAY` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-CANDIDATE` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-PROFILE` — parent=`JS-NODE-KEEPER-ORACLE-C0`; declared=`JS-NODE-KEEPER-ORACLE-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-REPLAY` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-CANDIDATE` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-PROFILE` — parent=`JS-NODE-TX-BUILDER-C0`; declared=`JS-NODE-TX-BUILDER-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-REPLAY` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-CANDIDATE` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-PROFILE` — parent=`TS-NODE-RELAYER-SDK-C0`; declared=`TS-NODE-RELAYER-SDK-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-REPLAY` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-CANDIDATE` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-PROFILE` — parent=`TS-NODE-KEEPER-ORACLE-C0`; declared=`TS-NODE-KEEPER-ORACLE-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-REPLAY` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-CANDIDATE` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-PROFILE` — parent=`TS-NODE-TX-BUILDER-C0`; declared=`TS-NODE-TX-BUILDER-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-REPLAY` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-CANDIDATE` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-PROFILE` — parent=`X-SOL-TS-RELAYER-C0`; declared=`X-SOL-TS-RELAYER-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-REPLAY` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-CANDIDATE` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-PROFILE` — parent=`X-VYP-JS-KEEPER-C0`; declared=`X-VYP-JS-KEEPER-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-REPLAY` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-CANDIDATE` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-PROFILE` — parent=`X-SOLANA-TS-CLIENT-C0`; declared=`X-SOLANA-TS-CLIENT-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-REPLAY` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-CANDIDATE` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-PROFILE` — parent=`X-COSMWASM-GO-RELAYER-C0`; declared=`X-COSMWASM-GO-RELAYER-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-REPLAY` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-CANDIDATE` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-PROFILE` — parent=`X-NEAR-JS-CLIENT-C0`; declared=`X-NEAR-JS-CLIENT-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-REPLAY` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-CANDIDATE` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-PROFILE` — parent=`X-GO-C-FFI-C0`; declared=`X-GO-C-FFI-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-REPLAY` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-CANDIDATE` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-PROFILE` — parent=`X-GO-CPP-FFI-C0`; declared=`X-GO-CPP-FFI-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-REPLAY` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-CANDIDATE` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-PROFILE` — parent=`X-TS-DATA-SOL-TX-C0`; declared=`X-TS-DATA-SOL-TX-C0`; hard-contrib-deps=0; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-REPLAY` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=8; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-07` — parent=`LANG-SOL-04-INTEGRATION`; declared=`LANG-SOL-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SOL-10` — parent=`LANG-SOL-05-INTEGRATION`; declared=`LANG-SOL-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-08` — parent=`LANG-TS-03-INTEGRATION`; declared=`LANG-TS-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-08` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-10` — parent=`LANG-X-04-INTEGRATION`; declared=`LANG-X-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-001C` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001D` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001F` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001H` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001I` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002A` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002B` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002C` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002D` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002E` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002F` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002G` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002H` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002I` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002J` — parent=`VALIDATION-CAP-900`; declared=`VALIDATION-CAP-900`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-002K` — parent=`VALIDATION-CAP-900`; declared=`VALIDATION-CAP-900`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002L` — parent=`VALIDATION-CAP-900`; declared=`VALIDATION-CAP-900`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002M` — parent=`VALIDATION-CAP-900`; declared=`VALIDATION-CAP-900`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002N` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002O` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-002P` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C7-002Q` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-003B` — parent=`DB-CAP-902`; declared=`DB-CAP-902`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-004` — parent=`SCOPE-CAP-900`; declared=`SCOPE-CAP-900`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-005` — parent=`BOM-CAP-903`; declared=`BOM-CAP-903`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-006` — parent=`ISO-CAP-904`; declared=`ISO-CAP-904`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-007` — parent=`CORPUS-CAP-905`; declared=`CORPUS-CAP-905`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-007A` — parent=`CORPUS-CAP-905`; declared=`CORPUS-CAP-905`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-008` — parent=`HOLDOUT-CAP-906`; declared=`HOLDOUT-CAP-906`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-008A` — parent=`HOLDOUT-CAP-906`; declared=`HOLDOUT-CAP-906`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-008B` — parent=`HOLDOUT-CAP-906`; declared=`HOLDOUT-CAP-906`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-008C` — parent=`HOLDOUT-CAP-906`; declared=`HOLDOUT-CAP-906`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-009` — parent=`NOVEL-CAP-907`; declared=`NOVEL-CAP-907`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-009A` — parent=`NOVEL-CAP-907`; declared=`NOVEL-CAP-907`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-009B` — parent=`NOVEL-CAP-907`; declared=`NOVEL-CAP-907`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-009C` — parent=`NOVEL-CAP-907`; declared=`NOVEL-CAP-907`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-010` — parent=`EVAL-908`; declared=`EVAL-908`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-010A` — parent=`EVAL-908`; declared=`EVAL-908`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-010B` — parent=`EVAL-908`; declared=`EVAL-908`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-010C` — parent=`EVAL-908`; declared=`EVAL-908`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-011` — parent=`EVAL-908`; declared=`EVAL-908`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-013` — parent=`LIVE-CAP-913`; declared=`LIVE-CAP-913`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-013A` — parent=`LIVE-CAP-913`; declared=`LIVE-CAP-913`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-013B` — parent=`LIVE-CAP-913`; declared=`LIVE-CAP-913`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-013C` — parent=`LIVE-CAP-913`; declared=`LIVE-CAP-913`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-013D` — parent=`LIVE-CAP-913`; declared=`LIVE-CAP-913`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-013E` — parent=`LIVE-CAP-913`; declared=`LIVE-CAP-913`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-014A` — parent=`CANARY-CAP-909`; declared=`CANARY-CAP-909`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-014B` — parent=`KNOWN-CAP-910`; declared=`KNOWN-CAP-910`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-015` — parent=`SCOPE-CAP-900`; declared=`SCOPE-CAP-900`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-016` — parent=`FINAL-003-CAP`; declared=`FINAL-003-CAP`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C7-016A` — parent=`FINAL-003-CAP`; declared=`FINAL-003-CAP`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-016B` — parent=`FINAL-003-CAP`; declared=`FINAL-003-CAP`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-016C` — parent=`FINAL-003-CAP`; declared=`FINAL-003-CAP`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.6 solguard-diff
+
+- [ ] `C0-110` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-018` — parent=`RUN-207-DIFF`; declared=`RUN-207-DIFF`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-11` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-10` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-10` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-10` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001C` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007D` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-009` — parent=`IR-305`; declared=`IR-305`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-009A` — parent=`IR-306`; declared=`IR-306`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-009AD` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-C-07A` — parent=`LANG-C-05-INTEGRATION`; declared=`LANG-C-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-11` — parent=`LANG-090-HARNESS`; declared=`LANG-090-HARNESS`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-08` — parent=`LANG-CPP-03-INTEGRATION`; declared=`LANG-CPP-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-05D` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-09D` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-12F` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-07A` — parent=`LANG-JS-02-INTEGRATION`; declared=`LANG-JS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-05D` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09D` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09M` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-12D` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-15F` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-DIFF` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-DIFF` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-DIFF` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-DIFF` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-DIFF` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-DIFF` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-DIFF` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-DIFF` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-DIFF` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-DIFF` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-DIFF` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-DIFF` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-DIFF` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-DIFF` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-DIFF` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-DIFF` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-DIFF` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-DIFF` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-DIFF` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-DIFF` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-DIFF` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-DIFF` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-DIFF` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-DIFF` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-DIFF` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-DIFF` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-DIFF` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-DIFF` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-DIFF` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-DIFF` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-06` — parent=`LANG-SOL-04-INTEGRATION`; declared=`LANG-SOL-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-07A` — parent=`LANG-TS-02-INTEGRATION`; declared=`LANG-TS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-07A` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-09` — parent=`LANG-X-04-INTEGRATION`; declared=`LANG-X-04`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.7 solguard-discover
+
+- [ ] `C0-109` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-007` — parent=`TRUTH-104`; declared=`TRUTH-104`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-012` — parent=`RUN-207-DISCOVER`; declared=`RUN-207-DISCOVER`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-05` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-04` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-04` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-04` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001B` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004B` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007C` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-009AC` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-010` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-010E` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-011` — parent=`MODEL-402`; declared=`MODEL-402`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-014D` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-015B` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-016A` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C3-016E` — parent=`MODEL-406`; declared=`MODEL-406`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-019` — parent=`MODEL-408-DISCOVER`; declared=`MODEL-408-DISCOVER`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-030` — parent=`MODEL-402`; declared=`MODEL-402`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-C-04` — parent=`LANG-C-03-INTEGRATION`; declared=`LANG-C-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-06B` — parent=`LANG-050B`; declared=`LANG-050B`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-04` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-04` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-08` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-12` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-14` — parent=`LANG-GO-05-INTEGRATION`; declared=`LANG-GO-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-04` — parent=`LANG-JS-02-INTEGRATION`; declared=`LANG-JS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-04` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-08` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09G` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-11A` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-15` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-MODEL` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-MODEL` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-MODEL` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-MODEL` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-MODEL` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-MODEL` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-MODEL` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-MODEL` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-MODEL` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-MODEL` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-MODEL` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-MODEL` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-MODEL` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-MODEL` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-MODEL` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-MODEL` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-MODEL` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-MODEL` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-MODEL` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-MODEL` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-MODEL` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-MODEL` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-MODEL` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-MODEL` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-MODEL` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-MODEL` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-MODEL` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-MODEL` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-MODEL` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-MODEL` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-04` — parent=`LANG-SOL-03-INTEGRATION`; declared=`LANG-SOL-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-04` — parent=`LANG-TS-02-INTEGRATION`; declared=`LANG-TS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-04` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-04` — parent=`LANG-X-03-INTEGRATION`; declared=`LANG-X-03`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.8 solguard-docs
+
+- [ ] `C0-002` — parent=`GOV-002`; declared=`GOV-002`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C0-008` — parent=`GOV-002`; declared=`GOV-002`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C0-014` — parent=`LEDGER-001`; declared=`LEDGER-001`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C0-108` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-009D` — parent=`TRUTH-105`; declared=`TRUTH-105`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C1-018` — parent=`TRUTH-108`; declared=`TRUTH-108`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C2-024` — parent=`RUN-208`; declared=`RUN-208`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-14` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-025` — parent=`DECIDE-605`; declared=`DECIDE-605`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C5-011` — parent=`PLAT-806`; declared=`PLAT-806`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C5-012` — parent=`PLAT-806`; declared=`PLAT-806`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-C-09` — parent=`LANG-C-05-INTEGRATION`; declared=`LANG-C-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-01` — parent=`LANG-000`; declared=`LANG-000`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-10` — parent=`LANG-CPP-03-INTEGRATION`; declared=`LANG-CPP-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-19` — parent=`LANG-GO-05-INTEGRATION`; declared=`LANG-GO-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-10` — parent=`LANG-JS-03-INTEGRATION`; declared=`LANG-JS-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-19` — parent=`LANG-RUST-06-INTEGRATION`; declared=`LANG-RUST-06`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-SCOPE` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-SCOPE` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-SCOPE` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-SCOPE` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-SCOPE` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-SCOPE` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-SCOPE` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-SCOPE` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-SCOPE` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-SCOPE` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-SCOPE` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-SCOPE` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-SCOPE` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-SCOPE` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-SCOPE` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-SCOPE` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-SCOPE` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-SCOPE` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-SCOPE` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-SCOPE` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-SCOPE` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-SCOPE` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-SCOPE` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-SCOPE` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-SCOPE` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-SCOPE` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-SCOPE` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-SCOPE` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-SCOPE` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-SCOPE` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-11` — parent=`LANG-SOL-05-INTEGRATION`; declared=`LANG-SOL-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-09` — parent=`LANG-TS-03-INTEGRATION`; declared=`LANG-TS-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-09` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-11` — parent=`LANG-X-04-INTEGRATION`; declared=`LANG-X-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C7-001B` — parent=`MEASURE-901`; declared=`MEASURE-901`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.9 solguard-economic
+
+- [ ] `C0-107` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-013` — parent=`RUN-207-ECONOMIC`; declared=`RUN-207-ECONOMIC`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-06` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-05` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-05` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-05` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001D` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004C` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007E` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-010A` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-012` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-012E` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-013A` — parent=`MODEL-410`; declared=`MODEL-410`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-013C` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C3-013D` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013E` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013F` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013G` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013H` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013I` — parent=`MODEL-404`; declared=`MODEL-404`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013J` — parent=`MODEL-411`; declared=`MODEL-411`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-013O` — parent=`MODEL-411`; declared=`MODEL-411`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-020` — parent=`MODEL-408-ECONOMIC`; declared=`MODEL-408-ECONOMIC`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-000F` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002C` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-005` — parent=`PROOF-503-ECONOMIC`; declared=`PROOF-503-ECONOMIC`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-010` — parent=`PROOF-505`; declared=`PROOF-505`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-C-04A` — parent=`LANG-C-03-INTEGRATION`; declared=`LANG-C-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-07` — parent=`LANG-060`; declared=`LANG-060`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-04A` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-04A` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-08A` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-12A` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-04A` — parent=`LANG-JS-02-INTEGRATION`; declared=`LANG-JS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-04A` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-08A` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09H` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-11B` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-15A` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-ECONOMIC` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-ECONOMIC` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-ECONOMIC` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-ECONOMIC` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-ECONOMIC` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-ECONOMIC` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-ECONOMIC` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-ECONOMIC` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-ECONOMIC` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-ECONOMIC` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-ECONOMIC` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-ECONOMIC` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-ECONOMIC` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-ECONOMIC` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-ECONOMIC` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-ECONOMIC` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-ECONOMIC` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-ECONOMIC` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-ECONOMIC` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-ECONOMIC` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-ECONOMIC` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-ECONOMIC` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-ECONOMIC` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-ECONOMIC` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-ECONOMIC` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-ECONOMIC` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-ECONOMIC` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-ECONOMIC` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-ECONOMIC` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-ECONOMIC` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-04A` — parent=`LANG-SOL-03-INTEGRATION`; declared=`LANG-SOL-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-04A` — parent=`LANG-TS-02-INTEGRATION`; declared=`LANG-TS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-04A` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-03` — parent=`LANG-X-03-INTEGRATION`; declared=`LANG-X-03`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.10 solguard-filter
+
+- [ ] `C0-106` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-000VA` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-003A` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-004` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-005` — parent=`TRUTH-103`; declared=`TRUTH-103`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-017` — parent=`RUN-207-FILTER`; declared=`RUN-207-FILTER`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-10` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-09` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-09` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-09` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015G` — parent=`MODEL-407`; declared=`MODEL-407`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-014A` — parent=`PROOF-507`; declared=`PROOF-507`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-019` — parent=`DECIDE-602`; declared=`DECIDE-602`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-019A` — parent=`DECIDE-602`; declared=`DECIDE-602`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-024` — parent=`DECIDE-605`; declared=`DECIDE-605`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-029B` — parent=`DECIDE-608`; declared=`DECIDE-608`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-C-07` — parent=`LANG-C-04-INTEGRATION`; declared=`LANG-C-04`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-COM-10` — parent=`LANG-080-FILTER`; declared=`LANG-080-FILTER`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-07` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-GO-05C` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-09C` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-12E` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-17` — parent=`LANG-GO-05-INTEGRATION`; declared=`LANG-GO-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-07` — parent=`LANG-JS-02-INTEGRATION`; declared=`LANG-JS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-05C` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09C` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09L` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-12C` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-15E` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-17` — parent=`LANG-RUST-06-INTEGRATION`; declared=`LANG-RUST-06`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-FILTER` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-FILTER` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-FILTER` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-FILTER` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-FILTER` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-FILTER` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-FILTER` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-FILTER` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-FILTER` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-FILTER` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-FILTER` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-FILTER` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-FILTER` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-FILTER` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-FILTER` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-FILTER` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-FILTER` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-FILTER` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-FILTER` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-FILTER` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-FILTER` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-FILTER` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-FILTER` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-FILTER` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-FILTER` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-FILTER` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-FILTER` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-FILTER` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-FILTER` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-FILTER` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-09` — parent=`LANG-SOL-03-INTEGRATION`; declared=`LANG-SOL-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-07` — parent=`LANG-TS-02-INTEGRATION`; declared=`LANG-TS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-07` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-X-08` — parent=`LANG-X-04-INTEGRATION`; declared=`LANG-X-04`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.11 solguard-invariant
+
+- [ ] `C0-105` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-014` — parent=`RUN-207-INVARIANT`; declared=`RUN-207-INVARIANT`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-07` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-06` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-06` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-06` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001E` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004E` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007F` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-010B` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-012A` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-014` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-014E` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-000G` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002E` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-007` — parent=`PROOF-503-INVARIANT`; declared=`PROOF-503-INVARIANT`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-C-05` — parent=`LANG-C-03-INTEGRATION`; declared=`LANG-C-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-CPP-05` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-05` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-09` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-12B` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-05` — parent=`LANG-JS-02-INTEGRATION`; declared=`LANG-JS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-05` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09I` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-12` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-15B` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-INVARIANT` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-INVARIANT` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-INVARIANT` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-INVARIANT` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-INVARIANT` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-INVARIANT` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-INVARIANT` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-INVARIANT` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-INVARIANT` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-INVARIANT` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-INVARIANT` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-INVARIANT` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-INVARIANT` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-INVARIANT` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-INVARIANT` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-INVARIANT` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-INVARIANT` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-INVARIANT` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-INVARIANT` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-INVARIANT` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-INVARIANT` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-INVARIANT` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-INVARIANT` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-INVARIANT` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-INVARIANT` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-INVARIANT` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-INVARIANT` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-INVARIANT` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-INVARIANT` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-INVARIANT` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-05` — parent=`LANG-SOL-03-INTEGRATION`; declared=`LANG-SOL-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-05` — parent=`LANG-TS-02-INTEGRATION`; declared=`LANG-TS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-05` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-05` — parent=`LANG-X-03-INTEGRATION`; declared=`LANG-X-03`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.12 solguard-map
+
+- [ ] `C0-104` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-010` — parent=`RUN-207-MAP`; declared=`RUN-207-MAP`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-03` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-02` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-02` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-02` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-002` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-003` — parent=`IR-302`; declared=`IR-302`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-007` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-007J` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-009AA` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-009B` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-000D` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002A` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-003` — parent=`PROOF-503-MAP`; declared=`PROOF-503-MAP`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-C-01` — parent=`LANG-C-01-INTEGRATION`; declared=`LANG-C-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-C-02` — parent=`LANG-C-02-INTEGRATION`; declared=`LANG-C-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-02` — parent=`LANG-010-HARNESS`; declared=`LANG-010-HARNESS`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-COM-06A` — parent=`LANG-050A`; declared=`LANG-050A`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-01` — parent=`LANG-CPP-01-INTEGRATION`; declared=`LANG-CPP-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-02` — parent=`LANG-CPP-01-INTEGRATION`; declared=`LANG-CPP-01`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-01` — parent=`LANG-GO-01-INTEGRATION`; declared=`LANG-GO-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-GO-02` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-06` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-10` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-01` — parent=`LANG-JS-01-INTEGRATION`; declared=`LANG-JS-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-JS-02` — parent=`LANG-JS-01-INTEGRATION`; declared=`LANG-JS-01`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-01` — parent=`LANG-RUST-01-INTEGRATION`; declared=`LANG-RUST-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-RST-02` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-06` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09E` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-10` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-13` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-FRONTEND` — parent=`SOL-EVM-DEFI-C1`; declared=`SOL-EVM-DEFI-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-01-LOCAL-IR` — parent=`SOL-EVM-DEFI-C2`; declared=`SOL-EVM-DEFI-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-FRONTEND` — parent=`VYP-EVM-DEFI-C1`; declared=`VYP-EVM-DEFI-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-LOCAL-IR` — parent=`VYP-EVM-DEFI-C2`; declared=`VYP-EVM-DEFI-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-FRONTEND` — parent=`RST-SOLANA-ANCHOR-C1`; declared=`RST-SOLANA-ANCHOR-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-LOCAL-IR` — parent=`RST-SOLANA-ANCHOR-C2`; declared=`RST-SOLANA-ANCHOR-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-FRONTEND` — parent=`RST-COSMWASM-C1`; declared=`RST-COSMWASM-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-LOCAL-IR` — parent=`RST-COSMWASM-C2`; declared=`RST-COSMWASM-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-FRONTEND` — parent=`RST-NEAR-C1`; declared=`RST-NEAR-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-LOCAL-IR` — parent=`RST-NEAR-C2`; declared=`RST-NEAR-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-FRONTEND` — parent=`RST-SUBSTRATE-FRAME-C1`; declared=`RST-SUBSTRATE-FRAME-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-LOCAL-IR` — parent=`RST-SUBSTRATE-FRAME-C2`; declared=`RST-SUBSTRATE-FRAME-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-FRONTEND` — parent=`RST-NATIVE-CLIENT-C1`; declared=`RST-NATIVE-CLIENT-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-LOCAL-IR` — parent=`RST-NATIVE-CLIENT-C2`; declared=`RST-NATIVE-CLIENT-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-FRONTEND` — parent=`GO-COSMOS-SDK-C1`; declared=`GO-COSMOS-SDK-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-LOCAL-IR` — parent=`GO-COSMOS-SDK-C2`; declared=`GO-COSMOS-SDK-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-FRONTEND` — parent=`GO-GETH-CLIENT-C1`; declared=`GO-GETH-CLIENT-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-LOCAL-IR` — parent=`GO-GETH-CLIENT-C2`; declared=`GO-GETH-CLIENT-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-FRONTEND` — parent=`GO-RELAYER-ORACLE-C1`; declared=`GO-RELAYER-ORACLE-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-LOCAL-IR` — parent=`GO-RELAYER-ORACLE-C2`; declared=`GO-RELAYER-ORACLE-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-FRONTEND` — parent=`C-UTXO-CONSENSUS-C1`; declared=`C-UTXO-CONSENSUS-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-LOCAL-IR` — parent=`C-UTXO-CONSENSUS-C2`; declared=`C-UTXO-CONSENSUS-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-FRONTEND` — parent=`C-BRIDGE-FINALITY-C1`; declared=`C-BRIDGE-FINALITY-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-LOCAL-IR` — parent=`C-BRIDGE-FINALITY-C2`; declared=`C-BRIDGE-FINALITY-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-FRONTEND` — parent=`C-WALLET-CUSTODY-C1`; declared=`C-WALLET-CUSTODY-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-LOCAL-IR` — parent=`C-WALLET-CUSTODY-C2`; declared=`C-WALLET-CUSTODY-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-FRONTEND` — parent=`CPP-UTXO-CONSENSUS-C1`; declared=`CPP-UTXO-CONSENSUS-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-LOCAL-IR` — parent=`CPP-UTXO-CONSENSUS-C2`; declared=`CPP-UTXO-CONSENSUS-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-FRONTEND` — parent=`CPP-BRIDGE-FINALITY-C1`; declared=`CPP-BRIDGE-FINALITY-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-LOCAL-IR` — parent=`CPP-BRIDGE-FINALITY-C2`; declared=`CPP-BRIDGE-FINALITY-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-FRONTEND` — parent=`CPP-WALLET-CUSTODY-C1`; declared=`CPP-WALLET-CUSTODY-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-LOCAL-IR` — parent=`CPP-WALLET-CUSTODY-C2`; declared=`CPP-WALLET-CUSTODY-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-FRONTEND` — parent=`JS-NODE-RELAYER-C1`; declared=`JS-NODE-RELAYER-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-LOCAL-IR` — parent=`JS-NODE-RELAYER-C2`; declared=`JS-NODE-RELAYER-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-FRONTEND` — parent=`JS-NODE-KEEPER-ORACLE-C1`; declared=`JS-NODE-KEEPER-ORACLE-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-LOCAL-IR` — parent=`JS-NODE-KEEPER-ORACLE-C2`; declared=`JS-NODE-KEEPER-ORACLE-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-FRONTEND` — parent=`JS-NODE-TX-BUILDER-C1`; declared=`JS-NODE-TX-BUILDER-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-LOCAL-IR` — parent=`JS-NODE-TX-BUILDER-C2`; declared=`JS-NODE-TX-BUILDER-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-FRONTEND` — parent=`TS-NODE-RELAYER-SDK-C1`; declared=`TS-NODE-RELAYER-SDK-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-LOCAL-IR` — parent=`TS-NODE-RELAYER-SDK-C2`; declared=`TS-NODE-RELAYER-SDK-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-FRONTEND` — parent=`TS-NODE-KEEPER-ORACLE-C1`; declared=`TS-NODE-KEEPER-ORACLE-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-LOCAL-IR` — parent=`TS-NODE-KEEPER-ORACLE-C2`; declared=`TS-NODE-KEEPER-ORACLE-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-FRONTEND` — parent=`TS-NODE-TX-BUILDER-C1`; declared=`TS-NODE-TX-BUILDER-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-LOCAL-IR` — parent=`TS-NODE-TX-BUILDER-C2`; declared=`TS-NODE-TX-BUILDER-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-FRONTEND` — parent=`X-SOL-TS-RELAYER-C1`; declared=`X-SOL-TS-RELAYER-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-LOCAL-IR` — parent=`X-SOL-TS-RELAYER-C2`; declared=`X-SOL-TS-RELAYER-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-FRONTEND` — parent=`X-VYP-JS-KEEPER-C1`; declared=`X-VYP-JS-KEEPER-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-LOCAL-IR` — parent=`X-VYP-JS-KEEPER-C2`; declared=`X-VYP-JS-KEEPER-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-FRONTEND` — parent=`X-SOLANA-TS-CLIENT-C1`; declared=`X-SOLANA-TS-CLIENT-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-LOCAL-IR` — parent=`X-SOLANA-TS-CLIENT-C2`; declared=`X-SOLANA-TS-CLIENT-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-FRONTEND` — parent=`X-COSMWASM-GO-RELAYER-C1`; declared=`X-COSMWASM-GO-RELAYER-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-LOCAL-IR` — parent=`X-COSMWASM-GO-RELAYER-C2`; declared=`X-COSMWASM-GO-RELAYER-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-FRONTEND` — parent=`X-NEAR-JS-CLIENT-C1`; declared=`X-NEAR-JS-CLIENT-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-LOCAL-IR` — parent=`X-NEAR-JS-CLIENT-C2`; declared=`X-NEAR-JS-CLIENT-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-FRONTEND` — parent=`X-GO-C-FFI-C1`; declared=`X-GO-C-FFI-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-LOCAL-IR` — parent=`X-GO-C-FFI-C2`; declared=`X-GO-C-FFI-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-FRONTEND` — parent=`X-GO-CPP-FFI-C1`; declared=`X-GO-CPP-FFI-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-LOCAL-IR` — parent=`X-GO-CPP-FFI-C2`; declared=`X-GO-CPP-FFI-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-FRONTEND` — parent=`X-TS-DATA-SOL-TX-C1`; declared=`X-TS-DATA-SOL-TX-C1`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-LOCAL-IR` — parent=`X-TS-DATA-SOL-TX-C2`; declared=`X-TS-DATA-SOL-TX-C2`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-01` — parent=`LANG-SOL-01-INTEGRATION`; declared=`LANG-SOL-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-SOL-02` — parent=`LANG-SOL-02-INTEGRATION`; declared=`LANG-SOL-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-01` — parent=`LANG-TS-01-INTEGRATION`; declared=`LANG-TS-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-TS-02` — parent=`LANG-TS-01-INTEGRATION`; declared=`LANG-TS-01`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-01` — parent=`LANG-VYP-01-INTEGRATION`; declared=`LANG-VYP-01`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-VYP-02` — parent=`LANG-VYP-01-INTEGRATION`; declared=`LANG-VYP-01`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-01` — parent=`LANG-X-01-INTEGRATION`; declared=`LANG-X-01`; hard-contrib-deps=0; source=`concrete_row`.
+
+### 5.13 solguard-trace
+
+- [ ] `C0-103` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-006` — parent=`TRUTH-104`; declared=`TRUTH-104`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-011` — parent=`RUN-207-TRACE`; declared=`RUN-207-TRACE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-04` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-03` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-03` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-03` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001A` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004A` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-005` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005A` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005B` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005C` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005D` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005E` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005F` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005G` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-005H` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-006` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C3-006B` — parent=`IR-308`; declared=`IR-308`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C3-007B` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-009AB` — parent=`IR-307`; declared=`IR-307`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-018` — parent=`MODEL-408-TRACE`; declared=`MODEL-408-TRACE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-000E` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002B` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-004` — parent=`PROOF-503-TRACE`; declared=`PROOF-503-TRACE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-C-03` — parent=`LANG-C-02-INTEGRATION`; declared=`LANG-C-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-05` — parent=`LANG-040-HARNESS`; declared=`LANG-040-HARNESS`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-03` — parent=`LANG-CPP-01-INTEGRATION`; declared=`LANG-CPP-01`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-03` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-07` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-11` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-13` — parent=`LANG-GO-05-INTEGRATION`; declared=`LANG-GO-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-03` — parent=`LANG-JS-01-INTEGRATION`; declared=`LANG-JS-01`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-08A` — parent=`LANG-JS-03-INTEGRATION`; declared=`LANG-JS-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-03` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-07` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09F` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-11` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-14` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-TRACE` — parent=`SOL-EVM-DEFI-C3`; declared=`SOL-EVM-DEFI-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-TRACE` — parent=`VYP-EVM-DEFI-C3`; declared=`VYP-EVM-DEFI-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-TRACE` — parent=`RST-SOLANA-ANCHOR-C3`; declared=`RST-SOLANA-ANCHOR-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-TRACE` — parent=`RST-COSMWASM-C3`; declared=`RST-COSMWASM-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-TRACE` — parent=`RST-NEAR-C3`; declared=`RST-NEAR-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-TRACE` — parent=`RST-SUBSTRATE-FRAME-C3`; declared=`RST-SUBSTRATE-FRAME-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-TRACE` — parent=`RST-NATIVE-CLIENT-C3`; declared=`RST-NATIVE-CLIENT-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-TRACE` — parent=`GO-COSMOS-SDK-C3`; declared=`GO-COSMOS-SDK-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-TRACE` — parent=`GO-GETH-CLIENT-C3`; declared=`GO-GETH-CLIENT-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-TRACE` — parent=`GO-RELAYER-ORACLE-C3`; declared=`GO-RELAYER-ORACLE-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-TRACE` — parent=`C-UTXO-CONSENSUS-C3`; declared=`C-UTXO-CONSENSUS-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-TRACE` — parent=`C-BRIDGE-FINALITY-C3`; declared=`C-BRIDGE-FINALITY-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-TRACE` — parent=`C-WALLET-CUSTODY-C3`; declared=`C-WALLET-CUSTODY-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-TRACE` — parent=`CPP-UTXO-CONSENSUS-C3`; declared=`CPP-UTXO-CONSENSUS-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-TRACE` — parent=`CPP-BRIDGE-FINALITY-C3`; declared=`CPP-BRIDGE-FINALITY-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-TRACE` — parent=`CPP-WALLET-CUSTODY-C3`; declared=`CPP-WALLET-CUSTODY-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-TRACE` — parent=`JS-NODE-RELAYER-C3`; declared=`JS-NODE-RELAYER-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-TRACE` — parent=`JS-NODE-KEEPER-ORACLE-C3`; declared=`JS-NODE-KEEPER-ORACLE-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-TRACE` — parent=`JS-NODE-TX-BUILDER-C3`; declared=`JS-NODE-TX-BUILDER-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-TRACE` — parent=`TS-NODE-RELAYER-SDK-C3`; declared=`TS-NODE-RELAYER-SDK-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-TRACE` — parent=`TS-NODE-KEEPER-ORACLE-C3`; declared=`TS-NODE-KEEPER-ORACLE-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-TRACE` — parent=`TS-NODE-TX-BUILDER-C3`; declared=`TS-NODE-TX-BUILDER-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-TRACE` — parent=`X-SOL-TS-RELAYER-C3`; declared=`X-SOL-TS-RELAYER-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-TRACE` — parent=`X-VYP-JS-KEEPER-C3`; declared=`X-VYP-JS-KEEPER-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-TRACE` — parent=`X-SOLANA-TS-CLIENT-C3`; declared=`X-SOLANA-TS-CLIENT-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-TRACE` — parent=`X-COSMWASM-GO-RELAYER-C3`; declared=`X-COSMWASM-GO-RELAYER-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-TRACE` — parent=`X-NEAR-JS-CLIENT-C3`; declared=`X-NEAR-JS-CLIENT-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-TRACE` — parent=`X-GO-C-FFI-C3`; declared=`X-GO-C-FFI-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-TRACE` — parent=`X-GO-CPP-FFI-C3`; declared=`X-GO-CPP-FFI-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-TRACE` — parent=`X-TS-DATA-SOL-TX-C3`; declared=`X-TS-DATA-SOL-TX-C3`; hard-contrib-deps=1; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-03` — parent=`LANG-SOL-02-INTEGRATION`; declared=`LANG-SOL-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-03` — parent=`LANG-TS-01-INTEGRATION`; declared=`LANG-TS-01`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-03` — parent=`LANG-VYP-03-INTEGRATION`; declared=`LANG-VYP-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-02` — parent=`LANG-X-02-INTEGRATION`; declared=`LANG-X-02`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.14 solguard-validate
+
+- [ ] `C0-102` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-000V` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C1-001` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-002` — parent=`TRUTH-101`; declared=`TRUTH-101`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C1-003` — parent=`TRUTH-102`; declared=`TRUTH-102`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-016` — parent=`RUN-207-VALIDATE`; declared=`RUN-207-VALIDATE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-09` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-08` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-08` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-08` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001G` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004F` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007H` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-012C` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013L` — parent=`MODEL-411`; declared=`MODEL-411`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-014B` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015F` — parent=`MODEL-407`; declared=`MODEL-407`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-000C` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002H` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-014` — parent=`DECIDE-601`; declared=`DECIDE-601`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-016` — parent=`DECIDE-601`; declared=`DECIDE-601`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-018` — parent=`PROOF-508`; declared=`PROOF-508`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-021` — parent=`DECIDE-603-VALIDATE`; declared=`DECIDE-603-VALIDATE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-029` — parent=`DECIDE-606`; declared=`DECIDE-606`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-030` — parent=`DECIDE-601`; declared=`DECIDE-601`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-C-06` — parent=`LANG-C-04-INTEGRATION`; declared=`LANG-C-04`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-C-06A` — parent=`LANG-C-04-INTEGRATION`; declared=`LANG-C-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-COM-09` — parent=`LANG-080-VALIDATE`; declared=`LANG-080-VALIDATE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-CPP-06` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-CPP-06A` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-05B` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-09B` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-12D` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-16` — parent=`LANG-GO-05-INTEGRATION`; declared=`LANG-GO-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-06` — parent=`LANG-JS-02-INTEGRATION`; declared=`LANG-JS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-05B` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09B` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09K` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-12B` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-15D` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-16` — parent=`LANG-RUST-06-INTEGRATION`; declared=`LANG-RUST-06`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-VALIDATE` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-VALIDATE` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-VALIDATE` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-VALIDATE` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-VALIDATE` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-VALIDATE` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-VALIDATE` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-VALIDATE` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-VALIDATE` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-VALIDATE` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-VALIDATE` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-VALIDATE` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-VALIDATE` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-VALIDATE` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-VALIDATE` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-VALIDATE` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-VALIDATE` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-VALIDATE` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-VALIDATE` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-VALIDATE` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-VALIDATE` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-VALIDATE` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-VALIDATE` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-VALIDATE` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-VALIDATE` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-VALIDATE` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-VALIDATE` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-VALIDATE` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-VALIDATE` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-VALIDATE` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-08` — parent=`LANG-SOL-03-INTEGRATION`; declared=`LANG-SOL-03`; hard-contrib-deps=2; source=`concrete_row`.
+- [ ] `C6-TS-06` — parent=`LANG-TS-02-INTEGRATION`; declared=`LANG-TS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-06` — parent=`LANG-VYP-02-INTEGRATION`; declared=`LANG-VYP-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-07` — parent=`LANG-X-04-INTEGRATION`; declared=`LANG-X-04`; hard-contrib-deps=1; source=`concrete_row`.
+
+### 5.15 solguard-value
+
+- [ ] `C0-101` — parent=`GOV-005`; declared=`GOV-005`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-015` — parent=`RUN-207-VALUE`; declared=`RUN-207-VALUE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C2-CON-08` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-CON-RM-07` — parent=`RUN-201`; declared=`RUN-201`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-RUN-07` — parent=`RUN-202`; declared=`RUN-202`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C2-SCOPE-07` — parent=`LANG-020-HARNESS`; declared=`LANG-020-HARNESS`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-001F` — parent=`IR-301`; declared=`IR-301`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-004D` — parent=`IR-303`; declared=`IR-303`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-007G` — parent=`IR-304`; declared=`IR-304`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-010C` — parent=`MODEL-401`; declared=`MODEL-401`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-012B` — parent=`MODEL-403`; declared=`MODEL-403`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-013K` — parent=`MODEL-411`; declared=`MODEL-411`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-014A` — parent=`MODEL-405`; declared=`MODEL-405`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C3-015E` — parent=`MODEL-407`; declared=`MODEL-407`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-000A` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-000H` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-001` — parent=`PROOF-501`; declared=`PROOF-501`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002D` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-002G` — parent=`PROOF-502`; declared=`PROOF-502`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-006` — parent=`PROOF-503-VALUE`; declared=`PROOF-503-VALUE`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-009` — parent=`PROOF-505`; declared=`PROOF-505`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-011` — parent=`PROOF-506`; declared=`PROOF-506`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-011A` — parent=`PROOF-506`; declared=`PROOF-506`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-011B` — parent=`PROOF-506`; declared=`PROOF-506`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-011C` — parent=`PROOF-506`; declared=`PROOF-506`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-011D` — parent=`PROOF-506`; declared=`PROOF-506`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-013` — parent=`PROOF-507`; declared=`PROOF-507`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C4-015` — parent=`PROOF-507`; declared=`PROOF-507`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C4-017` — parent=`PROOF-508`; declared=`PROOF-508`; hard-contrib-deps=0; source=`concrete_row`.
+- [ ] `C6-C-05A` — parent=`LANG-C-03-INTEGRATION`; declared=`LANG-C-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-C-05B` — parent=`LANG-C-03-INTEGRATION`; declared=`LANG-C-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-CPP-05A` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-CPP-05B` — parent=`LANG-CPP-02-INTEGRATION`; declared=`LANG-CPP-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-05A` — parent=`LANG-GO-02-INTEGRATION`; declared=`LANG-GO-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-09A` — parent=`LANG-GO-03-INTEGRATION`; declared=`LANG-GO-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-GO-12C` — parent=`LANG-GO-04-INTEGRATION`; declared=`LANG-GO-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-JS-05A` — parent=`LANG-JS-02-INTEGRATION`; declared=`LANG-JS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-05A` — parent=`LANG-RUST-02-INTEGRATION`; declared=`LANG-RUST-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09A` — parent=`LANG-RUST-03A-INTEGRATION`; declared=`LANG-RUST-03A`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-09J` — parent=`LANG-RUST-03B-INTEGRATION`; declared=`LANG-RUST-03B`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-12A` — parent=`LANG-RUST-04-INTEGRATION`; declared=`LANG-RUST-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-RST-15C` — parent=`LANG-RUST-05-INTEGRATION`; declared=`LANG-RUST-05`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-SCP-01-VALUE` — parent=`SOL-EVM-DEFI-C4`; declared=`SOL-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-02-VALUE` — parent=`VYP-EVM-DEFI-C4`; declared=`VYP-EVM-DEFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-03-VALUE` — parent=`RST-SOLANA-ANCHOR-C4`; declared=`RST-SOLANA-ANCHOR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-04-VALUE` — parent=`RST-COSMWASM-C4`; declared=`RST-COSMWASM-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-05-VALUE` — parent=`RST-NEAR-C4`; declared=`RST-NEAR-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-06-VALUE` — parent=`RST-SUBSTRATE-FRAME-C4`; declared=`RST-SUBSTRATE-FRAME-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-07-VALUE` — parent=`RST-NATIVE-CLIENT-C4`; declared=`RST-NATIVE-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-08-VALUE` — parent=`GO-COSMOS-SDK-C4`; declared=`GO-COSMOS-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-09-VALUE` — parent=`GO-GETH-CLIENT-C4`; declared=`GO-GETH-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-10-VALUE` — parent=`GO-RELAYER-ORACLE-C4`; declared=`GO-RELAYER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-11-VALUE` — parent=`C-UTXO-CONSENSUS-C4`; declared=`C-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-12-VALUE` — parent=`C-BRIDGE-FINALITY-C4`; declared=`C-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-13-VALUE` — parent=`C-WALLET-CUSTODY-C4`; declared=`C-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-14-VALUE` — parent=`CPP-UTXO-CONSENSUS-C4`; declared=`CPP-UTXO-CONSENSUS-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-15-VALUE` — parent=`CPP-BRIDGE-FINALITY-C4`; declared=`CPP-BRIDGE-FINALITY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-16-VALUE` — parent=`CPP-WALLET-CUSTODY-C4`; declared=`CPP-WALLET-CUSTODY-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-17-VALUE` — parent=`JS-NODE-RELAYER-C4`; declared=`JS-NODE-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-18-VALUE` — parent=`JS-NODE-KEEPER-ORACLE-C4`; declared=`JS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-19-VALUE` — parent=`JS-NODE-TX-BUILDER-C4`; declared=`JS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-20-VALUE` — parent=`TS-NODE-RELAYER-SDK-C4`; declared=`TS-NODE-RELAYER-SDK-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-21-VALUE` — parent=`TS-NODE-KEEPER-ORACLE-C4`; declared=`TS-NODE-KEEPER-ORACLE-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-22-VALUE` — parent=`TS-NODE-TX-BUILDER-C4`; declared=`TS-NODE-TX-BUILDER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-23-VALUE` — parent=`X-SOL-TS-RELAYER-C4`; declared=`X-SOL-TS-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-24-VALUE` — parent=`X-VYP-JS-KEEPER-C4`; declared=`X-VYP-JS-KEEPER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-25-VALUE` — parent=`X-SOLANA-TS-CLIENT-C4`; declared=`X-SOLANA-TS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-26-VALUE` — parent=`X-COSMWASM-GO-RELAYER-C4`; declared=`X-COSMWASM-GO-RELAYER-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-27-VALUE` — parent=`X-NEAR-JS-CLIENT-C4`; declared=`X-NEAR-JS-CLIENT-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-28-VALUE` — parent=`X-GO-C-FFI-C4`; declared=`X-GO-C-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-29-VALUE` — parent=`X-GO-CPP-FFI-C4`; declared=`X-GO-CPP-FFI-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SCP-30-VALUE` — parent=`X-TS-DATA-SOL-TX-C4`; declared=`X-TS-DATA-SOL-TX-C4`; hard-contrib-deps=2; source=`c6_scope_expansion`.
+- [ ] `C6-SOL-05A` — parent=`LANG-SOL-03-INTEGRATION`; declared=`LANG-SOL-03`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-TS-05A` — parent=`LANG-TS-02-INTEGRATION`; declared=`LANG-TS-02`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-VYP-05A` — parent=`LANG-VYP-04-INTEGRATION`; declared=`LANG-VYP-04`; hard-contrib-deps=1; source=`concrete_row`.
+- [ ] `C6-X-06` — parent=`LANG-X-03-INTEGRATION`; declared=`LANG-X-03`; hard-contrib-deps=1; source=`concrete_row`.
+
+## 6. Cierre del programa
+
+- [ ] Primary de implementación/control aceptados.
+- [ ] Primary terminalizables con resultado terminal.
+- [ ] Las 1103 contributions aceptadas.
+- [ ] Los 128 derived satisfied en el release train aplicable.
+- [ ] `RC-FULL-1-CLOSE` aceptado con `closed_pass`.
+- [ ] `FINAL-007` aceptado y `CLAIM-007=true`.
+
+Completar esta checklist demuestra el contrato de aceptación de esta versión. No garantiza un bounty futuro ni detección universal.
+
+<!-- generated by rebuild-final-plan.mjs; do not edit manually -->
