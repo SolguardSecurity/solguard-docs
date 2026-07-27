@@ -54,6 +54,11 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   reader validates explicit v1 state, counts, ID/DAG roots and immutable
   acceptance material before rendering; commits, branches, pull requests and
   planned subjects never imply acceptance, and the reader has no writer mode
+- canonical finding, public-finding and product-review views are distinct
+  read-only roles pinned to Core schemas and the Deploy route reader. Reviews
+  never count as findings, public findings require eligible plus
+  unique/representative, legacy inputs remain diagnostic and no view enables
+  the DECIDE-604 writer or establishes measured capability
 - document physical evidence and semantic lineage separately. Canonical MAP
   `EvidenceItem` and native TRACE `evidence_items` are authority; copied IDs,
   owner references and `source-*` lineage are not

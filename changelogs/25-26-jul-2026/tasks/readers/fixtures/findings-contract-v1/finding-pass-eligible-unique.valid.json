@@ -1,0 +1,194 @@
+{
+  "schema_version": "solguard-finding-envelope.v1",
+  "contract_version": "v1",
+  "finding_id": "finding-envelope-v1-pass-eligible-unique",
+  "run_id": "run-findings-golden-001",
+  "candidate_epoch_binding": {
+    "schema_version": "solguard-candidate-epoch-binding.v1",
+    "candidate_epoch_id": "candidate-epoch-truth-c1",
+    "candidate_epoch_definition_id": "candidate-epoch-definition-truth-c1",
+    "candidate_epoch_root": "0101010101010101010101010101010101010101010101010101010101010101",
+    "candidate_epoch_open_event_id": "candidate-epoch-open-truth-c1",
+    "candidate_epoch_open_event_root": "0202020202020202020202020202020202020202020202020202020202020202",
+    "binding_phase": "post_freeze",
+    "candidate_epoch_freeze_event_id": "candidate-epoch-freeze-truth-c1",
+    "candidate_epoch_freeze_event_root": "0303030303030303030303030303030303030303030303030303030303030303",
+    "candidate_accepted_input_membership_root": "0404040404040404040404040404040404040404040404040404040404040404",
+    "candidate_accepted_input_membership_count": 3,
+    "accepted_tooling_membership_root": "0505050505050505050505050505050505050505050505050505050505050505",
+    "accepted_tooling_membership_count": 11,
+    "resource_profile_id": "resource-profile-truth-c1",
+    "resource_profile_version": "1.0.0",
+    "resource_profile_root": "0606060606060606060606060606060606060606060606060606060606060606",
+    "resource_profile_policy_id": "resource-profile-policy-truth-c1",
+    "resource_profile_policy_version": "1.0.0",
+    "resource_profile_policy_root": "0707070707070707070707070707070707070707070707070707070707070707",
+    "resource_profile_policy_compliance_root": "0808080808080808080808080808080808080808080808080808080808080808"
+  },
+  "run_input_membership_root": "0909090909090909090909090909090909090909090909090909090909090909",
+  "run_input_membership_count": 7,
+  "producer": {
+    "repo": "solguard-core",
+    "tool_version": "1.0.0",
+    "contract_version": "v1"
+  },
+  "projection": {
+    "projector_id": "solguard-admission-to-product-envelopes",
+    "projector_version": "1.0.0",
+    "projector_root": "1010101010101010101010101010101010101010101010101010101010101010"
+  },
+  "candidate_id": "candidate-economic-loss-001",
+  "candidate_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "verdict_ref": {
+    "artifact_id": "technical-verdict-v1-supported-economic",
+    "content_digest": "e7e2078661d68281d65ecbd7968ef50f0a2c49f6e566e329da6f565e9e3aab3e"
+  },
+  "admission_ref": {
+    "artifact_id": "admission-result-v1-pass-unique",
+    "content_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "origin": {
+    "classes": ["semantic_generic", "model_grounded"],
+    "primary_class": "semantic_generic",
+    "knowledge_taints": ["open_world"],
+    "effective_knowledge_taint": "open_world",
+    "taint_join_rule_id": "solguard-knowledge-taint-max-join",
+    "taint_join_rule_version": "1.0.0",
+    "taint_join_rule_root": "1212121212121212121212121212121212121212121212121212121212121212",
+    "taint_ancestor_set_root": "1313131313131313131313131313131313131313131313131313131313131313",
+    "taint_causal_paths_root": "1414141414141414141414141414141414141414141414141414141414141414",
+    "artifacts": [
+      {
+        "origin_class": "model_grounded",
+        "knowledge_taint": "open_world",
+        "artifact_id": "artifact-model-grounded-proposal",
+        "content_digest": "1515151515151515151515151515151515151515151515151515151515151515",
+        "model_id": "model-generic-reasoner",
+        "model_root": "1616161616161616161616161616161616161616161616161616161616161616"
+      },
+      {
+        "origin_class": "semantic_generic",
+        "knowledge_taint": "open_world",
+        "artifact_id": "artifact-semantic-generic-candidate",
+        "content_digest": "1717171717171717171717171717171717171717171717171717171717171717"
+      }
+    ]
+  },
+  "claim": {
+    "title": "Credited amount can exceed received assets",
+    "vulnerability_class": "accounting-credit-inflation",
+    "economic_family": "asset-accounting-mismatch",
+    "materiality": {
+      "materiality_profile_id": "materiality-profile-native-lower-bound",
+      "materiality_profile_version": "1.0.0",
+      "materiality_profile_root": "1818181818181818181818181818181818181818181818181818181818181818",
+      "policy_set_commitment_root": "1919191919191919191919191919191919191919191919191919191919191919",
+      "impact_class": "direct-asset-loss",
+      "proven_lower_bound": {
+        "amount": "1000000",
+        "asset": "asset-usdc",
+        "native_unit": "atomic-usdc"
+      },
+      "time_horizon": "single transaction",
+      "actor_prerequisites": {
+        "privilege": "unprivileged caller",
+        "capital": "one transfer fee unit",
+        "timing": "while deposits are enabled",
+        "repetitions": "one",
+        "protocol_state": "vault is active"
+      },
+      "product_materiality_status": "native_lower_bound_proven"
+    }
+  },
+  "scope": {
+    "language": "solidity",
+    "framework": "evm",
+    "components": ["component-vault"],
+    "entrypoints": ["entrypoint-vault-deposit"],
+    "actors": ["actor-unprivileged-depositor"],
+    "assets": ["asset-usdc"],
+    "states": ["state-vault-active"]
+  },
+  "route": {
+    "flow_id": "economic-flow-v2-route-supported",
+    "route_digest": "2020202020202020202020202020202020202020202020202020202020202020",
+    "ordered_operations": ["operation-transfer-in", "operation-credit-shares", "operation-withdraw"]
+  },
+  "invariant": {
+    "invariant_id": "accounting.credited_amount_must_not_exceed_received",
+    "predicate": "credited_amount <= received_amount",
+    "quantifier": "forall",
+    "independent_derivation": {
+      "artifact_ref": "artifact-invariant-primary",
+      "artifact_digest": "2121212121212121212121212121212121212121212121212121212121212121",
+      "json_pointer": "/invariants/0"
+    }
+  },
+  "proof": {
+    "certificate_id": "proof-certificate-complete-economic-001",
+    "certificate_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+    "status": "complete",
+    "obligations": ["scope", "reachability", "state-transition", "invariant", "contradiction", "effect", "economic-delta", "same-flow", "same-asset", "protection-analysis", "lineage", "coverage", "counterevidence", "run-binding"],
+    "state_before": "2323232323232323232323232323232323232323232323232323232323232323",
+    "state_after": "2424242424242424242424242424242424242424242424242424242424242424",
+    "delta": {
+      "amount": "-1000000",
+      "asset": "asset-usdc",
+      "native_unit": "atomic-usdc",
+      "direction": "adverse"
+    },
+    "constraints": ["no effective protection", "same asset", "same flow"],
+    "solver_or_probe_receipts": ["receipt-bounded-symbolic-probe-001"],
+    "evidence_refs": [
+      {
+        "authority": "trace",
+        "artifact_ref": "artifact-trace-economic-primary",
+        "artifact_digest": "2525252525252525252525252525252525252525252525252525252525252525",
+        "json_pointer": "/economic_checks/0"
+      }
+    ],
+    "counterevidence_refs": [
+      {
+        "authority": "validate",
+        "artifact_ref": "artifact-protection-analysis",
+        "artifact_digest": "2626262626262626262626262626262626262626262626262626262626262626",
+        "json_pointer": "/protections"
+      }
+    ]
+  },
+  "verdict": {
+    "validate_decision": "supported",
+    "validate_reason": "supported_complete_economic_break",
+    "filter_decision": "pass",
+    "publication_eligibility": "eligible"
+  },
+  "presentation": {
+    "dedupe_group": "dedupe-economic-loss-route-001",
+    "presentation_role": "unique",
+    "rank": 1,
+    "evidence_completeness_score": {
+      "value": 100,
+      "rubric_id": "filter-evidence-completeness",
+      "rubric_version": "1.0.0",
+      "rubric_root": "2727272727272727272727272727272727272727272727272727272727272727",
+      "component_scores": {
+        "causal": 100,
+        "counterevidence": 100,
+        "proof": 100
+      }
+    }
+  },
+  "coverage": {
+    "status": "complete",
+    "debts": []
+  },
+  "bindings": {
+    "source_tree_sha256": "2828282828282828282828282828282828282828282828282828282828282828",
+    "runtime_manifest_sha256": "2929292929292929292929292929292929292929292929292929292929292929",
+    "candidate_epoch_binding_digest": "129e67794da9aff66af3bda7ceb393f9b0592e63f7cf887b95d264be26497102",
+    "run_input_membership_root": "0909090909090909090909090909090909090909090909090909090909090909",
+    "run_input_membership_count": 7,
+    "parent_artifact_ids": ["admission-result-v1-pass-unique", "proof-certificate-complete-economic-001", "technical-verdict-v1-supported-economic"],
+    "parent_roots": ["1111111111111111111111111111111111111111111111111111111111111111", "2222222222222222222222222222222222222222222222222222222222222222", "e7e2078661d68281d65ecbd7968ef50f0a2c49f6e566e329da6f565e9e3aab3e"]
+  }
+}

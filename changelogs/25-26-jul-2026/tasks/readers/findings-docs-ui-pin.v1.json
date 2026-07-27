@@ -1,0 +1,38 @@
+{
+  "schema_version": "solguard-findings-docs-ui-consumer-pin.v1",
+  "consumer_repository": "SolguardSecurity/solguard-docs",
+  "consumer_base_commit": "0bcc5eea93a1547ea37477e7d0a97484e56ca2ec",
+  "source_repository": "SolguardSecurity/solguard-core",
+  "source_commit": "1ad350d8d3f54c227ca8f81b9cb42c4bf6a0494b",
+  "source_evidence_root": "sha256:319c7e246aefbf41934bde419021f8bd38566c4add32d3032cb52e5f26a8a7c7",
+  "source_publication_root": "sha256:6cbf6026a2fc343aa58c62e71f70520dbb1b6a2a824e905816d79e2ba0968b1b",
+  "deploy_reader_repository": "SolguardSecurity/solguard-deploy",
+  "deploy_reader_commit": "cb223071c0dab18190041129490702b8282f27bb",
+  "deploy_reader_evidence_root": "sha256:def7ed84d98fca40317a79193e4b11e5b02db91fd900c1a3959c7a71744c792a",
+  "writer_enabled": false,
+  "runtime_writer_authority": "DECIDE-604",
+  "dependency_acceptance": {
+    "C1-009": "prepared_draft_pending_independent_acceptance",
+    "C1-009C": "prepared_draft_pending_independent_acceptance"
+  },
+  "roles": {
+    "finding_envelopes_all": {
+      "canonical_path": "finding_envelopes.json",
+      "canonical_schema": "solguard-finding-envelope.v1"
+    },
+    "published_findings_projection": {
+      "canonical_path": "findings.json",
+      "canonical_schema": "solguard-finding-envelope.v1"
+    },
+    "product_review_envelopes": {
+      "canonical_path": "review_queue.json",
+      "canonical_schema": "solguard-review-envelope.v1"
+    }
+  },
+  "fixture_sha256": {
+    "finding-envelope.v1.schema.json": "4d5912509f62c11f274e516a1852fab7294296b03f21f9b12cf09862b682c6b2",
+    "review-envelope.v1.schema.json": "e6cbd73dd0e4f739579c6acf1307fb6117775353a9bac2ae20133167cc3459f2",
+    "finding-pass-eligible-unique.valid.json": "737ced7074aff059952b89175a178873b6fe5b571f76f6d10fd5e12ab5830d4a",
+    "review-admission-review.valid.json": "9ec9f0334fcbe7d010b6cd2436b662694ab697cd0d45604dcf4a44b0c23e6b24"
+  }
+}
