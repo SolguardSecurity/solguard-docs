@@ -244,13 +244,13 @@ const ACCEPTANCE_ALLOWED = Object.freeze([
 
 const PINNED_PROGRAM_ROOTS = new Map([
     [
-        "solguard-detection-maturity-2026-07-25\0solguard-detection-maturity-2026-07-25.3",
+        "solguard-detection-maturity-2026-07-25\0solguard-detection-maturity-2026-07-25.4",
         Object.freeze({
-            node: "77dd0c5ac31ccee4347a4a3ef391c9c298e86fd5fe6f56acf7600aab7ffc0cfd",
+            node: "6fab73e53ff6adbb1cdb940e611a83774d0e0d48a85f3a96650b6bd3af374e3b",
             contribution:
-                "64b77b67ddde6638784544b45b9f7b8ed7f6631669026a663ffdece56ee0961c",
-            all: "6dde0cc088977a833b1badbc3312798aca9a101bb8bf981fe267e24d0762e6bf",
-            dag: "e3d4bb06f045e5aadc45f9f69b53810adfa710bd5bd478c1db63ebbb3d29d202",
+                "d9b86f98702c0da74b8324b400302ae9f6c437625467dfff2b2c3fd136020885",
+            all: "0d323e2fab3955e8ac50fa717c086fa538542ea4f0efd18001f5e03eefe4866d",
+            dag: "6158e1e93cd4819c83febf27a5314d8529a8101359eec7b717621d861f3fb9f6",
         }),
     ],
 ]);

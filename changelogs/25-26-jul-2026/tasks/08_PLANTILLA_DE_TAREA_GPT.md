@@ -108,7 +108,7 @@ Copiar el siguiente bloque en
 
 ## Metadata
 
-- Program: `solguard-detection-maturity-2026-07-25.3`
+- Program: `solguard-detection-maturity-2026-07-25.4`
 - Task type: `implementation_task`
 - Dispatch kind: `<primary_implementation|contribution_implementation>`
 - Ledger schema: `solguard-acceptance-ledger.v1`
@@ -828,7 +828,8 @@ El receipt conserva el inventario completo por paths/digests, no sólo una líne
 symlink escape, tool crash o diferencia entre producer/verifier producen
 `INDETERMINATE` o `PRESENT`; nunca `ABSENT`. Está prohibido crear un commit vacío
 para satisfacer esta contribution. El ledger exige este descriptor sólo a
-`C2-CON-RM-14` y `C2-CON-RM-15`; cualquier otro uso requiere revisar el programa.
+`C2-CON-11`, `C2-CON-RM-10`, `C2-CON-RM-14` y `C2-CON-RM-15`; cualquier otro uso
+requiere revisar el programa.
 
 ## 10. Especialización para medición ciega
 

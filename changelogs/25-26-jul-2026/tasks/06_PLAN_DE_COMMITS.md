@@ -19,6 +19,21 @@ Cada commit debe ser:
 Un commit que solo «prepara» una corrección sin comprobarla no cierra ninguna
 entrada de la checklist.
 
+### 1.1 Errata normativa de R2 (`.4`)
+
+La revisión `solguard-detection-maturity-2026-07-25.4` corrige la clasificación
+de `C2-CON-11` y `C2-CON-RM-10` de la versión congelada `.3`. El inventario
+`C2-CON-01` demuestra que `solguard-diff` no es miembro de ninguno de sus nueve
+grupos contractuales; por tanto, ambas filas son contributions de receipt de
+ausencia y no implementaciones.
+
+La corrección conserva los IDs, `RUN-201`, el orden y todas las dependencias
+duras. R2 mantiene **80 contributions: 76 de implementación y cuatro receipts
+de ausencia**. Ningún receipt autoriza branch, commit, PR ni escritura en su
+repositorio owner. La auditoría de impacto y los bindings normativos exactos
+están registrados en
+[ERRATA_2026-07-28_R2_SOLGUARD_DIFF.md](ERRATA_2026-07-28_R2_SOLGUARD_DIFF.md).
+
 ## 2. Convención
 
 ### 2.1 Identidad
@@ -331,7 +346,7 @@ debe producir un commit o una evidencia firmada de que no contiene una copia.
 | C2-CON-08 | `solguard-value` | `refactor(contracts): dual-read canonical shared types [C2-CON-08]`<br>Parent gate: `RUN-201` | Parity con copia |
 | C2-CON-09 | `solguard-validate` | `refactor(contracts): dual-read canonical shared types [C2-CON-09]`<br>Parent gate: `RUN-201` | Parity con copia |
 | C2-CON-10 | `solguard-filter` | `refactor(contracts): dual-read canonical shared types [C2-CON-10]`<br>Parent gate: `RUN-201` | Parity con copia |
-| C2-CON-11 | `solguard-diff` | `refactor(contracts): dual-read canonical shared types [C2-CON-11]`<br>Parent gate: `RUN-201` | Parity con copia |
+| C2-CON-11 | `solguard-diff` | receipt de ausencia `[C2-CON-11]`<br>Parent gate: `RUN-201` | Fuera de los miembros de C2-CON-01; `no_repository_write` |
 | C2-CON-12 | `solguard-database` | `refactor(contracts): consume generated canonical schemas [C2-CON-12]`<br>Parent gate: `RUN-201` | Round-trip |
 | C2-CON-13 | `solguard-backend` | `refactor(contracts): consume generated canonical schemas [C2-CON-13]`<br>Parent gate: `RUN-201` | API parity |
 | C2-CON-14 | `solguard-deploy` | `refactor(contracts): verify canonical schemas and goldens [C2-CON-14]`<br>Parent gate: `RUN-201` | Clean checkout |
@@ -352,7 +367,7 @@ firmado de ausencia y no mediante un commit vacío:
 | C2-CON-RM-07 | `solguard-value` | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-07]`<br>Parent gate: `RUN-201` | Cero copia autoritativa |
 | C2-CON-RM-08 | `solguard-validate` | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-08]`<br>Parent gate: `RUN-201` | Cero copia autoritativa |
 | C2-CON-RM-09 | `solguard-filter` | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-09]`<br>Parent gate: `RUN-201` | Cero copia autoritativa |
-| C2-CON-RM-10 | `solguard-diff` | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-10]`<br>Parent gate: `RUN-201` | Cero copia autoritativa |
+| C2-CON-RM-10 | `solguard-diff` | receipt de ausencia `[C2-CON-RM-10]`<br>Parent gate: `RUN-201` | Escaneo nuevo en su orden duro; `no_repository_write` |
 | C2-CON-RM-11 | `solguard-database` | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-11]`<br>Parent gate: `RUN-201` | Sólo schemas generados |
 | C2-CON-RM-12 | `solguard-backend` | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-12]`<br>Parent gate: `RUN-201` | Sólo schemas generados |
 | C2-CON-RM-13 | `solguard-deploy` | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-13]`<br>Parent gate: `RUN-201` | Sólo verifier canónico |

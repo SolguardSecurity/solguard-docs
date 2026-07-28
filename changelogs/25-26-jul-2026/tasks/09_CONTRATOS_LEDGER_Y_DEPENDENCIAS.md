@@ -2,7 +2,7 @@
 
 Estado: contrato normativo del programa.
 
-Versión del programa: `solguard-detection-maturity-2026-07-25.3`.
+Versión del programa: `solguard-detection-maturity-2026-07-25.4`.
 
 Schema del ledger: `solguard-acceptance-ledger.v1`.
 
@@ -142,7 +142,7 @@ La tabla principal cubre contratos materiales de producto/runtime. Esta tabla ci
 
 | Schema ID | Owner/authority | Uso/locator canónico observado |
 |---|---|---|
-| `solguard-absence-receipt-contribution.v1` | AGENTS/governance evidence authority | `08_PLANTILLA_DE_TAREA_GPT.md`, `ledger.contributions[].evidence_descriptor.schema` |
+| `solguard-absence-receipt-contribution.v1` | AGENTS/governance evidence authority | `08_PLANTILLA_DE_TAREA_GPT.md`, `ledger.contributions[].evidence_descriptor.schema`, `rebuild-final-plan.mjs` |
 | `solguard-acceptance-dossier-manifest.v1` | product contract registry §3 | `01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md`, `05_VALIDACION_CIEGA_Y_RELEASE.md`, `06_PLAN_DE_COMMITS.md`, `09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md (generated)`, `ledger.contributions[].dependencies[].contract_id`, `ledger.nodes[].dependencies[].contract_id` |
 | `solguard-acceptance-ledger-commit-receipt.v1` | AGENTS/DEPLOY release governance | `ledger.transition_contract.commit_receipt.schema`, `rebuild-final-plan.mjs` |
 | `solguard-acceptance-ledger-event.v1` | product contract registry §3 | `08_PLANTILLA_DE_TAREA_GPT.md`, `09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md (generated)`, `ledger.contributions[].dependencies[].contract_id`, `ledger.nodes[].dependencies[].contract_id` |
@@ -236,8 +236,8 @@ Cada `policy_root` se calcula como `SHA256(UTF8("solguard:resource-profile-polic
 
 | Policy | Schema | Program/version | Policy root |
 |---|---|---|---|
-| `solguard-resource-profile-policy-vertical-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.3` | `d5ce0a88f18883fe20e1c6362c959276a0738b96265fe9da7c877d44942c1801` |
-| `solguard-resource-profile-policy-full-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.3` | `f1fe7d18f5cfac3d7f1eea61a136812cd0881ad64106607fd1d4caf9a765e3cc` |
+| `solguard-resource-profile-policy-vertical-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.4` | `b8c9efad1212c83c8dff8d5fd2d48924f94ded8be5ea9cc67b9e155f6a89cc7d` |
+| `solguard-resource-profile-policy-full-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.4` | `21a7fe3f60e1afcd11870753f9cebbbd6bb63511742497078f2eb1c3f649bfd8` |
 
 - Campos obligatorios del profile: `resource_profile_id`, `resource_profile_version`, `hardware_class`, `runtime_class`, `hardware_root`, `runtime_root`, `wall_time_p95_ms_max`, `wall_time_ms_max`, `cpu_time_ms_max`, `peak_ram_bytes_max`, `peak_disk_bytes_max`, `solver_time_ms_max`, `model_calls_max`, `model_tokens_max`, `model_cost_minor_units_max`, `retry_count_max`, `throughput_targets_per_hour_min`, `concurrency_limit`, `queue_limit`, `candidate_limit`, `continuation_limit`, `model_timeout_rate_max`, `schema_failure_rate_max`, `model_failure_rate_max`, `schema_or_model_failure_rate_max`, `filter_failure_count_max`, `control_oom_count_max`, `control_disk_exhaustion_count_max`, `control_noncompletion_count_max`.
 - Hard rates/counts: `{"control_disk_exhaustion_count_max":0,"control_noncompletion_count_max":0,"control_oom_count_max":0,"filter_failure_count_max":0,"model_failure_rate_max":0.01,"model_timeout_rate_max":0.02,"schema_failure_rate_max":0.01,"schema_or_model_failure_rate_max":0.01}`.
@@ -453,7 +453,7 @@ La expansión contribution→contract permanece machine-readable en `contributio
 ## 4. Schema `solguard-acceptance-ledger.v1`
 
 <!-- GENERATED:LEDGER-CONFORMANCE:BEGIN -->
-### 4.0A Snapshot de conformidad solguard-detection-maturity-2026-07-25.3
+### 4.0A Snapshot de conformidad solguard-detection-maturity-2026-07-25.4
 
 La autoridad machine-readable contiene 1671 ítems. Eventos y receipts usan JCS, CAS, lease/fencing y timestamp 2-of-2.
 
@@ -1569,7 +1569,7 @@ Tabla generada desde `acceptance-ledger.v1.json`; cada ID aparece exactamente un
 | `C2-CON-08` | `contribution_implementation` | `solguard-value` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-08]` |
 | `C2-CON-09` | `contribution_implementation` | `solguard-validate` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-09]` |
 | `C2-CON-10` | `contribution_implementation` | `solguard-filter` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-10]` |
-| `C2-CON-11` | `contribution_implementation` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-11]` |
+| `C2-CON-11` | `absence_receipt_contribution` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-11]` |
 | `C2-CON-12` | `contribution_implementation` | `solguard-database` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): consume generated canonical schemas [C2-CON-12]` |
 | `C2-CON-13` | `contribution_implementation` | `solguard-backend` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): consume generated canonical schemas [C2-CON-13]` |
 | `C2-CON-14` | `contribution_implementation` | `solguard-deploy` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): verify canonical schemas and goldens [C2-CON-14]` |
@@ -1583,12 +1583,12 @@ Tabla generada desde `acceptance-ledger.v1.json`; cada ID aparece exactamente un
 | `C2-CON-RM-07` | `contribution_implementation` | `solguard-value` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-07]` |
 | `C2-CON-RM-08` | `contribution_implementation` | `solguard-validate` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-08]` |
 | `C2-CON-RM-09` | `contribution_implementation` | `solguard-filter` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-09]` |
-| `C2-CON-RM-10` | `contribution_implementation` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-10]` |
+| `C2-CON-RM-10` | `absence_receipt_contribution` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-RM-10]` |
 | `C2-CON-RM-11` | `contribution_implementation` | `solguard-database` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-11]` |
 | `C2-CON-RM-12` | `contribution_implementation` | `solguard-backend` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-12]` |
 | `C2-CON-RM-13` | `contribution_implementation` | `solguard-deploy` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-13]` |
-| `C2-CON-RM-14` | `absence_receipt_contribution` | `solguard-docs` | `RUN-201` | `RUN-201` | 1 | `receipt de ausencia [C2-CON-RM-14]` |
-| `C2-CON-RM-15` | `absence_receipt_contribution` | `solguard-agents` | `RUN-201` | `RUN-201` | 1 | `receipt de ausencia [C2-CON-RM-15]` |
+| `C2-CON-RM-14` | `absence_receipt_contribution` | `solguard-docs` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-RM-14]` |
+| `C2-CON-RM-15` | `absence_receipt_contribution` | `solguard-agents` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-RM-15]` |
 | `C2-CON-RM-16` | `contribution_implementation` | `solguard-agents` | `RUN-201` | `RUN-201` | 1 | `ci(contracts): reject authoritative contract copies [C2-CON-RM-16]` |
 | `C2-RUN-01` | `contribution_implementation` | `solguard-core` | `RUN-202` | `RUN-202` | 0 | `feat(run-contracts): publish run spec source authority and generic materiality schemas with writers off [C2-RUN-01]` |
 | `C2-RUN-02` | `contribution_implementation` | `solguard-map` | `RUN-202` | `RUN-202` | 1 | `refactor(run-reader): dual-read run spec and source authority [C2-RUN-02]` |

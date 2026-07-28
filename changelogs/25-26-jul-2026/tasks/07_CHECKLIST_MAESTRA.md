@@ -7,11 +7,11 @@ Esta vista se genera exclusivamente desde `acceptance-ledger.v1.json`; no se mar
 | Campo | Valor |
 |---|---|
 | Programa | `solguard-detection-maturity-2026-07-25` |
-| Versión | `solguard-detection-maturity-2026-07-25.3` |
+| Versión | `solguard-detection-maturity-2026-07-25.4` |
 | Revisión seed | `0` |
-| Node ID-set root | `77dd0c5ac31ccee4347a4a3ef391c9c298e86fd5fe6f56acf7600aab7ffc0cfd` |
-| Contribution ID-set root | `64b77b67ddde6638784544b45b9f7b8ed7f6631669026a663ffdece56ee0961c` |
-| All-counted-item ID-set root | `6dde0cc088977a833b1badbc3312798aca9a101bb8bf981fe267e24d0762e6bf` |
+| Node ID-set root | `6fab73e53ff6adbb1cdb940e611a83774d0e0d48a85f3a96650b6bd3af374e3b` |
+| Contribution ID-set root | `d9b86f98702c0da74b8324b400302ae9f6c437625467dfff2b2c3fd136020885` |
+| All-counted-item ID-set root | `0d323e2fab3955e8ac50fa717c086fa538542ea4f0efd18001f5e03eefe4866d` |
 | Primaries | **440** |
 | Derived | **128** |
 | Contributions | **1103** |

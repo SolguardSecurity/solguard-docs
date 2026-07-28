@@ -27,10 +27,10 @@ Render the frozen revision-zero plan snapshot with all current trust anchors:
 node changelogs/25-26-jul-2026/tasks/readers/acceptance-ledger-markdown.mjs `
   --ledger changelogs/25-26-jul-2026/tasks/acceptance-ledger.v1.json `
   --expect-program-id solguard-detection-maturity-2026-07-25 `
-  --expect-program-version solguard-detection-maturity-2026-07-25.3 `
+  --expect-program-version solguard-detection-maturity-2026-07-25.4 `
   --expect-revision 0 `
-  --expect-id-set-root 6dde0cc088977a833b1badbc3312798aca9a101bb8bf981fe267e24d0762e6bf `
-  --expect-program-dag-root e3d4bb06f045e5aadc45f9f69b53810adfa710bd5bd478c1db63ebbb3d29d202
+  --expect-id-set-root 0d323e2fab3955e8ac50fa717c086fa538542ea4f0efd18001f5e03eefe4866d `
+  --expect-program-dag-root 6158e1e93cd4819c83febf27a5314d8529a8101359eec7b717621d861f3fb9f6
 ```
 
 The command writes Markdown only to standard output. Supplying trusted

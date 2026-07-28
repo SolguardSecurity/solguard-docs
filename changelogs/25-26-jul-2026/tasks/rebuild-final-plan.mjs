@@ -5,9 +5,86 @@ import { fileURLToPath } from 'node:url';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const P = (name) => join(DIR, name);
-const VERSION = 'solguard-detection-maturity-2026-07-25.3';
+const VERSION = 'solguard-detection-maturity-2026-07-25.4';
+const PREVIOUS_VERSION = 'solguard-detection-maturity-2026-07-25.3';
 const SET_SCHEMA = 'solguard-canonical-set-commitment.v1';
 const BT = String.fromCharCode(96);
+const HARD_DEPENDENCY_GRAPH_ROOT = 'd6e86a36f754b7624806a23a8e2e3b52da0070c2c5aea786c347cee75659d835';
+const ABSENCE_RECEIPT_POLICIES = Object.freeze({
+  'C2-CON-11': Object.freeze({
+    receipt_identity: 'C2-CON-11',
+    artifact: 'absence receipt [C2-CON-11]',
+    description: 'bounded read-only contract absence receipt',
+    required_task_reference: 'C2-CON-11',
+    parent_gate: 'RUN-201',
+    owner_repo: 'solguard-diff',
+    receipt_domain: 'solguard:r2:absence-receipt:C2-CON-11:v1',
+    repository_binding: Object.freeze({
+      repository: 'solguard-diff',
+      commit_sha: '2bb4239eb50b503b63233435f39e562dd169193c',
+      git_tree_sha: '3294eb3a3d73a1218a0d61636acf66775833d794',
+      tracked_entry_count: 28
+    }),
+    inventory_binding: Object.freeze({
+      contribution_id: 'C2-CON-01',
+      contribution_commit_sha: '6867a70bd1e6b41c8cb66f93abdc3af66677a80f',
+      inventory_root: '18dd2a95377007e95c7140fe6156d59138dbf00ae88ca6c5cdddac7a21e4470f',
+      group_count: 9,
+      member_count: 29,
+      member_repositories: Object.freeze([
+        'solguard-core','solguard-discover','solguard-economic','solguard-filter',
+        'solguard-invariant','solguard-map','solguard-trace','solguard-validate','solguard-value'
+      ])
+    }),
+    generation_policy: 'seal_after_normative_amendment_publication_and_verification',
+    receipt_root_policy: 'recompute_from_closed_receipt_after_amendment',
+    no_repository_write: true
+  }),
+  'C2-CON-RM-10': Object.freeze({
+    receipt_identity: 'C2-CON-RM-10',
+    artifact: 'absence receipt [C2-CON-RM-10]',
+    description: 'deferred fresh-scan contract removal absence receipt',
+    required_task_reference: 'C2-CON-RM-10',
+    parent_gate: 'RUN-201',
+    owner_repo: 'solguard-diff',
+    receipt_domain: 'solguard:r2:absence-receipt:C2-CON-RM-10:v1',
+    repository_binding_policy: Object.freeze({
+      repository: 'solguard-diff',
+      reference: 'origin/main',
+      resolve_at: 'hard_order_position',
+      fresh_scan_required: true
+    }),
+    inventory_binding_policy: Object.freeze({
+      inventory_kind: 'fresh_bounded_contract_absence_inventory',
+      resolve_at: 'hard_order_position'
+    }),
+    generation_policy: 'deferred_until_hard_order_position',
+    receipt_root_policy: 'new_unique_root_not_reused_from_C2-CON-11',
+    no_repository_write: true
+  }),
+  'C2-CON-RM-14': Object.freeze({
+    receipt_identity: 'C2-CON-RM-14',
+    artifact: 'absence receipt [C2-CON-RM-14]',
+    description: 'bounded read-only absence receipt',
+    required_task_reference: 'C2-CON-RM-14',
+    parent_gate: 'RUN-201',
+    owner_repo: 'solguard-docs',
+    receipt_domain: 'solguard:r2:absence-receipt:C2-CON-RM-14:v1',
+    generation_policy: 'generate_at_hard_order_position',
+    no_repository_write: true
+  }),
+  'C2-CON-RM-15': Object.freeze({
+    receipt_identity: 'C2-CON-RM-15',
+    artifact: 'absence receipt [C2-CON-RM-15]',
+    description: 'bounded read-only absence receipt',
+    required_task_reference: 'C2-CON-RM-15',
+    parent_gate: 'RUN-201',
+    owner_repo: 'solguard-agents',
+    receipt_domain: 'solguard:r2:absence-receipt:C2-CON-RM-15:v1',
+    generation_policy: 'generate_at_hard_order_position',
+    no_repository_write: true
+  })
+});
 const RESOURCE_PROFILE_REQUIRED_FIELDS = [
   'resource_profile_id','resource_profile_version','hardware_class','runtime_class',
   'hardware_root','runtime_root','wall_time_p95_ms_max','wall_time_ms_max',
@@ -110,12 +187,21 @@ const pset = (ledger, subject, kind, members, keyFn = jcs) =>
   committedSet(ledger, subject, kind, members, keyFn, true);
 
 function deepVersion(value) {
-  if (typeof value === 'string') return value.replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION);
+  if (typeof value === 'string') {
+    return value
+      .replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION)
+      .replaceAll(PREVIOUS_VERSION, VERSION);
+  }
   if (Array.isArray(value)) return value.map(deepVersion);
   if (value && typeof value === 'object') {
     for (const key of Object.keys(value)) value[key] = deepVersion(value[key]);
   }
   return value;
+}
+function replacePlanVersionText(text) {
+  return text
+    .replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION)
+    .replaceAll(PREVIOUS_VERSION, VERSION);
 }
 const LEGACY_NAMES = new Map([
   ['evaluation_closure_id_set_root','evaluation_closure_member_set_root'],
@@ -193,12 +279,47 @@ function parseRows(markdown) {
       owner: match[2],
       subject: match[3].replaceAll(BT, '').trim(),
       parent: match[4],
-      result: result.replaceAll('<br>', ' ')
+      result: result.replaceAll('<br>', ' '),
+      row_type: /receipt de ausencia/i.test(match[3]) ? 'absence_receipt_contribution' : 'implementation_contribution'
     });
   }
   ok(rows.length === 653, 'expected 653 explicit rows, got ' + rows.length);
   ok(new Set(rows.map((x) => x.id)).size === rows.length, 'duplicate explicit row');
   return rows;
+}
+function configureAbsenceReceipt(item, row) {
+  const policy = ABSENCE_RECEIPT_POLICIES[row.id];
+  ok(policy, row.id + ': absence receipt row has no normative policy');
+  ok(row.row_type === 'absence_receipt_contribution', row.id + ': source row must declare receipt de ausencia');
+  ok(row.owner === policy.owner_repo, row.id + ': absence receipt owner drift');
+  delete item.expected_commit;
+  item.contribution_type = 'absence_receipt_contribution';
+  item.expected_receipt = copy(policy);
+  item.predicate = {
+    type: 'absence_receipt_contribution_acceptance',
+    reference: '09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md',
+    criteria_id: row.id,
+    criteria_locator: 'contribution_table_row',
+    must_hold: [
+      'exact_owner_repo','bounded_inventory_complete','absence_predicate_true',
+      'repo_tree_digest_bound','commands_exit_zero','immutable_unique_receipt_root',
+      'independent_verifier_accept','no_repository_write'
+    ]
+  };
+  item.evidence_descriptor = {
+    schema: 'solguard-absence-receipt-contribution.v1',
+    profile: 'absence_receipt_contribution',
+    closed: true,
+    required: [
+      'contribution_manifest','contribution_id','parent_primary_id','owner_repo',
+      'repo_tree_digest','bounded_inventory','absence_predicate','absence_report',
+      'commands_with_exit_codes','immutable_receipt_root','independent_verifier_root'
+    ],
+    forbidden: [
+      'branch','commit','commits','changed_files','source_tree_writes','changelog_update',
+      'primary_transition_proposal','claim_transition'
+    ]
+  };
 }
 function parentMap() {
   const map = new Map();
@@ -247,6 +368,8 @@ function updateRow(item, row) {
     observable_result: row.result || row.subject
   };
   item.predicate.criteria_id = row.id;
+  if (ABSENCE_RECEIPT_POLICIES[row.id]) configureAbsenceReceipt(item, row);
+  else ok(row.row_type === 'implementation_contribution', row.id + ': unexpected absence receipt row');
 }
 function makeContribution(template, row, parent) {
   const item = copy(template);
@@ -1738,7 +1861,7 @@ function schemaRegistry(ledger, textSources, productIds) {
 
 async function renderContracts(ledger) {
   let text = await readFile(P('09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md'), 'utf8');
-  text = text.replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION);
+  text = replacePlanVersionText(text);
   text = replaceLegacyString(text);
   text = text.replace(
     /Contiene 541 nodos \(414 primary y 127 derived\), 1039 contribuciones owner-únicas y 1580 ítems contados\./,
@@ -1848,7 +1971,7 @@ async function renderContracts(ledger) {
 }
 
 function renderReadme(text, ledger) {
-  text = text.replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION);
+  text = replacePlanVersionText(text);
   const section = [
     '## 3. Qué significa «100%»',
     '',
@@ -1882,8 +2005,100 @@ function renderReadme(text, ledger) {
       mdCode(ledger.all_counted_item_id_set_sha256) + '.',
     endMarker
   ].join('\n');
+  const errataStart = '<!-- GENERATED:R2-DIFF-ERRATA:BEGIN -->';
+  const errataEnd = '<!-- GENERATED:R2-DIFF-ERRATA:END -->';
+  if (text.includes(errataStart)) {
+    const start = text.indexOf(errataStart);
+    const end = text.indexOf(errataEnd, start) + errataEnd.length;
+    text = text.slice(0, start) + text.slice(end).replace(/^\s*/, '');
+  }
+  const r2 = ledger.contributions.filter((item) => item.parent_primary_id.startsWith('RUN-'));
+  const r2Receipts = r2.filter((item) => item.contribution_type === 'absence_receipt_contribution');
+  const errata = [
+    errataStart,
+    'Errata normativa ' + mdCode('ERRATA-R2-DIFF-ABSENCE-2026-07-28') + ': la revisión congelada ' +
+      mdCode(PREVIOUS_VERSION) + ' clasificó incorrectamente ' + mdCode('C2-CON-11') + ' y ' +
+      mdCode('C2-CON-RM-10') + ' como implementaciones. ' + mdCode(VERSION) +
+      ' conserva las 80 contributions de R2 y su grafo duro: **' +
+      (r2.length - r2Receipts.length) + ' implementaciones + ' + r2Receipts.length +
+      ' receipts de ausencia**. ' + mdCode('solguard-diff') + ' no se modifica.',
+    '',
+    'Registro completo: [ERRATA_2026-07-28_R2_SOLGUARD_DIFF.md](ERRATA_2026-07-28_R2_SOLGUARD_DIFF.md). ' +
+      'Las diez PR R2 ya publicadas permanecen draft y pending; la checklist continúa sin marcar.',
+    errataEnd
+  ].join('\n');
   const first = text.indexOf('## 1.');
-  return text.slice(0, first) + status + '\n\n' + text.slice(first);
+  return text.slice(0, first) + status + '\n\n' + errata + '\n\n' + text.slice(first);
+}
+
+function hardDependencyGraphPayload(ledger) {
+  const hardEdges = (edges) => (edges || [])
+    .filter((edge) => edge.type === 'hard')
+    .map(copy)
+    .sort((left, right) => cmp(jcs(left), jcs(right)));
+  return {
+    nodes: ledger.nodes.map((node) => ({
+      id: node.id,
+      dependencies: hardEdges(node.dependencies)
+    })).sort((left, right) => cmp(left.id, right.id)),
+    contributions: ledger.contributions.map((item) => ({
+      contribution_id: item.contribution_id,
+      parent_primary_id: item.parent_primary_id,
+      parent_primary_ids: item.parent_primary_ids,
+      integration_gate: item.integration_gate,
+      declared_parent_id: item.declared_parent_id,
+      dependencies: hardEdges(item.dependencies),
+      hard_contribution_dependencies: (item.hard_contribution_dependencies || [])
+        .map(copy)
+        .sort((left, right) => cmp(jcs(left), jcs(right)))
+    })).sort((left, right) => cmp(left.contribution_id, right.contribution_id))
+  };
+}
+
+function validateR2AbsenceAmendment(ledger) {
+  const receiptIds = sorted(Object.keys(ABSENCE_RECEIPT_POLICIES));
+  const r2 = ledger.contributions.filter((item) => item.parent_primary_id.startsWith('RUN-'));
+  const receipts = r2.filter((item) => item.contribution_type === 'absence_receipt_contribution');
+  const implementations = r2.filter((item) => item.contribution_type !== 'absence_receipt_contribution');
+  ok(r2.length === 80, 'R2 must preserve 80 contributions');
+  ok(implementations.length === 76, 'R2 must contain 76 implementation contributions');
+  ok(receipts.length === 4, 'R2 must contain four absence receipts');
+  ok(jcs(sorted(receipts.map((item) => item.contribution_id))) === jcs(receiptIds), 'R2 absence receipt ID set drift');
+  ok(implementations.every((item) => item.expected_commit), 'R2 implementation without expected commit');
+  const domains = new Set();
+  for (const id of receiptIds) {
+    const item = ledger.contributions.find((candidate) => candidate.contribution_id === id);
+    ok(item, id + ': receipt contribution missing');
+    ok(!item.expected_commit, id + ': absence receipt cannot plan a commit');
+    ok(item.expected_receipt?.no_repository_write === true, id + ': no_repository_write missing');
+    ok(item.predicate?.must_hold?.includes('no_repository_write'), id + ': predicate no_repository_write missing');
+    ok(item.evidence_descriptor?.forbidden?.includes('source_tree_writes'), id + ': source writes not forbidden');
+    ok(item.expected_receipt?.receipt_domain, id + ': receipt domain missing');
+    domains.add(item.expected_receipt.receipt_domain);
+  }
+  ok(domains.size === 4, 'R2 receipt domains must be distinct');
+  const c11 = ledger.contributions.find((item) => item.contribution_id === 'C2-CON-11');
+  ok(c11.owner_repo === 'solguard-diff' && c11.parent_primary_id === 'RUN-201', 'C2-CON-11 identity drift');
+  ok(c11.expected_receipt.repository_binding.commit_sha === '2bb4239eb50b503b63233435f39e562dd169193c', 'C2-CON-11 commit binding drift');
+  ok(c11.expected_receipt.repository_binding.git_tree_sha === '3294eb3a3d73a1218a0d61636acf66775833d794', 'C2-CON-11 tree binding drift');
+  ok(c11.expected_receipt.inventory_binding.contribution_id === 'C2-CON-01', 'C2-CON-11 inventory contribution drift');
+  ok(c11.expected_receipt.inventory_binding.inventory_root === '18dd2a95377007e95c7140fe6156d59138dbf00ae88ca6c5cdddac7a21e4470f', 'C2-CON-11 inventory root drift');
+  ok(c11.expected_receipt.inventory_binding.group_count === 9, 'C2-CON-01 group count drift');
+  ok(c11.expected_receipt.inventory_binding.member_count === 29, 'C2-CON-01 member count drift');
+  ok(jcs(sorted(c11.expected_receipt.inventory_binding.member_repositories)) === jcs([
+    'solguard-core','solguard-discover','solguard-economic','solguard-filter',
+    'solguard-invariant','solguard-map','solguard-trace','solguard-validate','solguard-value'
+  ]), 'C2-CON-01 member repository set drift');
+  ok(!c11.expected_receipt.inventory_binding.member_repositories.includes('solguard-diff'), 'C2-CON-01 members cannot contain solguard-diff');
+  ok(c11.expected_receipt.receipt_root_policy === 'recompute_from_closed_receipt_after_amendment', 'C2-CON-11 root must be recomputed');
+  ok(c11.hard_contribution_dependencies?.[0]?.contribution_id === 'C2-CON-10', 'C2-CON-11 hard order drift');
+  const rm10 = ledger.contributions.find((item) => item.contribution_id === 'C2-CON-RM-10');
+  ok(rm10.expected_receipt.generation_policy === 'deferred_until_hard_order_position', 'C2-CON-RM-10 cannot be generated early');
+  ok(rm10.expected_receipt.repository_binding_policy?.fresh_scan_required === true, 'C2-CON-RM-10 fresh scan missing');
+  ok(rm10.expected_receipt.receipt_root_policy === 'new_unique_root_not_reused_from_C2-CON-11', 'C2-CON-RM-10 root policy drift');
+  ok(rm10.hard_contribution_dependencies?.[0]?.contribution_id === 'C2-CON-RM-09', 'C2-CON-RM-10 hard order drift');
+  const graphRoot = domainHash('solguard:hard-dependency-graph:v1', hardDependencyGraphPayload(ledger));
+  ok(graphRoot === HARD_DEPENDENCY_GRAPH_ROOT, 'hard dependency graph changed: ' + graphRoot);
 }
 
 function validate(ledger, rows) {
@@ -1894,6 +2109,7 @@ function validate(ledger, rows) {
   ok(rows.length === 653, 'explicit row drift');
   ok(ledger.contributions.filter((x) => x.source?.row_kind === 'concrete_row').length === 653, 'explicit contribution drift');
   ok(ledger.contributions.filter((x) => x.source?.row_kind === 'c6_scope_expansion').length === 450, 'generated contribution drift');
+  validateR2AbsenceAmendment(ledger);
   const all = new Set([...nodeIds,...contributionIds]);
   const contributionMap = new Map(ledger.contributions.map((item) => [item.contribution_id,item]));
   for (const node of ledger.nodes) {
