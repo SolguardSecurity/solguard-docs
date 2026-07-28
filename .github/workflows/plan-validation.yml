@@ -1,0 +1,54 @@
+name: Plan validation
+
+on:
+  pull_request:
+    paths:
+      - "changelogs/25-26-jul-2026/tasks/**"
+      - ".github/workflows/plan-validation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "changelogs/25-26-jul-2026/tasks/**"
+      - ".github/workflows/plan-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plan-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-final-plan:
+    name: Validate final plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: changelogs/25-26-jul-2026/tasks
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Verify generated artifacts are current
+        run: |
+          node rebuild-final-plan.mjs
+          git diff --exit-code -- \
+            acceptance-ledger.v1.json \
+            07_CHECKLIST_MAESTRA.md \
+            09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md \
+            README.md
+
+      - name: Validate canonical plan
+        run: node validate-final-plan.mjs
+
+      - name: Run generator and reader tests
+        run: node --test
