@@ -1,0 +1,268 @@
+{
+  "schema_version": "solguard-truth-docs-contract.v1",
+  "contribution_id": "C1-018",
+  "parent_gate": "TRUTH-108",
+  "dependency_state": "prepared_drafts_pending_independent_acceptance",
+  "authoritative": false,
+  "writer_enabled": false,
+  "acceptance_enabled": false,
+  "measured_capability": null,
+  "dependencies": {
+    "C1-016": {
+      "repository": "SolguardSecurity/solguard-deploy",
+      "commit": "8d8e1e432989ceb697e9beaa54cd1fc2973856ad",
+      "tree": "0787487bf8a7ea52fdfc2b643144352ea461129a",
+      "evidence_root": "sha256:3adb7498fd95ee04ee4217297fe02dbd761c8240ae955e8d3f5c610d6f822b7c"
+    },
+    "C1-017": {
+      "repository": "SolguardSecurity/solguard-agents",
+      "commit": "2986e2e73ef9be1c41e35e65a232f36ff2fab0f3",
+      "tree": "0efa887690ff041259a42af5da041f2a1f5929d7",
+      "evidence_root": "sha256:28b107a47bf12cf8471e9133bc8244045feb6e4d6017ac0bdf67d3bcf9decea7"
+    }
+  },
+  "technical_verdict": {
+    "schema_version": "solguard-technical-verdict.v1",
+    "owner": "SolguardSecurity/solguard-validate",
+    "commit": "af485547440e63042b3ee696b0eb92bca63055b6",
+    "tree": "b8a0a5711a5b2ebf235128ae13b57dc2e5eb580f",
+    "schema_path": "schemas/technical-verdict.v1.schema.json",
+    "schema_sha256": "50090bef6e5b0e26a45b80eb8c9d6c61d4f8c892b16fae06e4ff5145c0a078be",
+    "writer_enabled": false,
+    "decisions": ["supported", "refuted", "inconclusive"],
+    "reason_codes": {
+      "supported": [
+        "supported_complete_economic_break",
+        "supported_complete_non_economic_break"
+      ],
+      "refuted": [
+        "refuted_route_unreachable",
+        "refuted_invariant_holds",
+        "refuted_effect_absent",
+        "refuted_effective_protection"
+      ],
+      "inconclusive": [
+        "inconclusive_scope_unresolved",
+        "inconclusive_reachability_unresolved",
+        "inconclusive_state_transition_unresolved",
+        "inconclusive_invariant_unresolved",
+        "inconclusive_contradiction_unresolved",
+        "inconclusive_effect_unresolved",
+        "inconclusive_economic_delta_unresolved",
+        "inconclusive_same_flow_unresolved",
+        "inconclusive_same_asset_unresolved",
+        "inconclusive_protection_analysis_unresolved",
+        "inconclusive_evidence_lineage_unresolved",
+        "inconclusive_coverage_debt",
+        "inconclusive_counterevidence_unresolved",
+        "inconclusive_run_binding_unresolved",
+        "inconclusive_proof_certificate_incomplete",
+        "inconclusive_legacy_contract_unresolved"
+      ]
+    },
+    "obligations": [
+      "scope",
+      "reachability",
+      "state_transition",
+      "invariant",
+      "contradiction",
+      "effect",
+      "economic_delta",
+      "same_flow",
+      "same_asset",
+      "protection_analysis",
+      "evidence_lineage",
+      "coverage",
+      "counterevidence",
+      "run_binding"
+    ],
+    "obligation_statuses": [
+      "satisfied",
+      "refuted",
+      "unresolved",
+      "not_applicable"
+    ],
+    "goldens": [
+      {
+        "fixture": "supported-economic.valid.json",
+        "decision": "supported",
+        "reason": "supported_complete_economic_break",
+        "proof_status": "complete"
+      },
+      {
+        "fixture": "refuted-protection.valid.json",
+        "decision": "refuted",
+        "reason": "refuted_effective_protection",
+        "proof_status": "complete"
+      },
+      {
+        "fixture": "inconclusive-missing-proof.valid.json",
+        "decision": "inconclusive",
+        "reason": "inconclusive_proof_certificate_incomplete",
+        "proof_status": "missing"
+      }
+    ]
+  },
+  "admission_result": {
+    "schema_version": "solguard-admission-result.v1",
+    "owner": "SolguardSecurity/solguard-filter",
+    "commit": "22a08ca01ac027127e9b1cfd14a7c82d0a2ce0d5",
+    "tree": "4dc55518305277b0e82ec267d02fd9276453f6d0",
+    "schema_path": "schemas/admission-result.v1.schema.json",
+    "schema_sha256": "f13ef0f47c06654bddc49b83342f8069a7681b97c50d521d30799362bd94e1ec",
+    "writer_enabled": false,
+    "decisions": ["pass", "review", "reject", "invalid_upstream"],
+    "reason_codes": [
+      "pass_complete_admission",
+      "review_checker_missing",
+      "review_proof_inconclusive",
+      "review_probe_required",
+      "review_trace_authority_incomplete",
+      "reject_semantic_contradiction",
+      "reject_effective_protection",
+      "reject_tampered_input",
+      "reject_unsafe_source_reference",
+      "reject_proven_duplicate",
+      "invalid_upstream_technical_verdict",
+      "invalid_upstream_contract_mismatch"
+    ],
+    "technical_statuses": ["valid", "invalid"],
+    "checker_statuses": [
+      "passed",
+      "contradicted",
+      "inconclusive",
+      "missing",
+      "invalid"
+    ],
+    "evidence_statuses": ["complete", "incomplete", "contradicted", "invalid"],
+    "eligibility_statuses": ["eligible", "ineligible"],
+    "presentation_roles": ["unique", "representative", "duplicate"],
+    "ineligibility_kinds": [
+      "admission_not_pass",
+      "duplicate_non_representative",
+      "policy_suppression",
+      "policy_exclusion",
+      "invalid_upstream"
+    ],
+    "goldens": [
+      {
+        "fixture": "pass-unique.valid.json",
+        "decision": "pass",
+        "technical_decision": "supported",
+        "checker_status": "passed",
+        "evidence_status": "complete",
+        "eligibility": "eligible",
+        "presentation_role": "unique"
+      },
+      {
+        "fixture": "review-checker-missing.valid.json",
+        "decision": "review",
+        "technical_decision": "supported",
+        "checker_status": "missing",
+        "evidence_status": "incomplete",
+        "eligibility": "ineligible",
+        "presentation_role": "unique"
+      },
+      {
+        "fixture": "reject-protection.valid.json",
+        "decision": "reject",
+        "technical_decision": "supported",
+        "checker_status": "contradicted",
+        "evidence_status": "contradicted",
+        "eligibility": "ineligible",
+        "presentation_role": "unique"
+      },
+      {
+        "fixture": "invalid-upstream.valid.json",
+        "decision": "invalid_upstream",
+        "technical_decision": null,
+        "checker_status": "invalid",
+        "evidence_status": "invalid",
+        "eligibility": "ineligible",
+        "presentation_role": "unique"
+      }
+    ]
+  },
+  "metric_lineage": {
+    "repository": "SolguardSecurity/solguard-deploy",
+    "commit": "f934991f041de4c8d71b8d7c07aa0930506e293f",
+    "tree": "27c6e0d5d78988aa25ae2fc4a199de840983b0c0",
+    "evidence_root": "sha256:92a1c96471e8167e4c1530ed0791e2212ca52aa257fad98f0b4916b4fccd736c",
+    "schema_version": "solguard-oracle-free-metric-lineage-map.v1",
+    "check_schema_version": "solguard-oracle-free-metric-lineage-check.v1",
+    "writer_enabled": false,
+    "post_scan_contract_emission": false,
+    "publication_authority": "MEASURE-901",
+    "runtime_writer_authority": "EVAL-908",
+    "null_semantics": "unavailable_never_zero",
+    "metrics": [
+      ["canonical_candidates", "canonical_candidates.json", "array_length", null, "oracle_free_primary"],
+      ["validation_candidates", "tool-outputs/candidates/validation_candidates.json", "array_length", "canonical_candidates", "oracle_free_primary"],
+      ["supported", "tool-outputs/validate/validation_results.json", "count:result=supported", "validation_candidates", "oracle_free_primary"],
+      ["refuted", "tool-outputs/validate/validation_results.json", "count:result=refuted", "validation_candidates", "oracle_free_primary"],
+      ["inconclusive", "tool-outputs/validate/validation_results.json", "count:result=inconclusive", "validation_candidates", "oracle_free_primary"],
+      ["supported_findings", "tool-outputs/validate/validation_results.json", "count:finding_class=supported_finding", "validation_candidates", "oracle_free_primary"],
+      ["validation_review_queue", "tool-outputs/validate/validation_results.json", "count:finding_class=review_queue", "validation_candidates", "oracle_free_primary"],
+      ["validation_reviewable_leads", "tool-outputs/validate/validation_results.json", "count:finding_class=reviewable_lead", "validation_candidates", "oracle_free_primary"],
+      ["validation_non_findings", "tool-outputs/validate/validation_results.json", "count:finding_class=non_finding", "validation_candidates", "oracle_free_primary"],
+      ["admission_input_supported", "tool-outputs/filter/filter_results.json", "array_length", "supported", "oracle_free_primary"],
+      ["admission_pass", "tool-outputs/filter/filter_results.json", "count:decision=pass", "admission_input_supported", "oracle_free_primary"],
+      ["admission_review", "tool-outputs/filter/filter_results.json", "count:decision=review", "admission_input_supported", "oracle_free_primary"],
+      ["admission_reject", "tool-outputs/filter/filter_results.json", "count:decision=reject", "admission_input_supported", "oracle_free_primary"],
+      ["admission_duplicate", "tool-outputs/filter/filter_results.json", "count:decision=duplicate", "admission_input_supported", "legacy_filter_runtime_only"],
+      ["finding_envelopes_all", "finding_envelopes.json", "array_length", null, "runtime_writer_disabled"],
+      ["published_findings", "findings.json", "array_length", "finding_envelopes_all", "runtime_writer_disabled"],
+      ["review_envelopes", "review_queue.json", "array_length", null, "runtime_writer_disabled"],
+      ["matched_findings", "match decisions", "count:decision=matched", "predeclared_scoreable_truth_items", "post_scan_excluded"]
+    ]
+  },
+  "runtime_defaults": {
+    "repository": "SolguardSecurity/solguard-backend",
+    "commit": "320014d411cb8896ca58cbee9f147c5415be77c8",
+    "tree": "d53b82012f6c2c5f36b2d16765e589320beea4b1",
+    "evidence_root": "sha256:2f0e9f8056d7120d3cbb4856b65fd6a9c22546912397bf01b09e68822f45188e",
+    "analyze_mode_default": "audit_only",
+    "analysis_profile_defaults": {
+      "audit_only": "generic_blind",
+      "full": "generic_blind"
+    },
+    "run_exploit_default": false,
+    "run_exploit_requires_mode": "full",
+    "managed_release_profile": "generic_blind",
+    "managed_release_rejects": ["compatibility"],
+    "unmanaged_explicit_profiles": ["compatibility", "generic_blind"],
+    "filter_failure": {
+      "synthetic_result": false,
+      "downstream_exploit": false
+    }
+  },
+  "gate_separation": {
+    "repository": "SolguardSecurity/solguard-deploy",
+    "commit": "a8adabd194602f5c79371f00a6d2eed25b5caa50",
+    "tree": "1b61588562c00d3d1e5f3273605528299cf539fe",
+    "evidence_root": "sha256:a289527e79a2b2eb4b31fb1bec41bf6ec7f6cc62a5d4bed8b5397f454a133ee1",
+    "decisions": [
+      "measurement_integrity",
+      "verdict_truth_integrity",
+      "product_health",
+      "blind_evaluation_eligibility"
+    ],
+    "zero_detection_policy": "measurement_may_pass_but_product_health_must_fail_when_claimed_closure_is_missing",
+    "blind_default": "ineligible"
+  },
+  "truth_matrix": {
+    "repository": "SolguardSecurity/solguard-deploy",
+    "commit": "8d8e1e432989ceb697e9beaa54cd1fc2973856ad",
+    "schema_version": "solguard-truth-authority-chain-matrix.v1",
+    "authoritative": false,
+    "writer_enabled": false,
+    "acceptance_enabled": false,
+    "measured_capability": null,
+    "scenarios": [
+      ["positive", "supported", "pass", 1, 0, "passed", "passed", "passed", "ineligible"],
+      ["patch", "refuted", null, 0, 0, "passed", "passed", "passed", "ineligible"],
+      ["near_miss", "inconclusive", null, 0, 0, "passed", "passed", "passed", "ineligible"],
+      ["filter_failure", "supported", null, 0, 0, "passed_with_observations", "failed", "failed", "ineligible"]
+    ]
+  }
+}

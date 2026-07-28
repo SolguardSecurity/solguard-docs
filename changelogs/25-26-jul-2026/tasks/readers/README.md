@@ -42,3 +42,15 @@ Run the targeted tests:
 ```powershell
 node --test changelogs/25-26-jul-2026/tasks/readers/acceptance-ledger-markdown.test.mjs
 ```
+
+## Truth contract documentation
+
+C1-018 publishes a read-only documentation contract for TechnicalVerdict,
+AdmissionResult, oracle-free metric lineage, safe Backend defaults and the four
+separate truth gates. It pins prepared C1-016 and C1-017, preserves null as
+unavailable, and keeps writers, acceptance and measured capability disabled.
+
+```powershell
+node changelogs/25-26-jul-2026/tasks/readers/truth-docs-contract.mjs
+node --test changelogs/25-26-jul-2026/tasks/readers/truth-docs-contract.test.mjs
+```
