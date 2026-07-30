@@ -381,6 +381,12 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
 - `solguard-pre-release-check.v3` separates `measurement_integrity` from
   `product_health`. Measurement may sign coherent degraded evidence only with
   `product_release_eligible=false`; release selects strict product health
+- portable run lifecycle documentation must resolve artifacts by `artifact_id`
+  and `role`, treat filename/path/cwd/mtime only as transport observations,
+  verify every manifest payload before recovery publication and read the
+  create-only terminal receipt after a cancellation race. The RUN-208 matrix is
+  draft/pending and must never be described as merged or accepted without the
+  independent ledger transition
 
 ## Quick Checks
 

@@ -11,6 +11,7 @@ orquesta y reconcilia.
 
 - [Core: arquitectura, pipeline y autoridad operacional](docs/solguard-core/README.md)
 - [Backend HTTP](docs/solguard-backend/README.md)
+- [Resume, cancelacion y recovery portable](docs/solguard-core/runtime-portable-lifecycle.md)
 - [Herramientas MAP, TRACE, DISCOVER, VALIDATE, FILTER y EXPLOIT](docs/solguard-tools/README.md)
 - [Deploy, ejecucion sellada y fronteras de release](docs/solguard-deploy/README.md)
 - [Benchmarks y medicion](docs/solguard-benchmarks/README.md)

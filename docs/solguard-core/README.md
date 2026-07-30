@@ -258,6 +258,7 @@ Documentacion detallada:
 - [Integridad de fuentes y cadena MAP -> TRACE -> FILTER](./integridad-de-fuentes.md)
 - [DISCOVER v2 y cierre candidate-directed VALUE](./discovery-v2-y-candidate-value.md)
 - [Identidad económica de flujo v2](./economic-flow-identity-v2.md)
+- [Ciclo de vida portable: resume, cancelacion y recovery](./runtime-portable-lifecycle.md)
 
 ## API y CLI
 

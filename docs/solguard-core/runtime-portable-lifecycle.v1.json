@@ -1,0 +1,87 @@
+{
+  "schema_version": "docs.runtime-portable-lifecycle.v1",
+  "status": "draft_pending",
+  "authoritative": false,
+  "acceptance_authority": false,
+  "contracts": [
+    "solguard-run-artifact-manifest.v1",
+    "solguard-product-artifact-manifest.v1",
+    "solguard-run-terminal-state.v1"
+  ],
+  "terminal_outcomes": [
+    "succeeded",
+    "failed",
+    "cancelled",
+    "completed_with_debt"
+  ],
+  "endpoints": [
+    "POST /runs/:run_id/artifacts/resolve",
+    "POST /runs/:run_id/artifacts/expose",
+    "POST /runs/:run_id/attempts/:attempt_id/cancel",
+    "GET /runs/:run_id/attempts/:attempt_id/terminal-receipt"
+  ],
+  "resume": {
+    "required_identity": [
+      "run_id",
+      "run_spec_root",
+      "artifact_manifest_root",
+      "artifact_id",
+      "role"
+    ],
+    "forbidden_authority": [
+      "filename",
+      "path",
+      "cwd",
+      "mtime"
+    ],
+    "terminal_runs_are_immutable": true
+  },
+  "recovery": {
+    "requires_empty_identity_store": true,
+    "verify_all_before_publish": true,
+    "tamper_fails_without_partial_write": true,
+    "database_manifest_rows_create_only": true
+  },
+  "upstream_refs": [
+    {
+      "contribution_id": "C2-020",
+      "repository": "solguard-core",
+      "commit": "14595a76dda8c7bfde0c8a962f0af879de99f09a"
+    },
+    {
+      "contribution_id": "C2-020A",
+      "repository": "solguard-database",
+      "commit": "b37bfe66facf985bb2701778288df90d425c72c8"
+    },
+    {
+      "contribution_id": "C2-020B",
+      "repository": "solguard-backend",
+      "commit": "c5c60894165df6fe9e5e4d3b019ba19662be25e4"
+    },
+    {
+      "contribution_id": "C2-020C",
+      "repository": "solguard-deploy",
+      "commit": "0d94e3dcc3f8331c5bd59403f35b7eebb67a3bc4"
+    },
+    {
+      "contribution_id": "C2-020D",
+      "repository": "solguard-deploy",
+      "commit": "56141d2d44a34a2b9c7f173e687a8ad5724b8dbc"
+    },
+    {
+      "contribution_id": "C2-021",
+      "repository": "solguard-core",
+      "commit": "eacc2c9603499fad165a3400be1a1917b4e278a8"
+    },
+    {
+      "contribution_id": "C2-022",
+      "repository": "solguard-backend",
+      "commit": "6b1a6f8f3868264c96b136c959100dcda5ff6db3"
+    },
+    {
+      "contribution_id": "C2-023",
+      "repository": "solguard-deploy",
+      "commit": "8384ce1120c8c2361264ffaf42556b6455005982"
+    }
+  ]
+}
