@@ -1,0 +1,202 @@
+{
+  "schema_version": "solguard-product-claim-dictionary.v1",
+  "dictionary_version": 1,
+  "owner": "solguard-docs",
+  "status": "pre_genesis_candidate",
+  "claim_authority": "none",
+  "canonical_terms": [
+    {
+      "term": "signal",
+      "stage": "evidence_producer",
+      "definition": "Typed observation emitted from bounded product evidence before issue synthesis.",
+      "permitted_assertion": "The stated source and run produced the typed observation.",
+      "forbidden_implications": ["candidate", "supported", "finding", "detected"],
+      "required_evidence": ["producer", "run_binding", "physical_lineage"]
+    },
+    {
+      "term": "lead",
+      "stage": "hypothesis",
+      "definition": "Unresolved issue hypothesis retained for further evidence collection.",
+      "permitted_assertion": "The hypothesis exists and its unresolved obligations are recorded.",
+      "forbidden_implications": ["candidate", "supported", "finding", "detected"],
+      "required_evidence": ["source_signal_refs", "unresolved_obligations"]
+    },
+    {
+      "term": "candidate",
+      "stage": "canonical_issue_hypothesis",
+      "definition": "Canonical issue hypothesis with exact scope, claim type and immutable product-artifact identity.",
+      "permitted_assertion": "The hypothesis is eligible to enter proof compilation and technical validation.",
+      "forbidden_implications": ["supported", "pass", "finding", "detected"],
+      "required_evidence": ["candidate_identity", "scope_binding", "claim_type", "run_binding"]
+    },
+    {
+      "term": "proof",
+      "stage": "proof_obligation_closure",
+      "definition": "Versioned evidence bundle or certificate that records satisfied, refuted and unresolved obligations.",
+      "permitted_assertion": "The named obligations have the exact evidence state recorded by the proof artifact.",
+      "forbidden_implications": ["supported", "pass", "finding", "release"],
+      "required_evidence": ["proof_identity", "obligation_set", "evidence_lineage", "run_binding"]
+    },
+    {
+      "term": "supported",
+      "stage": "validate_technical_verdict",
+      "definition": "VALIDATE technical verdict stating that the typed claim is supported by a complete proof under the sealed inputs.",
+      "permitted_assertion": "The claim is technically supported for the exact candidate, run and evidence set.",
+      "forbidden_implications": ["pass", "finding", "match", "detected", "release"],
+      "required_evidence": ["technical_verdict", "complete_proof", "candidate_binding", "run_binding"]
+    },
+    {
+      "term": "refuted",
+      "stage": "validate_technical_verdict",
+      "definition": "VALIDATE technical verdict stating that counterevidence or an effective protection contradicts the candidate claim.",
+      "permitted_assertion": "The exact candidate claim is refuted for the sealed inputs.",
+      "forbidden_implications": ["universal_absence", "reject", "release"],
+      "required_evidence": ["technical_verdict", "counterevidence", "candidate_binding", "run_binding"]
+    },
+    {
+      "term": "inconclusive",
+      "stage": "validate_technical_verdict",
+      "definition": "VALIDATE technical verdict stating that one or more mandatory obligations remain unresolved, unavailable or over budget.",
+      "permitted_assertion": "The current evidence cannot support or refute the exact candidate claim.",
+      "forbidden_implications": ["refuted", "supported", "review", "finding"],
+      "required_evidence": ["technical_verdict", "open_obligations", "candidate_binding", "run_binding"]
+    },
+    {
+      "term": "pass",
+      "stage": "filter_admission",
+      "definition": "FILTER admission decision for a VALIDATE-supported candidate whose mandatory independent gates pass.",
+      "permitted_assertion": "The supported candidate is admitted to the finding projection for the exact run.",
+      "forbidden_implications": ["match", "detected", "blind", "novel", "release"],
+      "required_evidence": ["supported_verdict_ref", "filter_decision", "publication_eligibility", "run_binding"]
+    },
+    {
+      "term": "review",
+      "stage": "filter_admission",
+      "definition": "FILTER admission decision preserving a supported candidate for human or additional evidence review because admission is not closed.",
+      "permitted_assertion": "The candidate remains non-terminal in the publication plane with explicit review debt.",
+      "forbidden_implications": ["pass", "reject", "finding", "detected"],
+      "required_evidence": ["supported_verdict_ref", "filter_decision", "review_debt", "run_binding"]
+    },
+    {
+      "term": "reject",
+      "stage": "filter_admission",
+      "definition": "FILTER admission decision excluding a supported input from publication for an independently demonstrated policy, protection, source or duplication reason.",
+      "permitted_assertion": "The candidate is not admitted to the finding projection for the recorded reason.",
+      "forbidden_implications": ["refuted", "universal_absence", "finding", "detected"],
+      "required_evidence": ["supported_verdict_ref", "filter_decision", "rejection_reason", "run_binding"]
+    },
+    {
+      "term": "finding",
+      "stage": "published_product_result",
+      "definition": "PublishedFinding projection backed by a VALIDATE-supported verdict, FILTER pass, publication eligibility and the exact immutable candidate and run lineage.",
+      "permitted_assertion": "The product published the exact admitted technical result.",
+      "forbidden_implications": ["match", "detected", "blind", "novel", "expert", "release"],
+      "required_evidence": ["supported_verdict_ref", "filter_pass_ref", "publication_eligibility", "candidate_binding", "run_binding"]
+    },
+    {
+      "term": "match",
+      "stage": "post_product_evaluation",
+      "definition": "Evaluator linkage between a frozen product result and one exact oracle or ground-truth item after product outputs are sealed.",
+      "permitted_assertion": "The evaluator linked the two immutable identities under the declared matching policy.",
+      "forbidden_implications": ["supported", "finding", "detected", "blind", "novel"],
+      "required_evidence": ["frozen_product_output", "oracle_item", "matching_policy", "evaluation_run"]
+    },
+    {
+      "term": "detected",
+      "stage": "measurement_result",
+      "definition": "Finding credited to an exact evaluation denominator through a verified post-product match.",
+      "permitted_assertion": "The stated finding was credited within the named cohort, denominator, matcher and evaluation run.",
+      "forbidden_implications": ["universal_detection", "blind", "novel", "release"],
+      "required_evidence": ["finding_ref", "match_ref", "cohort", "denominator", "evaluation_run"]
+    },
+    {
+      "term": "known",
+      "stage": "cohort_classification",
+      "definition": "Regression or evaluation material whose oracle identity is part of a predeclared known corpus.",
+      "permitted_assertion": "The result belongs to the exact named known corpus and version.",
+      "forbidden_implications": ["blind", "novel", "generalization"],
+      "required_evidence": ["corpus_identity", "corpus_version", "membership_ref"]
+    },
+    {
+      "term": "blind",
+      "stage": "capability_separated_evaluation",
+      "definition": "Evaluation whose cohort was committed before execution and whose oracle remained inaccessible to the product boundary, with independently verified role and capability separation.",
+      "permitted_assertion": "The exact run satisfied the declared sealed holdout and separation contract.",
+      "forbidden_implications": ["novel", "expert", "universal_generalization", "generic_blind_profile_equivalence"],
+      "required_evidence": ["precommitment", "sealed_cohort", "capability_separation", "independent_evaluation"]
+    },
+    {
+      "term": "novel",
+      "stage": "novelty_adjudication",
+      "definition": "Independently adjudicated finding absent from the committed known corpora and the declared prior-art search scope at the cutoff.",
+      "permitted_assertion": "The finding met the exact novelty policy, search scope and cutoff recorded by the adjudicator.",
+      "forbidden_implications": ["blind", "universal_novelty", "expert", "release"],
+      "required_evidence": ["finding_ref", "known_corpus_exclusion", "prior_art_scope", "adjudication"]
+    },
+    {
+      "term": "expert",
+      "stage": "human_review_attribution",
+      "definition": "Attribution to an identified human reviewer with a declared role, scope, credentials and signed review artifact.",
+      "permitted_assertion": "The named reviewer performed the exact declared review.",
+      "forbidden_implications": ["correctness", "supported", "finding", "novel", "release"],
+      "required_evidence": ["reviewer_identity", "review_scope", "credential_context", "signed_review"]
+    },
+    {
+      "term": "release",
+      "stage": "release_publication",
+      "definition": "Versioned product artifact published only after its exact candidate epoch, release gates, evidence dossier and immutable tag or equivalent publication identity are complete.",
+      "permitted_assertion": "The exact artifact and version were published under the recorded release evidence.",
+      "forbidden_implications": ["blind", "novel", "expert", "universal_detection", "bounty_readiness"],
+      "required_evidence": ["candidate_epoch", "release_gate", "evidence_dossier", "publication_identity"]
+    }
+  ],
+  "forbidden_aliases": [
+    {
+      "alias": "release_eligible",
+      "replacement": "publication_eligibility",
+      "reason": "The alias mixes product admission with authorization of release claims.",
+      "legacy_removal_task": "C1-021"
+    },
+    {
+      "alias": "finding_eligibility",
+      "replacement": "publication_eligibility",
+      "reason": "The alias mixes technical truth with FILTER publication admission.",
+      "legacy_removal_task": "C1-021"
+    }
+  ],
+  "legacy_reference_policy": {
+    "claim_authority": "none",
+    "allowed_only_when": [
+      "the reference is explicitly described as legacy, deprecated, compatibility-only or forbidden",
+      "or the serialized field is shown with the literal value false and grants no positive claim"
+    ],
+    "positive_or_unqualified_use": "forbidden"
+  },
+  "lint_policy": {
+    "repository_names": [
+      "solguard-value",
+      "solguard-validate",
+      "solguard-trace",
+      "solguard-map",
+      "solguard-invariant",
+      "solguard-filter",
+      "solguard-economic",
+      "solguard-docs",
+      "solguard-discover",
+      "solguard-diff",
+      "solguard-deploy",
+      "solguard-database",
+      "solguard-core",
+      "solguard-backend",
+      "solguard-agents"
+    ],
+    "included_documentation": ["README.md", "agents/README.md", "docs/**/*.md"],
+    "excluded_documentation": ["changelogs/**", "releases/**", ".tmp/**"],
+    "finding_producer_allowlist": ["VALIDATE", "FILTER"],
+    "evidence_link_required_for": ["detected", "blind", "novel", "expert", "release"]
+  },
+  "compatibility_debt": {
+    "source_contract_alias_removal_task": "C1-021",
+    "statement": "C0-002 forbids new claim authority from legacy aliases and inventories active documentation; it does not rewrite serialized product contracts before their registered migration task."
+  }
+}

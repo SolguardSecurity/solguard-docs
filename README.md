@@ -17,6 +17,7 @@ orquesta y reconcilia.
 - [Labs](docs/solguard-labs/README.md)
 - [Database e ingesta documental](docs/solguard-database/README.md)
 - [CLI local](docs/solguard-cli/README.md)
+- [Gobierno: diccionario canónico de claims](docs/governance/product-claim-dictionary.md)
 - [Notas de versiones historicas](releases/tabla.md)
 
 ## Estado de evidencia
