@@ -36,12 +36,12 @@
     {
       "document_id": "claim-dictionary-json",
       "path": "docs/governance/product-claim-dictionary.v1.json",
-      "sha256": "ac86e6d8a343de2364bef104e64c1b0e97e4d1e7590f43dfd9f70db551ee2535"
+      "sha256": "c9f4087cdf81a3537b5f343d836d15946540ea8410577e5ad46ec95e52e4f4ec"
     },
     {
       "document_id": "claim-dictionary-markdown",
       "path": "docs/governance/product-claim-dictionary.md",
-      "sha256": "a7c9075d10a4badf5b41482e5c0cf4fac02776d9ff96e72056616c6441499d59"
+      "sha256": "99389e3e4d66833391dbe384cb0fa8f897fd746d76298cfdcc42f41eaa34dbbc"
     },
     {
       "document_id": "architecture-decisions",
@@ -58,17 +58,17 @@
     {
       "source_id": "maturity-architecture-contract",
       "path": "changelogs/25-26-jul-2026/tasks/01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md",
-      "sha256": "ec1190be878e325b18452f66e5c1be663d524336be80e35fae92ccbae8b57b6f"
+      "sha256": "1169e6dc852eea09e0cb025e699d88592e278e6a0f15899ce596441549e8c46c"
     },
     {
       "source_id": "structural-program",
       "path": "changelogs/25-26-jul-2026/tasks/02_PROGRAMA_ESTRUCTURAL.md",
-      "sha256": "861eea94694837d26d1373a4aa3d6df1adedc30cd49f3d7fcbd44f1af626d7c0"
+      "sha256": "0c9d0f7d5a7753f6bffea322503a47f230157eeac62d40ad6a0ea74e87a10dd5"
     },
     {
       "source_id": "ledger-and-dependencies",
       "path": "changelogs/25-26-jul-2026/tasks/09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md",
-      "sha256": "1bfcce444a178b4bb7b08e7d1952fafb3b980a6e07af769d5329761c521214f1"
+      "sha256": "f8abbb136a518682a323bd18cd2e5e1474cb929f452b659a59b5da6115159927"
     }
   ],
   "required_links": [
@@ -164,5 +164,5 @@
     "content_hashes_required": true,
     "negative_authority_tests_required": true
   },
-  "publication_root": "d5c21f6c5b14572628c7430e3d0d3e30cf9a0ad7835926248234df43db7ac490"
+  "publication_root": "fa4853c55ceda02bea9733ee45c5af699b6b00f050c86106dec18412926be6b7"
 }
