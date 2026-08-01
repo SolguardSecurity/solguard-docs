@@ -8,8 +8,10 @@
 - Parent gates: `GOV-005`, `LEDGER-001`
 - Depends-On: `solguard-economic@4aa743d4f534a11b6b37ce585835ce3fad0f569e`
 - Hard contribution dependencies for `C0-014`:
-  `solguard-agents@f093848824173f6c5cdb1a7a89dd4acbe5d90ab2` (`C0-012` publication) and
-  `solguard-deploy@36ca97b6f8117df77039eea397763b5a3a35a310` (`C0-013` reader)
+  `solguard-agents@9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778` (corrected `C0-012`
+  publication candidate) and
+  `solguard-deploy@5d8d0a3609b0b191cae89461c7c5946d1c6b3f89` (corrected `C0-013`
+  reader candidate)
 - Historical changelog: [changelog-docs.md](https://github.com/SolguardSecurity/solguard-docs/blob/main/changelogs/20-25-Jul-2026/changelog-docs.md)
 
 The archived history remains in the central documentation repository and is
