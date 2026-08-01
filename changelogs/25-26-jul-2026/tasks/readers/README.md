@@ -24,7 +24,7 @@ single-custodian assurance amendment at
 C0-013 validation reader at
 `solguard-deploy@5d8d0a3609b0b191cae89461c7c5946d1c6b3f89`. It does not republish or
 change either contract. Its LF-normalized source SHA-256 is
-`d1a595f39ceda77afc42d74f9bbebcd4e17af93ce24fd9f549439f7cc4b33e9b`.
+`d79faca964661430f565c9a897e72a4285f6fe96259e302853dace281ca6017c`.
 
 Render the frozen revision-zero plan snapshot with all current trust anchors:
 
