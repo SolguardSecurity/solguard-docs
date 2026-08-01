@@ -4,7 +4,7 @@
 
 - Program: `25-jul-2026`
 - Status: `unpublished`
-- Task IDs: `C0-108`, `C0-014`, `C0-002`
+- Task IDs: `C0-108`, `C0-014`, `C0-002`, `C0-008`
 - Parent gates: `GOV-005`, `LEDGER-001`, `GOV-002`
 - Depends-On: `solguard-economic@4aa743d4f534a11b6b37ce585835ce3fad0f569e`
 - Hard contribution dependencies for `C0-014`:
@@ -15,6 +15,10 @@
 - `C0-002` has no hard contribution dependencies. Its draft publication is
   stacked on the corrected C0-014 publication branch but does not infer or
   record acceptance from that ancestry.
+- `C0-008` has the hard contribution dependency `C0-002`. This candidate is
+  stacked on `solguard-docs@6744458f24243095d2a64c8fb06613b059d28133`,
+  records the dependency as `pending_draft` and does not manufacture the
+  accepted implementation ref, evidence root or publication receipt.
 - Historical changelog: [changelog-docs.md](https://github.com/SolguardSecurity/solguard-docs/blob/main/changelogs/20-25-Jul-2026/changelog-docs.md)
 
 The archived history remains in the central documentation repository and is
@@ -28,6 +32,10 @@ linked here without being copied or rewritten.
   documentation policy and its linter. It changes no product API, artifact
   schema or acceptance-ledger contract, remains `pre_genesis_candidate` and
   grants `claim_authority=none`.
+- C0-008 adds the internal `solguard-governance-publication.v1` manifest,
+  architecture decisions, evidence rules and a fail-closed validator. The
+  manifest is a content-addressed documentation publication, not a product API
+  or acceptance-ledger contract, and grants `claim_authority=none`.
 
 ### Migrations
 
@@ -53,18 +61,30 @@ linked here without being copied or rewritten.
 - C0-002 local Docs scan: PASS (57 active Markdown files; zero violations).
 - C0-002 workspace scan: PASS (15 repositories; 87 active Markdown files; zero
   violations).
+- C0-008 governance publication validator: PASS (5 bound documents, 3 frozen
+  plan sources, 15 required links, 10 architecture decisions and 12 evidence
+  rules; C0-002 dependency remains unsatisfied).
+- C0-008 negative and CLI suite:
+  `node --test test/governance-program.test.mjs` - PASS (7/7), covering
+  authority escalation, false dependency satisfaction, path/link scope,
+  closed IDs, validation-gate weakening, roots and candidate bindings.
+- Complete Docs Node suite: `node --test test/*.test.mjs` - PASS (13/13).
+- C0-008 local claim scan: PASS (60 active Markdown files; zero violations).
 
 ### Open limitations
 
 - This pre-genesis changelog bootstrap adds no product capability.
 - It establishes no product, performance, recall, precision, release, or
   generalization claim.
-- It does not accept `C0-108`, `GOV-005`, `C0-014`, `LEDGER-001`, `C0-002` or
-  `GOV-002`; ledger and checklist state remain unchanged until the external
-  atomic genesis and later valid transitions.
+- It does not accept `C0-108`, `GOV-005`, `C0-014`, `LEDGER-001`, `C0-002`,
+  `C0-008` or `GOV-002`; ledger and checklist state remain unchanged until the
+  external atomic genesis and later valid transitions.
 - Existing serialized `release_eligible` and `finding_eligibility` aliases are
   compatibility debt assigned to `C1-021`. C0-002 permits only explicit legacy,
   deprecated, forbidden or literal-false documentation references and rejects
   any new positive claim authority from those names.
 - `GOV-002` also requires C0-008, so this contribution cannot accept its parent
   gate by itself.
+- C0-008 remains ineligible for acceptance while C0-002 lacks the required
+  accepted implementation ref, evidence root and publication receipt. Its
+  stacked ancestry is ordering context only.
