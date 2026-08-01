@@ -335,6 +335,22 @@ function measurementEvidenceFor(node) {
 }
 
 function verifier(type = 'independent_verification') {
+  if (ledger.assurance_mode === 'development') {
+    return {
+      type: type === 'independent_contribution_verification'
+        ? 'single_custodian_contribution_verification'
+        : 'single_custodian_verification',
+      separation: 'different_role_context_and_credentials_same_declared_custodian',
+      required_verdict: 'ACCEPT',
+      forbidden: [
+        'same_key_reuse',
+        'same_run_context',
+        'waiver_as_pass',
+        'skipped_test_as_pass',
+        'independence_claim'
+      ]
+    };
+  }
   return {
     type,
     separation: 'different_context_identity_and_credentials',
