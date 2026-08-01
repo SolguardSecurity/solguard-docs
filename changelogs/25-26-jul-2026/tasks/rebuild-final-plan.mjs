@@ -1337,6 +1337,37 @@ async function finalizeLedger(ledger, ownershipDomains, fRegistry) {
     immutable_after_genesis: true,
     profile_change_rule: 'new_program_version_and_new_genesis_required'
   };
+  const activeVerifierDescriptor = ledger.assurance_mode === 'development'
+    ? {
+        type: 'single_custodian_verification',
+        separation: 'different_role_context_and_credentials_same_declared_custodian',
+        required_verdict: 'ACCEPT',
+        forbidden: [
+          'same_key_reuse',
+          'same_run_context',
+          'waiver_as_pass',
+          'skipped_test_as_pass',
+          'independence_claim'
+        ]
+      }
+    : {
+        type: 'independent_verification',
+        separation: 'different_context_identity_and_credentials',
+        required_verdict: 'ACCEPT',
+        forbidden: ['implementer_self_acceptance', 'waiver_as_pass', 'skipped_test_as_pass']
+      };
+  for (const subject of [...ledger.nodes, ...ledger.contributions]) {
+    if (!subject.verifier_descriptor) continue;
+    const contribution = subject.kind === 'contribution';
+    subject.verifier_descriptor = {
+      ...activeVerifierDescriptor,
+      type: contribution
+        ? (ledger.assurance_mode === 'development'
+            ? 'single_custodian_contribution_verification'
+            : 'independent_contribution_verification')
+        : activeVerifierDescriptor.type
+    };
+  }
   ledger.genesis_batch.genesis_contribution_set =
     ledger.genesis_batch.genesis_contribution_set.filter((id) => !['C0-001A','C0-001B'].includes(id));
   ledger.genesis_batch.topological_order =
@@ -1884,6 +1915,10 @@ async function renderContracts(ledger) {
     '| ' + mdCode('development') + ' | ' + mdCode('single-custodian') + ' | 4 distintas | exactamente 1 declarado | sólo ejecución single-custodian; independencia prohibida |',
     '',
     'Ambos modos rechazan key IDs, human identities o material público Ed25519 duplicado. Cambiar el perfil tras genesis exige nueva versión de programa y nueva genesis. El modo development no satisface gates ni claims que exigen custodios, holdouts, evaluadores o adjudicadores humanos independientes.',
+    '',
+    'En el snapshot activo development, cada ' + mdCode('verifier_descriptor') +
+      ' se rotula ' + mdCode('single_custodian_verification') +
+      ' (o su variante de contribution) y separa rol, contexto, credencial y clave bajo el mismo custodio declarado; no usa etiquetas de verificación independiente. El perfil production conserva los descriptores independientes.',
     assuranceEnd
   ].join('\n');
   text = text.replace(schemaHeading, assuranceBlock + '\n\n' + schemaHeading + '\n\n' + block);
@@ -1934,6 +1969,8 @@ function renderReadme(text, ledger) {
       mdCode(ledger.all_counted_item_id_set_sha256) + '.',
     'Perfil activo: ' + mdCode(ledger.assurance_mode) + ' / ' +
       mdCode(ledger.assurance_level) + '. No declara independencia humana ni de custodia.',
+    'Los verificadores activos separan rol, contexto, credencial y clave, pero permanecen bajo el mismo custodio declarado. ' +
+      'El perfil production conserva cuatro custodios distintos y verificación independiente.',
     endMarker
   ].join('\n');
   const first = text.indexOf('## 1.');

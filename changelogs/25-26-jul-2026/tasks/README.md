@@ -24,6 +24,7 @@ paso siguiente, deliberadamente no cubierto, será explotación.
 <!-- GENERATED:CANONICAL-STATUS:BEGIN -->
 Ledger canónico `solguard-detection-maturity-2026-07-25.4`: roots node/contribution/all-counted = `6fab73e53ff6adbb1cdb940e611a83774d0e0d48a85f3a96650b6bd3af374e3b` / `d9b86f98702c0da74b8324b400302ae9f6c437625467dfff2b2c3fd136020885` / `0d323e2fab3955e8ac50fa717c086fa538542ea4f0efd18001f5e03eefe4866d`.
 Perfil activo: `development` / `single-custodian`. No declara independencia humana ni de custodia.
+Los verificadores activos separan rol, contexto, credencial y clave, pero permanecen bajo el mismo custodio declarado. El perfil production conserva cuatro custodios distintos y verificación independiente.
 <!-- GENERATED:CANONICAL-STATUS:END -->
 
 ## 1. Propósito

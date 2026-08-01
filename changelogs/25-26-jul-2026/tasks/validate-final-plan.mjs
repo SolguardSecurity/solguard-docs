@@ -264,6 +264,36 @@ function validateAssuranceProfile(ledger) {
   check(profiles?.development?.required_distinct_ed25519_public_key_count === 4, "DEVELOPMENT_KEY_COUNT");
   check(profiles?.development?.independence_claim === "forbidden", "DEVELOPMENT_INDEPENDENCE_CLAIM");
   check(profiles?.immutable_after_genesis === true, "ASSURANCE_IMMUTABLE_AFTER_GENESIS");
+  const activeVerifierSubjects = [...(ledger.nodes ?? []), ...(ledger.contributions ?? [])].filter(
+    (subject) => subject.verifier_descriptor,
+  );
+  for (const subject of activeVerifierSubjects) {
+    const descriptor = subject.verifier_descriptor;
+    check(
+      descriptor.type ===
+        (subject.kind === "contribution"
+          ? "single_custodian_contribution_verification"
+          : "single_custodian_verification"),
+      "DEVELOPMENT_VERIFIER_TYPE",
+      `${subject.id ?? subject.contribution_id}:${descriptor.type}`,
+    );
+    check(
+      descriptor.separation ===
+        "different_role_context_and_credentials_same_declared_custodian",
+      "DEVELOPMENT_VERIFIER_SEPARATION",
+      subject.id ?? subject.contribution_id,
+    );
+    check(
+      descriptor.forbidden?.includes("independence_claim"),
+      "DEVELOPMENT_VERIFIER_INDEPENDENCE_FORBIDDEN",
+      subject.id ?? subject.contribution_id,
+    );
+    check(
+      !descriptor.forbidden?.includes("implementer_self_acceptance"),
+      "DEVELOPMENT_VERIFIER_NO_FALSE_SELF_ACCEPTANCE_CLAIM",
+      subject.id ?? subject.contribution_id,
+    );
+  }
   for (const field of ["assurance_mode", "assurance_level"]) {
     check(
       ledger.transition_contract?.common_event_required?.includes(field),
