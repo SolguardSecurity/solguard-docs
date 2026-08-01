@@ -32,7 +32,7 @@ function reseal(document) {
 test("C0-008 publishes linked architecture and evidence rules without authority", async () => {
   assert.deepEqual(await validateGovernancePublicationFiles(), {
     schemaVersion: "solguard-governance-publication.v1",
-    publicationRoot: "fa4853c55ceda02bea9733ee45c5af699b6b00f050c86106dec18412926be6b7",
+    publicationRoot: "f69b67393dd5bea73d9781d8c550dd8c5db2592affb5ab229da106401a1bc889",
     documents: 5,
     sourceDocuments: 3,
     requiredLinks: 15,

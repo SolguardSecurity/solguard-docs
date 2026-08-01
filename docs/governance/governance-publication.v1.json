@@ -58,7 +58,7 @@
     {
       "source_id": "maturity-architecture-contract",
       "path": "changelogs/25-26-jul-2026/tasks/01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md",
-      "sha256": "1169e6dc852eea09e0cb025e699d88592e278e6a0f15899ce596441549e8c46c"
+      "sha256": "5445422db207e4b6ed34e4373256df97e21dae9c022664f2968bf998a0d19530"
     },
     {
       "source_id": "structural-program",
@@ -68,7 +68,7 @@
     {
       "source_id": "ledger-and-dependencies",
       "path": "changelogs/25-26-jul-2026/tasks/09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md",
-      "sha256": "f8abbb136a518682a323bd18cd2e5e1474cb929f452b659a59b5da6115159927"
+      "sha256": "88df94f627f9e27f897889b822820bd00a3bee336735015780724a810810fe9f"
     }
   ],
   "required_links": [
@@ -164,5 +164,5 @@
     "content_hashes_required": true,
     "negative_authority_tests_required": true
   },
-  "publication_root": "fa4853c55ceda02bea9733ee45c5af699b6b00f050c86106dec18412926be6b7"
+  "publication_root": "f69b67393dd5bea73d9781d8c550dd8c5db2592affb5ab229da106401a1bc889"
 }
