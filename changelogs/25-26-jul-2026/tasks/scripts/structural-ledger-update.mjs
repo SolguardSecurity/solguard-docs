@@ -135,19 +135,19 @@ function operationalEvidence(mode) {
     },
     validation: {
       schema: 'solguard-validation-record.v1',
-      required: ['validation_id', 'validation_manifest_root', 'candidate_manifest_root', 'candidate_full_sha_tree_root', 'environment_root', 'denominator_root', 'command_execution_result_set_root', 'output_root', 'failure_predicate_results', 'independent_verifier_root', 'immutable_evidence_root']
+      required: ['validation_id', 'validation_manifest_root', 'candidate_manifest_root', 'candidate_full_sha_tree_root', 'environment_root', 'denominator_root', 'command_execution_result_set_root', 'output_root', 'failure_predicate_results', 'assurance_verifier_root', 'immutable_evidence_root']
     },
     candidate_epoch: {
       schema: 'solguard-candidate-epoch-open-receipt.v1',
-      required: ['candidate_epoch_context', 'candidate_epoch_artifact_ref', 'candidate_epoch_content_digest', 'candidate_epoch_root', 'candidate_epoch_id', 'candidate_epoch_kind', 'candidate_manifest_root', 'candidate_full_sha_tree_root', 'repository_revision_set_root', 'included_scope_ids', 'included_scope_count', 'excluded_scope_ids', 'excluded_scope_count', 'contract_version_set_root', 'release_train_closure_id_set_root', 'release_train_closure_id_count', 'planned_input_subject_set_root', 'planned_input_subject_count', 'accepted_input_membership_root', 'accepted_input_membership_count', 'planned_operational_gate_set_root', 'planned_operational_gate_count', 'claim_required_pass_set_root', 'claim_required_pass_count', 'evaluation_observation_set_root', 'evaluation_observation_count', 'allowed_next_action_set_root', 'allowed_next_action_count', 'freeze_reason', 'custodian_receipt_root', 'independent_verifier_root', 'external_timestamp_receipt_set_root', 'immutable_evidence_root']
+      required: ['candidate_epoch_context', 'candidate_epoch_artifact_ref', 'candidate_epoch_content_digest', 'candidate_epoch_root', 'candidate_epoch_id', 'candidate_epoch_kind', 'candidate_manifest_root', 'candidate_full_sha_tree_root', 'repository_revision_set_root', 'included_scope_ids', 'included_scope_count', 'excluded_scope_ids', 'excluded_scope_count', 'contract_version_set_root', 'release_train_closure_id_set_root', 'release_train_closure_id_count', 'planned_input_subject_set_root', 'planned_input_subject_count', 'accepted_input_membership_root', 'accepted_input_membership_count', 'planned_operational_gate_set_root', 'planned_operational_gate_count', 'claim_required_pass_set_root', 'claim_required_pass_count', 'evaluation_observation_set_root', 'evaluation_observation_count', 'allowed_next_action_set_root', 'allowed_next_action_count', 'freeze_reason', 'custodian_receipt_root', 'assurance_verifier_root', 'external_timestamp_receipt_set_root', 'immutable_evidence_root']
     },
     candidate_epoch_close: {
       schema: 'solguard-candidate-epoch-close-transition.v1',
-      required: ['candidate_epoch_close_context', 'source_candidate_epoch_id', 'source_candidate_epoch_root', 'preclose_candidate_epoch_state_root', 'preclose_dossier_ref', 'preclose_dossier_content_digest', 'preclose_dossier_root', 'frozen_membership_root', 'frozen_membership_count', 'terminal_state_event_binding_set_root', 'terminal_state_event_binding_count', 'primary_observation_event_ids', 'primary_observation_evidence_roots', 'primary_observation_count', 'derived_observation_event_ids', 'derived_observation_evaluation_roots', 'derived_observation_operand_state_hashes', 'derived_observation_count', 'derived_claim_evaluation_event_id', 'derived_claim_result', 'derived_claim_evaluation_root', 'closure_outcome', 'planned_target_set_root', 'observed_target_set_root', 'target_coverage_count', 'target_coverage_denominator', 'attempt_set_root', 'output_set_root', 'reveal_set_root', 'adjudication_set_root', 'result_set_root', 'terminal_outcome_set_root', 'not_started_reason_set_root', 'policy_opening_set_root', 'finding_materiality_assessment_set_root', 'coverage_predicate_results', 'source_epoch_authority_root', 'acceptance_verifier_root', 'independent_verifier_root', 'external_timestamp_receipt_set_root', 'immutable_evidence_root']
+      required: ['candidate_epoch_close_context', 'source_candidate_epoch_id', 'source_candidate_epoch_root', 'preclose_candidate_epoch_state_root', 'preclose_dossier_ref', 'preclose_dossier_content_digest', 'preclose_dossier_root', 'frozen_membership_root', 'frozen_membership_count', 'terminal_state_event_binding_set_root', 'terminal_state_event_binding_count', 'primary_observation_event_ids', 'primary_observation_evidence_roots', 'primary_observation_count', 'derived_observation_event_ids', 'derived_observation_evaluation_roots', 'derived_observation_operand_state_hashes', 'derived_observation_count', 'derived_claim_evaluation_event_id', 'derived_claim_result', 'derived_claim_evaluation_root', 'closure_outcome', 'planned_target_set_root', 'observed_target_set_root', 'target_coverage_count', 'target_coverage_denominator', 'attempt_set_root', 'output_set_root', 'reveal_set_root', 'adjudication_set_root', 'result_set_root', 'terminal_outcome_set_root', 'not_started_reason_set_root', 'policy_opening_set_root', 'finding_materiality_assessment_set_root', 'coverage_predicate_results', 'source_epoch_authority_root', 'acceptance_verifier_root', 'assurance_verifier_root', 'external_timestamp_receipt_set_root', 'immutable_evidence_root']
     },
     freeze_attestation: {
       schema: 'solguard-freeze-attestation.v1',
-      required: ['freeze_attestation_context', 'prefreeze_validation_event_ids', 'prefreeze_validation_event_roots', 'candidate_full_sha_tree_root', 'candidate_manifest_root', 'instance_binding_root', 'independent_verifier_root', 'immutable_evidence_root']
+      required: ['freeze_attestation_context', 'prefreeze_validation_event_ids', 'prefreeze_validation_event_roots', 'candidate_full_sha_tree_root', 'candidate_manifest_root', 'instance_binding_root', 'assurance_verifier_root', 'immutable_evidence_root']
     },
     campaign: {
       schema: 'solguard-campaign-transition-evidence.v1',
@@ -155,23 +155,23 @@ function operationalEvidence(mode) {
     },
     measurement: {
       schema: 'solguard-measurement-transition-evidence.v1',
-      required: ['measurement_context', 'measurement_report_root', 'campaign_manifest_root', 'denominator_root', 'instance_binding_root', 'independent_verifier_root', 'immutable_evidence_root']
+      required: ['measurement_context', 'measurement_report_root', 'campaign_manifest_root', 'denominator_root', 'instance_binding_root', 'assurance_verifier_root', 'immutable_evidence_root']
     },
     database_cutover: {
       schema: 'solguard-database-cutover-receipt.v1',
-      required: ['database_cutover_context', 'legacy_backup_path', 'legacy_backup_digest', 'legacy_read_only_freeze_receipt', 'new_database_path', 'new_database_create_once_receipt', 'migration_counts', 'migration_roots', 'migration_provenance_root', 'shadow_equivalence_root', 'zero_legacy_writers_receipt', 'cutover_event_id', 'guard_retention_root', 'restore_rollback_receipt', 'forward_rollback_receipt', 'partial_failure_matrix_root', 'independent_verifier_root', 'immutable_evidence_root']
+      required: ['database_cutover_context', 'legacy_backup_path', 'legacy_backup_digest', 'legacy_read_only_freeze_receipt', 'new_database_path', 'new_database_create_once_receipt', 'migration_counts', 'migration_roots', 'migration_provenance_root', 'shadow_equivalence_root', 'zero_legacy_writers_receipt', 'cutover_event_id', 'guard_retention_root', 'restore_rollback_receipt', 'forward_rollback_receipt', 'partial_failure_matrix_root', 'assurance_verifier_root', 'immutable_evidence_root']
     },
     final_evidence: {
       schema: 'solguard-final-evidence-transition.v1',
-      required: ['final_evidence_context', 'dossier_entry_root', 'instance_binding_root', 'independent_verifier_root', 'immutable_evidence_root']
+      required: ['final_evidence_context', 'dossier_entry_root', 'instance_binding_root', 'assurance_verifier_root', 'immutable_evidence_root']
     },
     release_pre_tag: {
       schema: 'solguard-release-pre-tag-transition.v1',
-      required: ['release_pre_tag_context', 'release_decision_event_id', 'prepromotion_state_root', 'release_pre_tag_dossier_self_hash', 'dsse_envelope_root', 'threshold_signature_receipt', 'tag_absence_proof', 'independent_verifier_root', 'immutable_evidence_root']
+      required: ['release_pre_tag_context', 'release_decision_event_id', 'prepromotion_state_root', 'release_pre_tag_dossier_self_hash', 'dsse_envelope_root', 'threshold_signature_receipt', 'tag_absence_proof', 'assurance_verifier_root', 'immutable_evidence_root']
     },
     post_tag_terminal: {
       schema: 'solguard-post-tag-terminal-transition.v1',
-      required: ['post_tag_terminal_context', 'final_006_event_id', 'final_006_dossier_self_hash', 'final_006_cumulative_root', 'tag_realization_receipt_15_of_15', 'post_tag_terminal_dossier_self_hash', 'pre_state_plus_transition_input_root', 'independent_verifier_root', 'immutable_evidence_root']
+      required: ['post_tag_terminal_context', 'final_006_event_id', 'final_006_dossier_self_hash', 'final_006_cumulative_root', 'tag_realization_receipt_15_of_15', 'post_tag_terminal_dossier_self_hash', 'pre_state_plus_transition_input_root', 'assurance_verifier_root', 'immutable_evidence_root']
     }
   };
   const profile = profiles[mode];
@@ -180,7 +180,7 @@ function operationalEvidence(mode) {
 }
 
 function freezeEvidenceFor(node) {
-  const common = ['freeze_attestation_context', 'attestation_kind', 'prefreeze_validation_event_ids', 'prefreeze_validation_event_roots', 'candidate_full_sha_tree_root', 'candidate_manifest_root', 'instance_binding_root', 'independent_verifier_root'];
+  const common = ['freeze_attestation_context', 'attestation_kind', 'prefreeze_validation_event_ids', 'prefreeze_validation_event_roots', 'candidate_full_sha_tree_root', 'candidate_manifest_root', 'instance_binding_root', 'assurance_verifier_root'];
   if (node.id === 'SCOPE-900') return {
     ...closedOperationalProfile('solguard-freeze-attestation.v1', 'detection_scope_freeze', [...common, 'scope_manifest_set_root', 'scope_manifest_count', 'runtime_reachability_closure_root', 'forbidden_capability_absence_root'], ['scanner_runtime_bom_root', 'evaluator_bom_root', 'governance_bom_root', 'isolation_closure_root']),
     cardinality: { prefreeze_validation_event_ids: 7, prefreeze_validation_event_roots: 7, scope_manifest_count: 30 }
@@ -222,7 +222,7 @@ function campaignEvidenceFor(node) {
   if (node.id === 'CORPUS-905' || node.id === 'VERTICAL-EVM-CORPUS-001') return closedOperationalProfile(
     'solguard-corpus-snapshot-transition.v1',
     'corpus_snapshot',
-    ['campaign_context', ...(node.id === 'VERTICAL-EVM-CORPUS-001' ? ['claim_profile', 'scope_ids'] : []), 'corpus_manifest_root', 'truth_item_set_root', 'contamination_event_set_root', 'contamination_root_at_freeze', 'historical_reconciliation_root', 'instance_binding_root', 'signatures', 'independent_verifier_root'],
+    ['campaign_context', ...(node.id === 'VERTICAL-EVM-CORPUS-001' ? ['claim_profile', 'scope_ids'] : []), 'corpus_manifest_root', 'truth_item_set_root', 'contamination_event_set_root', 'contamination_root_at_freeze', 'historical_reconciliation_root', 'instance_binding_root', 'signatures', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'campaign_manifest_roots', 'measurement_report_root']
   );
   if (node.id === 'HOLDOUT-906') return closedOperationalProfile(
@@ -262,73 +262,73 @@ function measurementEvidenceFor(node) {
   if (/^VERTICAL-EVM-HGEN-[AB]-001$/.test(node.id)) return closedOperationalProfile(
     'solguard-measurement-transition-evidence.v1',
     'h_gen_scope_replica',
-    ['measurement_context', 'vertical_profile_root', 'claim_profile', 'scope_ids', 'campaign_manifest_roots', 'campaign_manifest_count', 'replica_role', 'counterpart_campaign_id', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'denominator_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'independent_verifier_root'],
+    ['measurement_context', 'vertical_profile_root', 'claim_profile', 'scope_ids', 'campaign_manifest_roots', 'campaign_manifest_count', 'replica_role', 'counterpart_campaign_id', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'denominator_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root']
   );
   if (/-C5[AB]$/.test(node.id)) return closedOperationalProfile(
     'solguard-measurement-transition-evidence.v1',
     'h_gen_scope_replica',
-    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'replica_role', 'counterpart_campaign_id', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'denominator_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'independent_verifier_root'],
+    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'replica_role', 'counterpart_campaign_id', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'denominator_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root']
   );
   if (node.id === 'CANARY-909' || node.id === 'VERTICAL-EVM-CANARY-001') return closedOperationalProfile(
     'solguard-canary-validation-receipt.v1',
     'canary_validation',
-    ['measurement_context', ...(node.id === 'VERTICAL-EVM-CANARY-001' ? ['claim_profile', 'scope_ids'] : []), 'canary_run_manifest_root', 'canary_result_root', 'candidate_manifest_root', 'database_cutover_event_id', 'failure_predicate_results', 'independent_verifier_root'],
+    ['measurement_context', ...(node.id === 'VERTICAL-EVM-CANARY-001' ? ['claim_profile', 'scope_ids'] : []), 'canary_run_manifest_root', 'canary_result_root', 'candidate_manifest_root', 'database_cutover_event_id', 'failure_predicate_results', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'campaign_manifest_roots', 'measurement_report_root', 'measurement_report_roots']
   );
   if (node.id === 'KNOWN-910' || node.id === 'VERTICAL-EVM-KNOWN-001') return closedOperationalProfile(
     'solguard-measurement-transition-evidence.v1',
     'known_campaign',
-    ['measurement_context', ...(node.id === 'VERTICAL-EVM-KNOWN-001' ? ['claim_profile', 'scope_ids'] : []), 'known_run_manifest_root', 'corpus_manifest_root', 'truth_item_set_root', 'measurement_report_root', 'denominator_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'independent_verifier_root'],
+    ['measurement_context', ...(node.id === 'VERTICAL-EVM-KNOWN-001' ? ['claim_profile', 'scope_ids'] : []), 'known_run_manifest_root', 'corpus_manifest_root', 'truth_item_set_root', 'measurement_report_root', 'denominator_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'assurance_verifier_root'],
     ['campaign_manifest_roots', 'measurement_report_roots', 'blind_claim_credit']
   );
   if (/^VERTICAL-EVM-HNOVEL-[AB]-001$/.test(node.id)) return closedOperationalProfile(
     'solguard-measurement-transition-evidence.v1',
     'h_novel_scope_replica',
-    ['measurement_context', 'vertical_profile_root', 'claim_profile', 'scope_ids', 'campaign_manifest_roots', 'campaign_manifest_count', 'replica_role', 'counterpart_campaign_id', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'denominator_root', 'novelty_inventory_root', 'novelty_taxonomy_root', 'novelty_classification_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'post_reveal_contamination_root', 'instance_binding_root', 'independent_verifier_root'],
+    ['measurement_context', 'vertical_profile_root', 'claim_profile', 'scope_ids', 'campaign_manifest_roots', 'campaign_manifest_count', 'replica_role', 'counterpart_campaign_id', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'denominator_root', 'novelty_inventory_root', 'novelty_taxonomy_root', 'novelty_classification_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'post_reveal_contamination_root', 'instance_binding_root', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root']
   );
   if (node.id === 'NOVELRUN-912') return closedOperationalProfile(
     'solguard-measurement-transition-evidence.v1',
     'h_novel_pair_aggregate',
-    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'measurement_report_set_root', 'denominator_roots', 'novelty_inventory_root', 'novelty_taxonomy_root', 'novelty_classification_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'post_reveal_contamination_root', 'instance_binding_root', 'independent_verifier_root'],
+    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'measurement_report_set_root', 'denominator_roots', 'novelty_inventory_root', 'novelty_taxonomy_root', 'novelty_classification_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'post_reveal_contamination_root', 'instance_binding_root', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root']
   );
   if (node.id === 'LIVE-913' || node.id === 'VERTICAL-EVM-LIVE-001') return closedOperationalProfile(
     'solguard-live-measurement-transition.v1',
     'live_auth_campaign',
-    ['measurement_context', ...(node.id === 'VERTICAL-EVM-LIVE-001' ? ['vertical_profile_root', 'claim_profile', 'scope_ids'] : []), 'campaign_manifest_roots', 'campaign_manifest_count', 'measurement_report_roots', 'measurement_report_count', 'live_authorization_artifact_roots', 'live_authorization_artifact_count', 'live_authorization_status_root', 'attempt_authorization_check_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'independent_verifier_root'],
+    ['measurement_context', ...(node.id === 'VERTICAL-EVM-LIVE-001' ? ['vertical_profile_root', 'claim_profile', 'scope_ids'] : []), 'campaign_manifest_roots', 'campaign_manifest_count', 'measurement_report_roots', 'measurement_report_count', 'live_authorization_artifact_roots', 'live_authorization_artifact_count', 'live_authorization_status_root', 'attempt_authorization_check_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'instance_binding_root', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root', 'live_authorization_artifact_root']
   );
   if (node.id === 'TEST-V5' || node.id === 'VERTICAL-EVM-V5-001') return closedOperationalProfile(
     'solguard-operational-validation-receipt.v1',
     'known_validation',
-    ['measurement_context', ...(node.id === 'VERTICAL-EVM-V5-001' ? ['claim_profile', 'scope_ids'] : []), 'known_run_manifest_root', 'corpus_manifest_root', 'candidate_manifest_root', 'failure_predicate_results', 'independent_verifier_root'],
+    ['measurement_context', ...(node.id === 'VERTICAL-EVM-V5-001' ? ['claim_profile', 'scope_ids'] : []), 'known_run_manifest_root', 'corpus_manifest_root', 'candidate_manifest_root', 'failure_predicate_results', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'campaign_manifest_roots']
   );
   if (node.id === 'TEST-V6') return closedOperationalProfile(
     'solguard-operational-validation-receipt.v1',
     'h_gen_pair_aggregate',
-    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'campaign_pair_set_root', 'operand_measurement_event_ids', 'operand_measurement_event_set_root', 'measurement_report_roots', 'measurement_report_count', 'measurement_report_set_root', 'denominator_roots', 'failure_predicate_results', 'independent_verifier_root'],
+    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'campaign_pair_set_root', 'operand_measurement_event_ids', 'operand_measurement_event_set_root', 'measurement_report_roots', 'measurement_report_count', 'measurement_report_set_root', 'denominator_roots', 'failure_predicate_results', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root']
   );
   if (node.id === 'TEST-V7') return closedOperationalProfile(
     'solguard-operational-validation-receipt.v1',
     'h_novel_pair_aggregate',
-    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'truth_reveal_set_root', 'novelty_inventory_root', 'novelty_taxonomy_root', 'novelty_classification_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'post_reveal_contamination_root', 'failure_predicate_results', 'independent_verifier_root'],
+    ['measurement_context', 'campaign_manifest_roots', 'campaign_manifest_count', 'campaign_pair_set_root', 'measurement_report_roots', 'measurement_report_count', 'truth_reveal_set_root', 'novelty_inventory_root', 'novelty_taxonomy_root', 'novelty_classification_set_root', 'target_policy_openings_root', 'finding_materiality_assessments_root', 'post_reveal_contamination_root', 'failure_predicate_results', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root']
   );
   if (node.id === 'TEST-V8') return closedOperationalProfile(
     'solguard-operational-validation-receipt.v1',
     'live_auth_campaign',
-    ['measurement_context', 'live_authorization_artifact_roots', 'live_authorization_artifact_count', 'live_authorization_status_root', 'attempt_authorization_check_set_root', 'campaign_manifest_roots', 'campaign_manifest_count', 'measurement_report_roots', 'measurement_report_count', 'failure_predicate_results', 'independent_verifier_root'],
+    ['measurement_context', 'live_authorization_artifact_roots', 'live_authorization_artifact_count', 'live_authorization_status_root', 'attempt_authorization_check_set_root', 'campaign_manifest_roots', 'campaign_manifest_count', 'measurement_report_roots', 'measurement_report_count', 'failure_predicate_results', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root', 'live_authorization_artifact_root']
   );
   if (node.id === 'TEST-CHAOS' || node.id === 'VERTICAL-EVM-CHAOS-001') return closedOperationalProfile(
     'solguard-chaos-validation-receipt.v1',
     'chaos_validation',
-    ['measurement_context', ...(node.id === 'VERTICAL-EVM-CHAOS-001' ? ['vertical_profile_root', 'claim_profile', 'scope_ids'] : []), 'run_manifest_roots', 'run_manifest_count', 'run_manifest_set_root', 'declared_campaign_reference_roots', 'declared_campaign_reference_count', 'fault_injection_matrix_root', 'recovery_result_set_root', 'failure_predicate_results', 'independent_verifier_root'],
+    ['measurement_context', ...(node.id === 'VERTICAL-EVM-CHAOS-001' ? ['vertical_profile_root', 'claim_profile', 'scope_ids'] : []), 'run_manifest_roots', 'run_manifest_count', 'run_manifest_set_root', 'declared_campaign_reference_roots', 'declared_campaign_reference_count', 'fault_injection_matrix_root', 'recovery_result_set_root', 'failure_predicate_results', 'assurance_verifier_root'],
     ['campaign_manifest_root', 'measurement_report_root']
   );
   throw new Error(`Unclassified measurement node ${node.id}`);
@@ -895,13 +895,13 @@ for (const receiptId of ['C2-CON-RM-14', 'C2-CON-RM-15']) {
     reference: '09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md',
     criteria_id: receiptId,
     criteria_locator: 'contribution_table_row',
-    must_hold: ['exact_owner_repo', 'bounded_inventory_complete', 'absence_predicate_true', 'repo_tree_digest_bound', 'commands_exit_zero', 'immutable_unique_receipt_root', 'independent_verifier_accept', 'no_repository_write']
+    must_hold: ['exact_owner_repo', 'bounded_inventory_complete', 'absence_predicate_true', 'repo_tree_digest_bound', 'commands_exit_zero', 'immutable_unique_receipt_root', 'assurance_verifier_accept', 'no_repository_write']
   };
   item.evidence_descriptor = {
     schema: 'solguard-absence-receipt-contribution.v1',
     profile: 'absence_receipt_contribution',
     closed: true,
-    required: ['contribution_manifest', 'contribution_id', 'parent_primary_id', 'owner_repo', 'repo_tree_digest', 'bounded_inventory', 'absence_predicate', 'absence_report', 'commands_with_exit_codes', 'immutable_receipt_root', 'independent_verifier_root'],
+    required: ['contribution_manifest', 'contribution_id', 'parent_primary_id', 'owner_repo', 'repo_tree_digest', 'bounded_inventory', 'absence_predicate', 'absence_report', 'commands_with_exit_codes', 'immutable_receipt_root', 'assurance_verifier_root'],
     forbidden: ['branch', 'commit', 'commits', 'changed_files', 'source_tree_writes', 'changelog_update', 'primary_transition_proposal', 'claim_transition']
   };
 }
@@ -941,13 +941,13 @@ ledger.transition_contract = {
   },
   operations: {
     genesis_batch: { mode: 'bootstrap', targets: 'exact_interleaved_topological_order_from_genesis_batch', atomic: true, dependency_evaluation: 'within_single_tentative_post_state_without_preexisting_intra_batch_acceptance' },
-    accept_contribution: { mode: 'contribution_implementation_or_absence_receipt_contribution', target_kind: 'contribution', forbidden_for_genesis_members: true, requires: ['all_hard_contribution_dependencies_accepted', 'exact_publication_SHA_or_receipt_identity', 'dependency_evidence_roots_match', 'accepted_implementation_ref_materialized', 'independent_verifier_accept'] },
+    accept_contribution: { mode: 'contribution_implementation_or_absence_receipt_contribution', target_kind: 'contribution', forbidden_for_genesis_members: true, requires: ['all_hard_contribution_dependencies_accepted', 'exact_publication_SHA_or_receipt_identity', 'dependency_evidence_roots_match', 'accepted_implementation_ref_materialized', 'assurance_verifier_accept'] },
     reopen_contribution: { mode: 'contribution_implementation_or_absence_receipt_contribution', target_kind: 'contribution', requires: ['previous_state_version_evidence_verifier_dependency_roots', 'typed_invalidation_reason'], propagation: { mutable_primary_or_contribution: 'set_reopened', derived: 'invalidate_materialization_receipt_and_recompute_unsatisfied_without_reopened_state' } },
-    accept_primary: { mode: 'implementation', target_kind: 'primary', requires: ['exact_required_contribution_set_accepted', 'integration_e2e_root', 'independent_verifier_accept'] },
+    accept_primary: { mode: 'implementation', target_kind: 'primary', requires: ['exact_required_contribution_set_accepted', 'integration_e2e_root', 'assurance_verifier_accept'] },
     reopen_primary: { mode: 'implementation_or_active_epoch_only', target_kind: 'primary', forbidden: ['closed_candidate_epoch_operational_pass', 'closed_candidate_epoch_terminal_nonpass'], correction_for_closed_epoch: 'append_invalidation_and_create_successor_epoch_without_mutating_historical_event', propagation: { mutable_primary_or_contribution: 'set_reopened', active_epoch_derived: 'invalidate_materialization_receipt_and_recompute_unsatisfied_without_reopened_state', closed_epoch_boundary: 'stop_at_accepted_candidate_epoch_closure_receipt_and_preserve_historical_verdict' } },
     record_candidate_epoch_open: { mode: 'candidate_epoch', target_kind: 'primary', create_once: true, lifecycle_state: 'open', future_validation_or_freeze_event_ids: 'forbidden' },
     record_candidate_epoch_close: { mode: 'candidate_epoch_close', target_kind: 'primary', accepts_metric_outcome: 'pass_or_nonpass_but_only_evidence_complete_transition_is_accepted', preimage_rule: 'consumes_preclose_dossier_and_never_contains_own_event_or_postclose_root', post_persistence_receipt: 'create_once_solguard_candidate_epoch_closure_receipt_v1_binds_persisted_close_event_and_ledger_root' },
-    record_upstream_nonpass: { mode: 'operational_terminalization_override', target_kind: 'primary', target_state: 'terminal_not_run', ordinary_dependency_readiness_bypass: 'only_for_nonpass_terminalization_never_for_acceptance', blocking_path_edge_union: ['hard', 'instance_bound_contract', 'integration_readiness'], pure_schema_contract_edge_rule: 'schema_producer_nonpass_blocks_only_when_contract_instance_is_required_for_this_target', requires: ['same_candidate_epoch_id_and_root', 'immutable_readiness_DAG_path_root', 'blocking_dependency_edge_set_root', 'blocking_ancestor_ids', 'blocking_terminal_event_ids', 'blocking_terminal_evidence_roots', 'reason_exact_upstream_nonpass', 'planned_denominator_or_frame_root', 'zero_attempt_receipt_root', 'independent_verifier_accept'], rejects: ['target_still_runnable', 'blocking_ancestor_not_terminal_nonpass', 'path_mismatch', 'cross_epoch_target_or_ancestor', 'missing_or_reopened_ancestor', 'accepted_or_claim_satisfying_result'] },
+    record_upstream_nonpass: { mode: 'operational_terminalization_override', target_kind: 'primary', target_state: 'terminal_not_run', ordinary_dependency_readiness_bypass: 'only_for_nonpass_terminalization_never_for_acceptance', blocking_path_edge_union: ['hard', 'instance_bound_contract', 'integration_readiness'], pure_schema_contract_edge_rule: 'schema_producer_nonpass_blocks_only_when_contract_instance_is_required_for_this_target', requires: ['same_candidate_epoch_id_and_root', 'immutable_readiness_DAG_path_root', 'blocking_dependency_edge_set_root', 'blocking_ancestor_ids', 'blocking_terminal_event_ids', 'blocking_terminal_evidence_roots', 'reason_exact_upstream_nonpass', 'planned_denominator_or_frame_root', 'zero_attempt_receipt_root', 'assurance_verifier_accept'], rejects: ['target_still_runnable', 'blocking_ancestor_not_terminal_nonpass', 'path_mismatch', 'cross_epoch_target_or_ancestor', 'missing_or_reopened_ancestor', 'accepted_or_claim_satisfying_result'] },
     record_validation: { mode: 'validation', target_kind: 'primary', outcome_union: ['accepted', 'terminal_failed', 'terminal_invalid', 'insufficient_evidence'] },
     record_freeze_attestation: { mode: 'freeze_attestation', target_kind: 'primary', outcome_union: ['accepted', 'terminal_failed', 'terminal_invalid', 'insufficient_evidence'] },
     record_campaign: { mode: 'campaign', target_kind: 'primary', outcome_union: ['accepted', 'terminal_failed', 'terminal_invalid', 'insufficient_evidence'] },
@@ -1123,7 +1123,7 @@ ledger.candidate_epoch_closure_receipt_contract = {
 ledger.candidate_epoch_close_transition_contract = {
   schema: 'solguard-candidate-epoch-close-transition.v1',
   closed: true,
-  common_required: ['candidate_epoch_close_context', 'source_candidate_epoch_id', 'source_candidate_epoch_root', 'preclose_candidate_epoch_state_root', 'preclose_dossier_ref', 'preclose_dossier_content_digest', 'preclose_dossier_root', 'frozen_membership_root', 'frozen_membership_count', 'terminal_state_event_binding_set_root', 'terminal_state_event_binding_count', 'primary_observation_event_ids', 'primary_observation_evidence_roots', 'primary_observation_count', 'derived_observation_event_ids', 'derived_observation_evaluation_roots', 'derived_observation_operand_state_hashes', 'derived_observation_count', 'derived_claim_evaluation_event_id', 'derived_claim_result', 'derived_claim_evaluation_root', 'closure_outcome', 'coverage_predicate_results', 'independent_verifier_root', 'immutable_evidence_root'],
+  common_required: ['candidate_epoch_close_context', 'source_candidate_epoch_id', 'source_candidate_epoch_root', 'preclose_candidate_epoch_state_root', 'preclose_dossier_ref', 'preclose_dossier_content_digest', 'preclose_dossier_root', 'frozen_membership_root', 'frozen_membership_count', 'terminal_state_event_binding_set_root', 'terminal_state_event_binding_count', 'primary_observation_event_ids', 'primary_observation_evidence_roots', 'primary_observation_count', 'derived_observation_event_ids', 'derived_observation_evaluation_roots', 'derived_observation_operand_state_hashes', 'derived_observation_count', 'derived_claim_evaluation_event_id', 'derived_claim_result', 'derived_claim_evaluation_root', 'closure_outcome', 'coverage_predicate_results', 'assurance_verifier_root', 'immutable_evidence_root'],
   branch_union: {
     vertical_contamination_close: { required: ['train_dev_contamination_import_root', 'train_dev_classification_root'], forbidden: ['full_terminal_coverage_root'] },
     full_terminal_close: { required: ['full_terminal_coverage_root'], forbidden: ['train_dev_contamination_import_root', 'train_dev_classification_root'] }
@@ -1137,7 +1137,7 @@ ledger.candidate_epoch_close_transition_contract = {
 ledger.upstream_nonpass_receipt_contract = {
   schema: 'solguard-upstream-nonpass-receipt.v1',
   closed: true,
-  required: ['candidate_epoch_id', 'candidate_epoch_root', 'target_primary_id', 'target_primary_version', 'immutable_readiness_DAG_path_root', 'blocking_dependency_edge_set_root', 'blocking_ancestor_ids', 'blocking_terminal_event_ids', 'blocking_terminal_evidence_roots', 'reason', 'planned_denominator_or_frame_root', 'zero_attempt_receipt_root', 'independent_verifier_root', 'self_hash'],
+  required: ['candidate_epoch_id', 'candidate_epoch_root', 'target_primary_id', 'target_primary_version', 'immutable_readiness_DAG_path_root', 'blocking_dependency_edge_set_root', 'blocking_ancestor_ids', 'blocking_terminal_event_ids', 'blocking_terminal_evidence_roots', 'reason', 'planned_denominator_or_frame_root', 'zero_attempt_receipt_root', 'assurance_verifier_root', 'self_hash'],
   constants: { reason: 'upstream_nonpass', target_state: 'terminal_not_run' },
   allowed_blocking_edges: ['hard', 'instance_bound_contract', 'integration_readiness'],
   forbidden: ['accepted_state', 'claim_satisfaction', 'nonzero_attempt_count', 'cross_epoch_ancestor', 'runnable_target']
@@ -1209,7 +1209,7 @@ for (const node of nodes.values()) {
     schema: 'solguard-derived-materialization-receipt.v1',
     profile: 'h_gen_pair_aggregate',
     closed: true,
-    required: ['ledger_revision', 'formula_digest', 'operand_state_hash', 'generator_version', 'operand_event_ids', 'operand_evidence_roots', 'materialization_receipt', 'independent_verifier_root'],
+    required: ['ledger_revision', 'formula_digest', 'operand_state_hash', 'generator_version', 'operand_event_ids', 'operand_evidence_roots', 'materialization_receipt', 'assurance_verifier_root'],
     forbidden: gitForbidden
   };
   node.measurement_subtype = 'h_gen_pair_aggregate';
@@ -1239,7 +1239,7 @@ function makeDerived(id, operands, mustHold, operational = false, profile = 'non
       schema: 'solguard-derived-materialization-receipt.v1',
       profile,
       closed: true,
-      required: ['ledger_revision', 'formula_digest', 'operand_state_hash', 'generator_version', 'computed_result', 'operand_event_ids', 'operand_evidence_roots', 'materialization_receipt', 'independent_verifier_root'],
+      required: ['ledger_revision', 'formula_digest', 'operand_state_hash', 'generator_version', 'computed_result', 'operand_event_ids', 'operand_evidence_roots', 'materialization_receipt', 'assurance_verifier_root'],
       forbidden: gitForbidden
     } : {
       schema: 'solguard-derived-evaluation.v1',
@@ -1347,12 +1347,12 @@ function makeDerived(id, operands, mustHold, operational = false, profile = 'non
       reference: '09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md',
       criteria_id: id,
       criteria_locator: 'heading_or_table_row',
-      must_hold: [`suite_id_exact_${suiteId}`, 'candidate_epoch_and_root_exact_RC_V_EVM_1', 'manifest_environment_commands_denominator_outputs_and_failures_complete', 'terminal_outcome_typed_and_never_coerced_to_accepted', 'independent_verifier_accepts_evidence_integrity_not_metric_result']
+      must_hold: [`suite_id_exact_${suiteId}`, 'candidate_epoch_and_root_exact_RC_V_EVM_1', 'manifest_environment_commands_denominator_outputs_and_failures_complete', 'terminal_outcome_typed_and_never_coerced_to_accepted', 'assurance_verifier_accepts_evidence_integrity_not_metric_result']
     };
     node.evidence_descriptor = closedOperationalProfile(
       'solguard-validation-record.v1',
       `vertical_prefreeze_${suiteId.toLowerCase().replace('-', '_')}`,
-      ['validation_id', 'validation_suite_id', 'validation_manifest_root', 'candidate_manifest_root', 'candidate_full_sha_tree_root', 'environment_root', 'denominator_root', 'command_execution_result_set_root', 'output_root', 'failure_predicate_results', 'terminal_outcome', 'terminal_reason_root', 'independent_verifier_root'],
+      ['validation_id', 'validation_suite_id', 'validation_manifest_root', 'candidate_manifest_root', 'candidate_full_sha_tree_root', 'environment_root', 'denominator_root', 'command_execution_result_set_root', 'output_root', 'failure_predicate_results', 'terminal_outcome', 'terminal_reason_root', 'assurance_verifier_root'],
       ['campaign_context', 'measurement_context']
     );
     nodes.set(id, node);
@@ -1463,7 +1463,7 @@ function makeDerived(id, operands, mustHold, operational = false, profile = 'non
     node.evidence_mode = 'measurement';
     node.required_contribution_ids = [];
     node.transition_operation = 'record_measurement';
-    node.predicate = { type: 'vertical_scope_replica_measurement', reference: '09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md', criteria_id: id, criteria_locator: 'heading_or_table_row', must_hold: ['claim_profile_exact_bounty_vertical', 'scope_ids_exact_SOL_EVM_DEFI', 'vertical_profile_root_exact', `replica_role_exact_${role}`, `exact_vertical_${pairKind}_${role}_manifest_report_denominator_and_policy_roots`, 'counterpart_and_pair_set_root_exact', 'same_candidate_thresholds_power_and_fixed_denominators', 'vertical_cohorts_targets_disjoint_from_global', 'no_global_operational_or_test_event_reuse', 'independent_verifier_accept'] };
+    node.predicate = { type: 'vertical_scope_replica_measurement', reference: '09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md', criteria_id: id, criteria_locator: 'heading_or_table_row', must_hold: ['claim_profile_exact_bounty_vertical', 'scope_ids_exact_SOL_EVM_DEFI', 'vertical_profile_root_exact', `replica_role_exact_${role}`, `exact_vertical_${pairKind}_${role}_manifest_report_denominator_and_policy_roots`, 'counterpart_and_pair_set_root_exact', 'same_candidate_thresholds_power_and_fixed_denominators', 'vertical_cohorts_targets_disjoint_from_global', 'no_global_operational_or_test_event_reuse', 'assurance_verifier_accept'] };
     node.evidence_descriptor = measurementEvidenceFor(node);
     nodes.set(id, node);
   };
@@ -1861,7 +1861,7 @@ for (const node of nodes.values()) {
       schema: 'solguard-scope-certification-materialization-receipt.v1',
       profile: 'scope_certification',
       closed: true,
-      required: ['ledger_revision', 'scope_id', 'formula_digest', 'operand_state_hash', 'generator_version', 'operand_event_ids', 'operand_evidence_roots', 'candidate_manifest_root', 'scanner_runtime_bom_root', 'evaluator_bom_root', 'governance_bom_root', 'published_limits_root', 'certification_artifact_ref', 'certification_content_digest', 'certification_root', 'independent_verifier_root', 'external_timestamp_receipt_set_root'],
+      required: ['ledger_revision', 'scope_id', 'formula_digest', 'operand_state_hash', 'generator_version', 'operand_event_ids', 'operand_evidence_roots', 'candidate_manifest_root', 'scanner_runtime_bom_root', 'evaluator_bom_root', 'governance_bom_root', 'published_limits_root', 'certification_artifact_ref', 'certification_content_digest', 'certification_root', 'assurance_verifier_root', 'external_timestamp_receipt_set_root'],
       cardinality: { operand_event_ids: 8, operand_evidence_roots: 8, scanner_runtime_bom_root: 1, evaluator_bom_root: 1, governance_bom_root: 1, certification_root: 1 },
       forbidden: [...gitForbidden, 'campaign_context', 'measurement_context', 'primary_state_write', 'derived_state_write', 'tag_realization_receipt']
     };
@@ -1871,7 +1871,7 @@ for (const node of nodes.values()) {
       schema: 'solguard-release-decision-materialization-receipt.v1',
       profile: 'release_decision',
       closed: true,
-      required: ['ledger_revision', 'release_decision_event_id', 'release_decision_event_hash', 'pre_promotion_ledger_root', 'formula_digest', 'operand_state_hash', 'generator_version', 'operand_event_ids', 'operand_evidence_roots', 'release_authority_id', 'release_authority_key_id', 'release_authority_signature', 'independent_verifier_root', 'external_timestamp_receipt_set_root'],
+      required: ['ledger_revision', 'release_decision_event_id', 'release_decision_event_hash', 'pre_promotion_ledger_root', 'formula_digest', 'operand_state_hash', 'generator_version', 'operand_event_ids', 'operand_evidence_roots', 'release_authority_id', 'release_authority_key_id', 'release_authority_signature', 'assurance_verifier_root', 'external_timestamp_receipt_set_root'],
       cardinality: { operand_event_ids: node.formula.operands.length, operand_evidence_roots: node.formula.operands.length },
       forbidden: [...gitForbidden, 'post_promotion_ledger_root', 'post_state_root', 'tag_realization_receipt', 'dsse_envelope_root', 'release_pre_tag_context', 'post_tag_terminal_context', 'primary_state_write', 'derived_state_write']
     };

@@ -249,6 +249,35 @@ function validateCounts(ledger) {
   }
 }
 
+function validateAssuranceProfile(ledger) {
+  check(ledger.assurance_mode === "development", "ASSURANCE_MODE", String(ledger.assurance_mode));
+  check(
+    ledger.assurance_level === "single-custodian",
+    "ASSURANCE_LEVEL",
+    String(ledger.assurance_level),
+  );
+  const profiles = ledger.live_authorization_contract?.assurance_profiles;
+  check(profiles?.production?.assurance_level === "independent-custodians", "PRODUCTION_ASSURANCE_LEVEL");
+  check(profiles?.production?.required_distinct_custodian_count === 4, "PRODUCTION_CUSTODIAN_COUNT");
+  check(profiles?.development?.assurance_level === "single-custodian", "DEVELOPMENT_ASSURANCE_LEVEL");
+  check(profiles?.development?.required_distinct_custodian_count === 1, "DEVELOPMENT_CUSTODIAN_COUNT");
+  check(profiles?.development?.required_distinct_ed25519_public_key_count === 4, "DEVELOPMENT_KEY_COUNT");
+  check(profiles?.development?.independence_claim === "forbidden", "DEVELOPMENT_INDEPENDENCE_CLAIM");
+  check(profiles?.immutable_after_genesis === true, "ASSURANCE_IMMUTABLE_AFTER_GENESIS");
+  for (const field of ["assurance_mode", "assurance_level"]) {
+    check(
+      ledger.transition_contract?.common_event_required?.includes(field),
+      "ASSURANCE_EVENT_FIELD",
+      field,
+    );
+    check(
+      ledger.transition_contract?.commit_receipt?.required?.includes(field),
+      "ASSURANCE_RECEIPT_FIELD",
+      field,
+    );
+  }
+}
+
 function validateIdsAndGraph(ledger) {
   const nodes = ledger.nodes ?? [];
   const contributions = ledger.contributions ?? [];
@@ -1723,14 +1752,14 @@ function validateMarkdown(ledger) {
   }
 
   check(
-    ledger.program_version === "solguard-detection-maturity-2026-07-25.3",
+    ledger.program_version === "solguard-detection-maturity-2026-07-25.4",
     "PROGRAM_VERSION",
     String(ledger.program_version),
   );
   const allText = [...contents.values()].join("\n");
   check(
-    !/solguard-detection-maturity-2026-07-25\.2\b/.test(`${allText}\n${JSON.stringify(ledger)}`),
-    "STALE_PROGRAM_VERSION_2",
+    !/solguard-detection-maturity-2026-07-25\.[23]\b/.test(`${allText}\n${JSON.stringify(ledger)}`),
+    "STALE_PROGRAM_VERSION",
   );
   check(!/claim_required_pass/i.test(`${allText}\n${JSON.stringify(ledger)}`), "STALE_CLAIM_REQUIRED_PASS");
 
@@ -1836,6 +1865,7 @@ function main() {
   if (!ledger) finish();
   check(Array.isArray(ledger.nodes), "NODES_NOT_ARRAY");
   check(Array.isArray(ledger.contributions), "CONTRIBUTIONS_NOT_ARRAY");
+  validateAssuranceProfile(ledger);
   validateCounts(ledger);
   const graph = validateIdsAndGraph(ledger);
   validateScopesAndRows(ledger, graph);
