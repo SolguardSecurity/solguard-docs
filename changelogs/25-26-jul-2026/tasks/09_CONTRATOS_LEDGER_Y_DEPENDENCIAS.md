@@ -2,7 +2,7 @@
 
 Estado: contrato normativo del programa.
 
-Versión del programa: `solguard-detection-maturity-2026-07-25.3`.
+Versión del programa: `solguard-detection-maturity-2026-07-25.4`.
 
 Schema del ledger: `solguard-acceptance-ledger.v1`.
 
@@ -236,8 +236,8 @@ Cada `policy_root` se calcula como `SHA256(UTF8("solguard:resource-profile-polic
 
 | Policy | Schema | Program/version | Policy root |
 |---|---|---|---|
-| `solguard-resource-profile-policy-vertical-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.3` | `d5ce0a88f18883fe20e1c6362c959276a0738b96265fe9da7c877d44942c1801` |
-| `solguard-resource-profile-policy-full-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.3` | `f1fe7d18f5cfac3d7f1eea61a136812cd0881ad64106607fd1d4caf9a765e3cc` |
+| `solguard-resource-profile-policy-vertical-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.4` | `b8c9efad1212c83c8dff8d5fd2d48924f94ded8be5ea9cc67b9e155f6a89cc7d` |
+| `solguard-resource-profile-policy-full-v1@1` | `solguard-resource-profile-policy.v1` | `solguard-detection-maturity-2026-07-25@solguard-detection-maturity-2026-07-25.4` | `21a7fe3f60e1afcd11870753f9cebbbd6bb63511742497078f2eb1c3f649bfd8` |
 
 - Campos obligatorios del profile: `resource_profile_id`, `resource_profile_version`, `hardware_class`, `runtime_class`, `hardware_root`, `runtime_root`, `wall_time_p95_ms_max`, `wall_time_ms_max`, `cpu_time_ms_max`, `peak_ram_bytes_max`, `peak_disk_bytes_max`, `solver_time_ms_max`, `model_calls_max`, `model_tokens_max`, `model_cost_minor_units_max`, `retry_count_max`, `throughput_targets_per_hour_min`, `concurrency_limit`, `queue_limit`, `candidate_limit`, `continuation_limit`, `model_timeout_rate_max`, `schema_failure_rate_max`, `model_failure_rate_max`, `schema_or_model_failure_rate_max`, `filter_failure_count_max`, `control_oom_count_max`, `control_disk_exhaustion_count_max`, `control_noncompletion_count_max`.
 - Hard rates/counts: `{"control_disk_exhaustion_count_max":0,"control_noncompletion_count_max":0,"control_oom_count_max":0,"filter_failure_count_max":0,"model_failure_rate_max":0.01,"model_timeout_rate_max":0.02,"schema_failure_rate_max":0.01,"schema_or_model_failure_rate_max":0.01}`.
@@ -450,10 +450,25 @@ El ledger contiene **809 aristas contractuales de nodo** y **1187 bindings contr
 
 La expansión contribution→contract permanece machine-readable en `contributions[].dependencies`.
 
+<!-- GENERATED:ASSURANCE-PROFILES:BEGIN -->
+### 4.0 Perfil de assurance y custodia
+
+El par `assurance_mode`/`assurance_level` es obligatorio en ledger, event, lease, authoritative head, derived evaluation y commit receipt; debe coincidir durante toda la cadena.
+
+| Modo | Nivel | Claves Ed25519 | Custodios | Claim permitido |
+|---|---|---:|---:|---|
+| `production` | `independent-custodians` | 4 distintas | 4 distintos | independencia de custodia |
+| `development` | `single-custodian` | 4 distintas | exactamente 1 declarado | sólo ejecución single-custodian; independencia prohibida |
+
+Ambos modos rechazan key IDs, human identities o material público Ed25519 duplicado. Cambiar el perfil tras genesis exige nueva versión de programa y nueva genesis. El modo development no satisface gates ni claims que exigen custodios, holdouts, evaluadores o adjudicadores humanos independientes.
+
+En el snapshot activo development, cada `verifier_descriptor` se rotula `single_custodian_verification` (o su variante de contribution) y separa rol, contexto, credencial y clave bajo el mismo custodio declarado; no usa etiquetas de verificación independiente. El perfil production conserva los descriptores independientes.
+<!-- GENERATED:ASSURANCE-PROFILES:END -->
+
 ## 4. Schema `solguard-acceptance-ledger.v1`
 
 <!-- GENERATED:LEDGER-CONFORMANCE:BEGIN -->
-### 4.0A Snapshot de conformidad solguard-detection-maturity-2026-07-25.3
+### 4.0A Snapshot de conformidad solguard-detection-maturity-2026-07-25.4
 
 La autoridad machine-readable contiene 1671 ítems. Eventos y receipts usan JCS, CAS, lease/fencing y timestamp 2-of-2.
 

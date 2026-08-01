@@ -13,6 +13,12 @@ las puertas de aceptación descritas aquí con denominadores congelados,
 artefactos íntegros, ground truth inaccesible durante el scan y adjudicación
 independiente.
 
+Por tanto, `development/single-custodian` puede ejecutar bootstrap y trabajo de
+ingeniería, pero no satisface ninguna puerta de este documento que exija
+custodia, holdout, evaluación, confirmación o adjudicación independiente. Esas
+puertas requieren `production/independent-custodians`; no hay downgrade ni
+conversión retroactiva de receipts.
+
 El alcance termina en un finding automático, trazable, validado y
 económicamente material. La construcción de exploits, la ejecución ofensiva y
 la generación de reportes de bounty quedan fuera.

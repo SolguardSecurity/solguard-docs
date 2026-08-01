@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const P = (name) => join(DIR, name);
-const VERSION = 'solguard-detection-maturity-2026-07-25.3';
+const VERSION = 'solguard-detection-maturity-2026-07-25.4';
 const SET_SCHEMA = 'solguard-canonical-set-commitment.v1';
 const BT = String.fromCharCode(96);
 const RESOURCE_PROFILE_REQUIRED_FIELDS = [
@@ -110,7 +110,11 @@ const pset = (ledger, subject, kind, members, keyFn = jcs) =>
   committedSet(ledger, subject, kind, members, keyFn, true);
 
 function deepVersion(value) {
-  if (typeof value === 'string') return value.replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION);
+  if (typeof value === 'string') {
+    return value
+      .replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION)
+      .replaceAll('solguard-detection-maturity-2026-07-25.3', VERSION);
+  }
   if (Array.isArray(value)) return value.map(deepVersion);
   if (value && typeof value === 'object') {
     for (const key of Object.keys(value)) value[key] = deepVersion(value[key]);
@@ -490,7 +494,7 @@ function makeFullClose(template, evaluationNodes, claimNodes) {
       'claim_observation_records','claim_observation_count','claim_observation_set_root',
       'required_pass_member_set_root','required_pass_member_count',
       'pass_claim_target_set_root','pass_claim_target_count',
-      'proposed_closure_outcome','independent_verifier_root',
+      'proposed_closure_outcome','assurance_verifier_root',
       'external_timestamp_receipt_set_root','immutable_evidence_root',
       'candidate_epoch_id','candidate_epoch_root'
     ],
@@ -733,6 +737,8 @@ async function rebuild() {
   ]);
   const ledger = deepVersion(JSON.parse(raw));
   ledger.program_version = VERSION;
+  ledger.assurance_mode = 'development';
+  ledger.assurance_level = 'single-custodian';
   const rows = parseRows(commits);
   const contributions = new Map(ledger.contributions.map((item) => [item.contribution_id, item]));
   const template = ledger.contributions.find((item) =>
@@ -1286,12 +1292,13 @@ async function finalizeLedger(ledger, ownershipDomains, fRegistry) {
     'previous_authoritative_commit_receipt_ref','previous_authoritative_commit_receipt_root',
     'lease_id','lease_ref','lease_root','fencing_token',
     'expected_ledger_revision','expected_authoritative_head_root','lease_expiry',
-    'external_timestamp_quorum_2_of_2'
+    'external_timestamp_quorum_2_of_2','assurance_mode','assurance_level'
   ]);
   ledger.transition_contract.commit_receipt = {
     schema: 'solguard-acceptance-ledger-commit-receipt.v1',
     closed: true,
     required: [
+      'assurance_mode','assurance_level',
       'receipt_id','committed_event_id','event_self_hash',
       'previous_authoritative_commit_receipt_ref','previous_authoritative_commit_receipt_root',
       'lease_id','lease_root','fencing_token','expected_ledger_revision','committed_ledger_revision',
@@ -1311,6 +1318,56 @@ async function finalizeLedger(ledger, ownershipDomains, fRegistry) {
     timestamp_boundary: '2-of-2 external authorities bind event and commit receipt',
     recovery: 'ignore orphan artifacts and retry with new lease and fencing token'
   };
+  ledger.live_authorization_contract.assurance_profiles = {
+    production: {
+      assurance_level: 'independent-custodians',
+      required_role_count: 4,
+      required_distinct_custodian_count: 4,
+      duplicate_key_id_or_public_key_material: 'reject'
+    },
+    development: {
+      assurance_level: 'single-custodian',
+      required_role_count: 4,
+      required_distinct_custodian_count: 1,
+      required_distinct_key_id_count: 4,
+      required_distinct_ed25519_public_key_count: 4,
+      duplicate_key_id_or_public_key_material: 'reject',
+      independence_claim: 'forbidden'
+    },
+    immutable_after_genesis: true,
+    profile_change_rule: 'new_program_version_and_new_genesis_required'
+  };
+  const activeVerifierDescriptor = ledger.assurance_mode === 'development'
+    ? {
+        type: 'single_custodian_verification',
+        separation: 'different_role_context_and_credentials_same_declared_custodian',
+        required_verdict: 'ACCEPT',
+        forbidden: [
+          'same_key_reuse',
+          'same_run_context',
+          'waiver_as_pass',
+          'skipped_test_as_pass',
+          'independence_claim'
+        ]
+      }
+    : {
+        type: 'independent_verification',
+        separation: 'different_context_identity_and_credentials',
+        required_verdict: 'ACCEPT',
+        forbidden: ['implementer_self_acceptance', 'waiver_as_pass', 'skipped_test_as_pass']
+      };
+  for (const subject of [...ledger.nodes, ...ledger.contributions]) {
+    if (!subject.verifier_descriptor) continue;
+    const contribution = subject.kind === 'contribution';
+    subject.verifier_descriptor = {
+      ...activeVerifierDescriptor,
+      type: contribution
+        ? (ledger.assurance_mode === 'development'
+            ? 'single_custodian_contribution_verification'
+            : 'independent_contribution_verification')
+        : activeVerifierDescriptor.type
+    };
+  }
   ledger.genesis_batch.genesis_contribution_set =
     ledger.genesis_batch.genesis_contribution_set.filter((id) => !['C0-001A','C0-001B'].includes(id));
   ledger.genesis_batch.topological_order =
@@ -1434,6 +1491,8 @@ function renderChecklist(ledger) {
     '|---|---|',
     '| Programa | ' + mdCode(ledger.program_id) + ' |',
     '| Versión | ' + mdCode(ledger.program_version) + ' |',
+    '| Assurance mode | ' + mdCode(ledger.assurance_mode) + ' |',
+    '| Assurance level | ' + mdCode(ledger.assurance_level) + ' |',
     '| Revisión seed | ' + mdCode(ledger.ledger_revision) + ' |',
     '| Node ID-set root | ' + mdCode(ledger.node_id_set_sha256) + ' |',
     '| Contribution ID-set root | ' + mdCode(ledger.contribution_id_set_sha256) + ' |',
@@ -1449,7 +1508,7 @@ function renderChecklist(ledger) {
     '## 2. Reglas de progreso',
     '',
     '1. ' + mdCode('pending') + ' significa no aceptado; implementación o tests locales no cambian el ledger.',
-    '2. Cada transición exige evidencia content-addressed, verificador independiente y commit receipt linealizable.',
+    '2. Cada transición exige evidencia content-addressed, identidades/runs/contexts/claves separados y commit receipt linealizable; la separación de custodio depende del perfil de assurance explícito.',
     '3. Una contribution no acepta su primary; el integrador exige el set exacto y E2E.',
     '4. Un derived se materializa como ' + mdCode('satisfied|unsatisfied') + ' con operands exactos; nunca se marca a mano.',
     '5. Sólo un primary ' + mdCode('terminalizable=true') + ' admite nonpass tipado o ' + mdCode('terminal_not_run') + ' demostrado en el mismo epoch.',
@@ -1739,6 +1798,7 @@ function schemaRegistry(ledger, textSources, productIds) {
 async function renderContracts(ledger) {
   let text = await readFile(P('09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md'), 'utf8');
   text = text.replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION);
+  text = text.replaceAll('solguard-detection-maturity-2026-07-25.3', VERSION);
   text = replaceLegacyString(text);
   text = text.replace(
     /Contiene 541 nodos \(414 primary y 127 derived\), 1039 contribuciones owner-únicas y 1580 ítems contados\./,
@@ -1835,7 +1895,33 @@ async function renderContracts(ledger) {
     conformityEnd
   ].join('\n');
   const schemaHeading = '## 4. Schema ' + mdCode('solguard-acceptance-ledger.v1');
-  text = text.replace(schemaHeading, schemaHeading + '\n\n' + block);
+  const assuranceStart = '<!-- GENERATED:ASSURANCE-PROFILES:BEGIN -->';
+  const assuranceEnd = '<!-- GENERATED:ASSURANCE-PROFILES:END -->';
+  if (text.includes(assuranceStart)) {
+    const start = text.indexOf(assuranceStart);
+    const end = text.indexOf(assuranceEnd, start) + assuranceEnd.length;
+    text = text.slice(0, start) + text.slice(end).replace(/^\s*/, '');
+  }
+  const assuranceBlock = [
+    assuranceStart,
+    '### 4.0 Perfil de assurance y custodia',
+    '',
+    'El par ' + mdCode('assurance_mode') + '/' + mdCode('assurance_level') +
+      ' es obligatorio en ledger, event, lease, authoritative head, derived evaluation y commit receipt; debe coincidir durante toda la cadena.',
+    '',
+    '| Modo | Nivel | Claves Ed25519 | Custodios | Claim permitido |',
+    '|---|---|---:|---:|---|',
+    '| ' + mdCode('production') + ' | ' + mdCode('independent-custodians') + ' | 4 distintas | 4 distintos | independencia de custodia |',
+    '| ' + mdCode('development') + ' | ' + mdCode('single-custodian') + ' | 4 distintas | exactamente 1 declarado | sólo ejecución single-custodian; independencia prohibida |',
+    '',
+    'Ambos modos rechazan key IDs, human identities o material público Ed25519 duplicado. Cambiar el perfil tras genesis exige nueva versión de programa y nueva genesis. El modo development no satisface gates ni claims que exigen custodios, holdouts, evaluadores o adjudicadores humanos independientes.',
+    '',
+    'En el snapshot activo development, cada ' + mdCode('verifier_descriptor') +
+      ' se rotula ' + mdCode('single_custodian_verification') +
+      ' (o su variante de contribution) y separa rol, contexto, credencial y clave bajo el mismo custodio declarado; no usa etiquetas de verificación independiente. El perfil production conserva los descriptores independientes.',
+    assuranceEnd
+  ].join('\n');
+  text = text.replace(schemaHeading, assuranceBlock + '\n\n' + schemaHeading + '\n\n' + block);
   const additions = [
     '| ' + mdCode('BASELINE-009') + ' | ' + mdCode('solguard-deploy') + ' | replay baseline/loss post-genesis | ' + mdCode('C0-001A') + ', ' + mdCode('C0-001B') + ' |',
     '| ' + mdCode('MODEL-411') + ' | ' + mdCode('solguard-economic') + ' | adversario económico acotado | ' + mdCode('C3-013J..P') + ' |',
@@ -1849,6 +1935,7 @@ async function renderContracts(ledger) {
 
 function renderReadme(text, ledger) {
   text = text.replaceAll('solguard-detection-maturity-2026-07-25.2', VERSION);
+  text = text.replaceAll('solguard-detection-maturity-2026-07-25.3', VERSION);
   const section = [
     '## 3. Qué significa «100%»',
     '',
@@ -1880,6 +1967,10 @@ function renderReadme(text, ledger) {
       mdCode(ledger.node_id_set_sha256) + ' / ' +
       mdCode(ledger.contribution_id_set_sha256) + ' / ' +
       mdCode(ledger.all_counted_item_id_set_sha256) + '.',
+    'Perfil activo: ' + mdCode(ledger.assurance_mode) + ' / ' +
+      mdCode(ledger.assurance_level) + '. No declara independencia humana ni de custodia.',
+    'Los verificadores activos separan rol, contexto, credencial y clave, pero permanecen bajo el mismo custodio declarado. ' +
+      'El perfil production conserva cuatro custodios distintos y verificación independiente.',
     endMarker
   ].join('\n');
   const first = text.indexOf('## 1.');
