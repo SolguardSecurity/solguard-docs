@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solguard.dev/schemas/review-envelope.v1.schema.json",
+  "title": "Solguard review envelope v1",
+  "description": "CORE-owned immutable projection of one authentic FILTER review or reject. It is never a finding.",
+  "x-solguard-owner": "solguard-core",
+  "x-solguard-contract-id": "solguard-review-envelope.v1",
+  "x-solguard-writer-enabled": false,
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_version",
+    "review_id",
+    "run_id",
+    "candidate_epoch_binding",
+    "run_input_membership_root",
+    "run_input_membership_count",
+    "producer",
+    "projection",
+    "candidate_id",
+    "candidate_digest",
+    "technical_verdict",
+    "verdict_ref",
+    "admission_status",
+    "admission_ref",
+    "review_class",
+    "admission_unresolved_checks",
+    "requested_admission_context",
+    "admission_debt",
+    "proof_certificate_ref",
+    "proof_certificate_digest",
+    "source_tree_sha256",
+    "runtime_manifest_sha256",
+    "parent_artifact_ids",
+    "parent_roots",
+    "next_action"
+  ],
+  "properties": {
+    "schema_version": { "const": "solguard-review-envelope.v1" },
+    "contract_version": { "const": "v1" },
+    "review_id": { "type": "string", "pattern": "^review-envelope-v1-[a-z0-9][a-z0-9._:-]{2,127}$" },
+    "run_id": { "$ref": "#/$defs/canonical_id" },
+    "candidate_epoch_binding": { "$ref": "#/$defs/candidate_epoch_binding" },
+    "run_input_membership_root": { "$ref": "#/$defs/sha256" },
+    "run_input_membership_count": { "$ref": "#/$defs/nonnegative_integer" },
+    "producer": { "$ref": "#/$defs/producer" },
+    "projection": { "$ref": "#/$defs/projection" },
+    "candidate_id": { "$ref": "#/$defs/canonical_id" },
+    "candidate_digest": { "$ref": "#/$defs/sha256" },
+    "technical_verdict": { "const": "supported" },
+    "verdict_ref": { "$ref": "#/$defs/artifact_ref" },
+    "admission_status": { "enum": ["review", "reject"] },
+    "admission_ref": { "$ref": "#/$defs/artifact_ref" },
+    "review_class": {
+      "enum": [
+        "checker_missing",
+        "proof_context_required",
+        "trace_authority_incomplete",
+        "semantic_contradiction",
+        "effective_protection",
+        "tampered_input",
+        "unsafe_source_reference",
+        "proven_duplicate"
+      ]
+    },
+    "admission_unresolved_checks": { "$ref": "#/$defs/string_set" },
+    "requested_admission_context": { "$ref": "#/$defs/string_set" },
+    "admission_debt": { "$ref": "#/$defs/string_set" },
+    "proof_certificate_ref": { "$ref": "#/$defs/canonical_id" },
+    "proof_certificate_digest": { "$ref": "#/$defs/sha256" },
+    "source_tree_sha256": { "$ref": "#/$defs/sha256" },
+    "runtime_manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "parent_artifact_ids": { "type": "array", "minItems": 3, "uniqueItems": true, "items": { "$ref": "#/$defs/canonical_id" } },
+    "parent_roots": { "type": "array", "minItems": 3, "uniqueItems": true, "items": { "$ref": "#/$defs/sha256" } },
+    "canonical_parent_id": { "$ref": "#/$defs/canonical_id" },
+    "next_action": {
+      "enum": [
+        "resolve_checker",
+        "supply_admission_context",
+        "inspect_contradiction",
+        "confirm_duplicate",
+        "quarantine_input"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "admission_status": { "const": "review" } }, "required": ["admission_status"] },
+      "then": {
+        "properties": {
+          "review_class": { "enum": ["checker_missing", "proof_context_required", "trace_authority_incomplete"] },
+          "next_action": { "enum": ["resolve_checker", "supply_admission_context"] },
+          "admission_unresolved_checks": { "minItems": 1 }
+        }
+      },
+      "else": {
+        "properties": {
+          "review_class": { "enum": ["semantic_contradiction", "effective_protection", "tampered_input", "unsafe_source_reference", "proven_duplicate"] },
+          "next_action": { "enum": ["inspect_contradiction", "confirm_duplicate", "quarantine_input"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "review_class": { "const": "proven_duplicate" } }, "required": ["review_class"] },
+      "then": { "required": ["canonical_parent_id"], "properties": { "next_action": { "const": "confirm_duplicate" } } },
+      "else": { "not": { "required": ["canonical_parent_id"] } }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "canonical_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$" },
+    "version": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$" },
+    "nonnegative_integer": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "string_set": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 1024 }
+    },
+    "candidate_epoch_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "candidate_epoch_id",
+        "candidate_epoch_definition_id",
+        "candidate_epoch_root",
+        "candidate_epoch_open_event_id",
+        "candidate_epoch_open_event_root",
+        "binding_phase",
+        "candidate_epoch_freeze_event_id",
+        "candidate_epoch_freeze_event_root",
+        "candidate_accepted_input_membership_root",
+        "candidate_accepted_input_membership_count",
+        "accepted_tooling_membership_root",
+        "accepted_tooling_membership_count",
+        "resource_profile_id",
+        "resource_profile_version",
+        "resource_profile_root",
+        "resource_profile_policy_id",
+        "resource_profile_policy_version",
+        "resource_profile_policy_root",
+        "resource_profile_policy_compliance_root"
+      ],
+      "properties": {
+        "schema_version": { "const": "solguard-candidate-epoch-binding.v1" },
+        "candidate_epoch_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_definition_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_root": { "$ref": "#/$defs/sha256" },
+        "candidate_epoch_open_event_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_open_event_root": { "$ref": "#/$defs/sha256" },
+        "binding_phase": { "const": "post_freeze" },
+        "candidate_epoch_freeze_event_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_freeze_event_root": { "$ref": "#/$defs/sha256" },
+        "candidate_accepted_input_membership_root": { "$ref": "#/$defs/sha256" },
+        "candidate_accepted_input_membership_count": { "$ref": "#/$defs/nonnegative_integer" },
+        "accepted_tooling_membership_root": { "$ref": "#/$defs/sha256" },
+        "accepted_tooling_membership_count": { "$ref": "#/$defs/nonnegative_integer" },
+        "resource_profile_id": { "$ref": "#/$defs/canonical_id" },
+        "resource_profile_version": { "$ref": "#/$defs/version" },
+        "resource_profile_root": { "$ref": "#/$defs/sha256" },
+        "resource_profile_policy_id": { "$ref": "#/$defs/canonical_id" },
+        "resource_profile_policy_version": { "$ref": "#/$defs/version" },
+        "resource_profile_policy_root": { "$ref": "#/$defs/sha256" },
+        "resource_profile_policy_compliance_root": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "tool_version", "contract_version"],
+      "properties": {
+        "repo": { "const": "solguard-core" },
+        "tool_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "contract_version": { "const": "v1" }
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projector_id", "projector_version", "projector_root"],
+      "properties": {
+        "projector_id": { "const": "solguard-admission-to-product-envelopes" },
+        "projector_version": { "const": "1.0.0" },
+        "projector_root": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "content_digest"],
+      "properties": {
+        "artifact_id": { "$ref": "#/$defs/canonical_id" },
+        "content_digest": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

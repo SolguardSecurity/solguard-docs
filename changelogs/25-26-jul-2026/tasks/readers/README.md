@@ -14,12 +14,17 @@ The output is a disposable, non-authoritative view:
   acceptance material required by the v1 contract;
 - it rejects schema drift, duplicate JSON members, ID/count/DAG/root drift,
   inconsistent derived state and unsafe physical inputs.
+- it validates and renders the closed assurance pair; a
+  `development/single-custodian` snapshot is never presented as independent.
 
 The reader pins the C0-012 contract publication at
-`solguard-agents@f093848824173f6c5cdb1a7a89dd4acbe5d90ab2` and the independent
+`solguard-agents@9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778`, its explicit
+single-custodian assurance amendment at
+`solguard-agents@7769407d9ac2d68c8f8ef861736aa6ea4198ab13`, and the separate
 C0-013 validation reader at
-`solguard-deploy@36ca97b6f8117df77039eea397763b5a3a35a310`. It does not republish or
-change either contract.
+`solguard-deploy@5d8d0a3609b0b191cae89461c7c5946d1c6b3f89`. It does not republish or
+change either contract. Its LF-normalized source SHA-256 is
+`d79faca964661430f565c9a897e72a4285f6fe96259e302853dace281ca6017c`.
 
 Render the frozen revision-zero plan snapshot with all current trust anchors:
 
@@ -27,10 +32,10 @@ Render the frozen revision-zero plan snapshot with all current trust anchors:
 node changelogs/25-26-jul-2026/tasks/readers/acceptance-ledger-markdown.mjs `
   --ledger changelogs/25-26-jul-2026/tasks/acceptance-ledger.v1.json `
   --expect-program-id solguard-detection-maturity-2026-07-25 `
-  --expect-program-version solguard-detection-maturity-2026-07-25.3 `
+  --expect-program-version solguard-detection-maturity-2026-07-25.4 `
   --expect-revision 0 `
-  --expect-id-set-root 6dde0cc088977a833b1badbc3312798aca9a101bb8bf981fe267e24d0762e6bf `
-  --expect-program-dag-root e3d4bb06f045e5aadc45f9f69b53810adfa710bd5bd478c1db63ebbb3d29d202
+  --expect-id-set-root 0d323e2fab3955e8ac50fa717c086fa538542ea4f0efd18001f5e03eefe4866d `
+  --expect-program-dag-root 6158e1e93cd4819c83febf27a5314d8529a8101359eec7b717621d861f3fb9f6
 ```
 
 The command writes Markdown only to standard output. Supplying trusted
@@ -47,10 +52,37 @@ node --test changelogs/25-26-jul-2026/tasks/readers/acceptance-ledger-markdown.t
 
 C1-018 publishes a read-only documentation contract for TechnicalVerdict,
 AdmissionResult, oracle-free metric lineage, safe Backend defaults and the four
-separate truth gates. It pins prepared C1-016 and C1-017, preserves null as
-unavailable, and keeps writers, acceptance and measured capability disabled.
+separate truth gates. It pins C1-016 and C1-017 at authoritative development
+ledger revisions 50 and 51 with `single-custodian` assurance and no independent
+custody claim, preserves null as unavailable, and keeps writers, acceptance
+transition and measured capability disabled.
 
 ```powershell
 node changelogs/25-26-jul-2026/tasks/readers/truth-docs-contract.mjs
 node --test changelogs/25-26-jul-2026/tasks/readers/truth-docs-contract.test.mjs
+```
+
+## Canonical findings Docs/UI projection
+
+The C1-009D read-only consumer validates the exact C1-009 finding and review
+schemas before deriving a closed JSON or Markdown presentation. Its local
+schema/golden copies are non-authoritative fixtures pinned byte-for-byte to
+`solguard-core@1ad350d8d3f54c227ca8f81b9cb42c4bf6a0494b`; the route semantics
+also pin
+`solguard-deploy@cb223071c0dab18190041129490702b8282f27bb`.
+
+The reader keeps all Pass envelopes, public findings and product reviews in
+three distinct roles. Reviews never increment finding counts, and
+`findings.json` rejects any member that is not both eligible and
+`unique|representative`. It accepts canonical empty arrays, preserves the
+source byte digest, exposes no writer/output-file mode and reports no measured
+capability. C1-009, C1-009C, C1-009D and TRUTH-105 remain pending acceptance.
+
+```powershell
+node changelogs/25-26-jul-2026/tasks/readers/findings-docs-ui-projection.mjs `
+  --input C:\evidence\project\review_queue.json `
+  --role product_review_envelopes `
+  --format json
+
+node --test changelogs/25-26-jul-2026/tasks/readers/findings-docs-ui-projection.test.mjs
 ```

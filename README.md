@@ -18,6 +18,7 @@ orquesta y reconcilia.
 - [Labs](docs/solguard-labs/README.md)
 - [Database e ingesta documental](docs/solguard-database/README.md)
 - [CLI local](docs/solguard-cli/README.md)
+- [Gobierno del programa](docs/governance/README.md)
 - [Notas de versiones historicas](releases/tabla.md)
 
 ## Estado de evidencia

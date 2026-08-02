@@ -1,7 +1,7 @@
 # Programa maestro de madurez de Solguard
 
 Estado editorial del plan: **CERRADO Y CONGELADO** para la versión
-`solguard-detection-maturity-2026-07-25.3`. Cualquier cambio posterior exige
+`solguard-detection-maturity-2026-07-25.4`. Cualquier cambio posterior exige
 una nueva versión, regenerar las vistas y superar de nuevo el validador.
 
 Estado de ejecución: **PENDIENTE**. Cerrar el plan no acepta ningún estado del
@@ -22,7 +22,9 @@ es publicar findings válidos, reproducibles y económicamente demostrados. El
 paso siguiente, deliberadamente no cubierto, será explotación.
 
 <!-- GENERATED:CANONICAL-STATUS:BEGIN -->
-Ledger canónico `solguard-detection-maturity-2026-07-25.3`: roots node/contribution/all-counted = `77dd0c5ac31ccee4347a4a3ef391c9c298e86fd5fe6f56acf7600aab7ffc0cfd` / `64b77b67ddde6638784544b45b9f7b8ed7f6631669026a663ffdece56ee0961c` / `6dde0cc088977a833b1badbc3312798aca9a101bb8bf981fe267e24d0762e6bf`.
+Ledger canónico `solguard-detection-maturity-2026-07-25.4`: roots node/contribution/all-counted = `6fab73e53ff6adbb1cdb940e611a83774d0e0d48a85f3a96650b6bd3af374e3b` / `d9b86f98702c0da74b8324b400302ae9f6c437625467dfff2b2c3fd136020885` / `0d323e2fab3955e8ac50fa717c086fa538542ea4f0efd18001f5e03eefe4866d`.
+Perfil activo: `development` / `single-custodian`. No declara independencia humana ni de custodia.
+Los verificadores activos separan rol, contexto, credencial y clave, pero permanecen bajo el mismo custodio declarado. El perfil production conserva cuatro custodios distintos y verificación independiente.
 <!-- GENERATED:CANONICAL-STATUS:END -->
 
 ## 1. Propósito

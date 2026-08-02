@@ -50,19 +50,24 @@ function acceptContribution(ledger, contributionId) {
     return contribution;
 }
 
-test("C0-014 pins C0-012 and C0-013 while keeping all authority and writes off", () => {
+test("C0-014 pins the schema, assurance amendment and C0-013 with writes off", () => {
     assert.equal(LEDGER_VIEW_AUTHORITATIVE, false);
     assert.equal(LEDGER_WRITER_ENABLED, false);
     assert.deepEqual(ACCEPTANCE_LEDGER_READER_PINS, {
         schemaPublisher: {
             repository: "solguard-agents",
             taskId: "C0-012",
-            commit: "f093848824173f6c5cdb1a7a89dd4acbe5d90ab2",
+            commit: "9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778",
+        },
+        assuranceAmendment: {
+            repository: "solguard-agents",
+            changeId: "single-custodian-assurance",
+            commit: "7769407d9ac2d68c8f8ef861736aa6ea4198ab13",
         },
         validatingReader: {
             repository: "solguard-deploy",
             taskId: "C0-013",
-            commit: "36ca97b6f8117df77039eea397763b5a3a35a310",
+            commit: "5d8d0a3609b0b191cae89461c7c5946d1c6b3f89",
         },
     });
 });
@@ -103,6 +108,8 @@ test("the frozen central ledger validates and renders deterministically without 
     assert.equal(first, second);
     assert.equal(canonicalJson(ledger), before);
     assert.match(first, /this Markdown does not grant, infer, reopen or revoke acceptance/u);
+    assert.match(first, /Assurance mode: `development`/u);
+    assert.match(first, /Assurance level: `single-custodian`/u);
     assert.match(first, /\| `C0-014` \| `solguard-docs` \| `LEDGER-001` \| `pending` \| none \| none \|/u);
     assert.doesNotMatch(first, /\[[ xX]\]/u);
     assert.ok(first.endsWith("\n"));
@@ -155,6 +162,14 @@ test("future, tampered, count-drifted and formula-drifted ledgers fail closed", 
         const ledger = await freshLedger();
         ledger.unregistered_future_field = true;
         assert.throws(() => validateAcceptanceLedgerForView(ledger), /unknown field/u);
+    });
+    await context.test("assurance profile mismatch", async () => {
+        const ledger = await freshLedger();
+        ledger.assurance_level = "independent-custodians";
+        assert.throws(
+            () => validateAcceptanceLedgerForView(ledger),
+            /assurance mode and level are inconsistent/u,
+        );
     });
     await context.test("state count drift", async () => {
         const ledger = await freshLedger();

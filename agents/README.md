@@ -58,7 +58,14 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   oracle-free metric lineage, safe runtime defaults and four independent gate
   decisions. `duplicate` remains a presentation role rather than an admission
   decision; unavailable metrics remain null, all writers stay disabled and
-  synthetic scenarios establish no measured capability or acceptance
+  synthetic scenarios establish no measured capability or acceptance. Its
+  C1-016/C1-017 dependencies are accepted only by the authoritative development
+  ledger with `single-custodian` assurance; no independent custody is claimed
+- canonical finding, public-finding and product-review views are distinct
+  read-only roles pinned to Core schemas and the Deploy route reader. Reviews
+  never count as findings, public findings require eligible plus
+  unique/representative, legacy inputs remain diagnostic and no view enables
+  the DECIDE-604 writer or establishes measured capability
 - document physical evidence and semantic lineage separately. Canonical MAP
   `EvidenceItem` and native TRACE `evidence_items` are authority; copied IDs,
   owner references and `source-*` lineage are not

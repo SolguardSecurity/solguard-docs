@@ -13,12 +13,17 @@ export const ACCEPTANCE_LEDGER_READER_PINS = Object.freeze({
     schemaPublisher: Object.freeze({
         repository: "solguard-agents",
         taskId: "C0-012",
-        commit: "f093848824173f6c5cdb1a7a89dd4acbe5d90ab2",
+        commit: "9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778",
+    }),
+    assuranceAmendment: Object.freeze({
+        repository: "solguard-agents",
+        changeId: "single-custodian-assurance",
+        commit: "7769407d9ac2d68c8f8ef861736aa6ea4198ab13",
     }),
     validatingReader: Object.freeze({
         repository: "solguard-deploy",
         taskId: "C0-013",
-        commit: "36ca97b6f8117df77039eea397763b5a3a35a310",
+        commit: "5d8d0a3609b0b191cae89461c7c5946d1c6b3f89",
     }),
 });
 
@@ -66,6 +71,8 @@ const EVENT_FIELDS = Object.freeze([
     "schema_version",
     "canonical_preimage_domain",
     "program_id",
+    "assurance_mode",
+    "assurance_level",
     "ledger_revision_before",
     "event_id",
     "event_self_hash",
@@ -96,6 +103,8 @@ const LEDGER_FIELDS = Object.freeze([
     "schema_version",
     "program_id",
     "program_version",
+    "assurance_mode",
+    "assurance_level",
     "ledger_revision",
     "generated_view",
     "specification",
@@ -244,13 +253,13 @@ const ACCEPTANCE_ALLOWED = Object.freeze([
 
 const PINNED_PROGRAM_ROOTS = new Map([
     [
-        "solguard-detection-maturity-2026-07-25\0solguard-detection-maturity-2026-07-25.3",
+        "solguard-detection-maturity-2026-07-25\0solguard-detection-maturity-2026-07-25.4",
         Object.freeze({
-            node: "77dd0c5ac31ccee4347a4a3ef391c9c298e86fd5fe6f56acf7600aab7ffc0cfd",
+            node: "6fab73e53ff6adbb1cdb940e611a83774d0e0d48a85f3a96650b6bd3af374e3b",
             contribution:
-                "64b77b67ddde6638784544b45b9f7b8ed7f6631669026a663ffdece56ee0961c",
-            all: "6dde0cc088977a833b1badbc3312798aca9a101bb8bf981fe267e24d0762e6bf",
-            dag: "e3d4bb06f045e5aadc45f9f69b53810adfa710bd5bd478c1db63ebbb3d29d202",
+                "d9b86f98702c0da74b8324b400302ae9f6c437625467dfff2b2c3fd136020885",
+            all: "0d323e2fab3955e8ac50fa717c086fa538542ea4f0efd18001f5e03eefe4866d",
+            dag: "6158e1e93cd4819c83febf27a5314d8529a8101359eec7b717621d861f3fb9f6",
         }),
     ],
 ]);
@@ -867,6 +876,17 @@ export function validateAcceptanceLedgerForView(document, expectations = {}) {
     );
     assertId(ledger.program_id, "ledger.program_id");
     assertId(ledger.program_version, "ledger.program_version");
+    invariant(
+        ledger.assurance_mode === "production" || ledger.assurance_mode === "development",
+        "ledger assurance mode is invalid",
+    );
+    invariant(
+        ledger.assurance_level ===
+            (ledger.assurance_mode === "production"
+                ? "independent-custodians"
+                : "single-custodian"),
+        "ledger assurance mode and level are inconsistent",
+    );
     assertInteger(ledger.ledger_revision, 0, "ledger.ledger_revision");
     assertString(ledger.generated_view, "ledger.generated_view");
     invariant(ledger.id_set_hash_algorithm === ID_SET_ALGORITHM, "ledger ID-set algorithm drifted");
@@ -1159,6 +1179,8 @@ export function renderAcceptanceLedgerMarkdown(document, expectations = {}) {
         `- Schema: ${mdCode(ledger.schema_version)}`,
         `- Program: ${mdCode(ledger.program_id)}`,
         `- Program version: ${mdCode(ledger.program_version)}`,
+        `- Assurance mode: ${mdCode(ledger.assurance_mode)}`,
+        `- Assurance level: ${mdCode(ledger.assurance_level)}`,
         `- Ledger revision: ${mdCode(ledger.ledger_revision)}`,
         `- Counted ID-set root: ${mdCode(ledger.id_set_sha256)}`,
         `- Program DAG root: ${mdCode(validation.programDagRoot)}`,

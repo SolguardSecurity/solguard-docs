@@ -40,7 +40,8 @@ test("C1-018 pins verdict, admission, metrics, defaults and gates without author
   const result = validatePublishedTruthDocs();
   assert.equal(result.status, "passed");
   assert.deepEqual(result.contract, {
-    contractRoot: "a9ac2edfb5a00f5bd6eea59874382ee0934cb4bc16c3379f9288a6dadc7697f4",
+    contractRoot:
+      "7844f38a7c8886f2950e2cfa413b20917ab521ce8f7ad58f253892a3d4840448",
     technicalDecisions: 3,
     technicalReasons: 22,
     technicalObligations: 14,
@@ -48,6 +49,10 @@ test("C1-018 pins verdict, admission, metrics, defaults and gates without author
     admissionReasons: 12,
     metrics: 18,
     scenarios: 4,
+    dependencyState: "accepted_authoritative_development_ledger",
+    assuranceMode: "development",
+    assuranceLevel: "single-custodian",
+    independentCustodyClaimed: false,
     writerEnabled: false,
     acceptanceEnabled: false,
     measuredCapability: null,
@@ -73,6 +78,20 @@ test("C1-018 rejects contract relabeling and authority escalation", () => {
         document.writer_enabled = true;
       },
       /documentation writer must remain false/u,
+    ],
+    [
+      "independent custody overstatement",
+      (document) => {
+        document.independent_custody_claimed = true;
+      },
+      /independent custody claim must remain false/u,
+    ],
+    [
+      "dependency acceptance revision drift",
+      (document) => {
+        document.dependencies["C1-016"].acceptance_revision = 49;
+      },
+      /acceptance_revision pin drifted/u,
     ],
     [
       "legacy duplicate as v1 authority",

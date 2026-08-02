@@ -2,9 +2,12 @@
 
 ## Estado de esta publicación
 
-C1-018 documenta la cadena preparada de verdad de `TRUTH-108`. Su estado de
-dependencias es `prepared_drafts_pending_independent_acceptance`: no acepta
-ninguna contribución y no activa writers. No cierra `TRUTH-108` y no establece capacidad medida.
+C1-018 documenta la cadena de verdad de `TRUTH-108`. Su estado de dependencias
+es `accepted_authoritative_development_ledger`: el ledger autoritativo de
+desarrollo acepta C1-016 y C1-017 en las revisiones 50 y 51 con
+`assurance_level=single-custodian`; no se alega custodia independiente. Este
+documento no crea ni modifica esas aceptaciones y no activa writers. No cierra
+`TRUTH-108` y no establece capacidad medida.
 Los ejemplos de esta página son fixtures contractuales, no resultados de una
 ejecución real.
 
@@ -33,10 +36,10 @@ El schema fue publicado reader-first con su writer desactivado.
 
 Las únicas decisiones son `supported`, `refuted` e `inconclusive`:
 
-| Decisión | Condición cerrada | Reason codes permitidos |
-| --- | --- | --- |
-| `supported` | Proof `complete` y ninguna obligación `refuted` o `unresolved`. | `supported_complete_economic_break`, `supported_complete_non_economic_break` |
-| `refuted` | Proof `complete` y al menos una obligación `refuted`. | `refuted_route_unreachable`, `refuted_invariant_holds`, `refuted_effect_absent`, `refuted_effective_protection` |
+| Decisión       | Condición cerrada                                                                               | Reason codes permitidos                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supported`    | Proof `complete` y ninguna obligación `refuted` o `unresolved`.                                 | `supported_complete_economic_break`, `supported_complete_non_economic_break`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `refuted`      | Proof `complete` y al menos una obligación `refuted`.                                           | `refuted_route_unreachable`, `refuted_invariant_holds`, `refuted_effect_absent`, `refuted_effective_protection`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `inconclusive` | Al menos una obligación `unresolved`; un proof parcial, inválido o ausente nunca se promociona. | `inconclusive_scope_unresolved`, `inconclusive_reachability_unresolved`, `inconclusive_state_transition_unresolved`, `inconclusive_invariant_unresolved`, `inconclusive_contradiction_unresolved`, `inconclusive_effect_unresolved`, `inconclusive_economic_delta_unresolved`, `inconclusive_same_flow_unresolved`, `inconclusive_same_asset_unresolved`, `inconclusive_protection_analysis_unresolved`, `inconclusive_evidence_lineage_unresolved`, `inconclusive_coverage_debt`, `inconclusive_counterevidence_unresolved`, `inconclusive_run_binding_unresolved`, `inconclusive_proof_certificate_incomplete`, `inconclusive_legacy_contract_unresolved` |
 
 Cada verdict evalúa exactamente 14 obligaciones, en este orden:
@@ -49,11 +52,11 @@ claim no económica mantiene `economic_delta=not_applicable`.
 
 Los goldens publicados fijan tres cortes representativos:
 
-| Fixture | Decisión | Motivo primario | Proof |
-| --- | --- | --- | --- |
-| `supported-economic.valid.json` | `supported` | `supported_complete_economic_break` | `complete` |
-| `refuted-protection.valid.json` | `refuted` | `refuted_effective_protection` | `complete` |
-| `inconclusive-missing-proof.valid.json` | `inconclusive` | `inconclusive_proof_certificate_incomplete` | `missing` |
+| Fixture                                 | Decisión       | Motivo primario                             | Proof      |
+| --------------------------------------- | -------------- | ------------------------------------------- | ---------- |
+| `supported-economic.valid.json`         | `supported`    | `supported_complete_economic_break`         | `complete` |
+| `refuted-protection.valid.json`         | `refuted`      | `refuted_effective_protection`              | `complete` |
+| `inconclusive-missing-proof.valid.json` | `inconclusive` | `inconclusive_proof_certificate_incomplete` | `missing`  |
 
 FILTER, dedupe, ranking y presentación pueden referenciar estos bytes, pero no
 reescribir su decisión, reason code, causal identity, proof u obligaciones.
@@ -69,12 +72,12 @@ Su writer también permanece desactivado.
 
 Las decisiones cerradas son `pass`, `review`, `reject` e `invalid_upstream`:
 
-| Decisión | Binding técnico y estado | Reason codes permitidos |
-| --- | --- | --- |
-| `pass` | Technical status `valid`, verdict `supported`, checker `passed` y evidencia `complete`. | `pass_complete_admission` |
-| `review` | Technical status `valid`, verdict `supported`, checker `missing` o `inconclusive`, evidencia `incomplete` y publicación `ineligible`. | `review_checker_missing`, `review_proof_inconclusive`, `review_probe_required`, `review_trace_authority_incomplete` |
-| `reject` | Technical status `valid`, verdict `supported`, checker y evidencia `contradicted`, publicación `ineligible`. | `reject_semantic_contradiction`, `reject_effective_protection`, `reject_tampered_input`, `reject_unsafe_source_reference`, `reject_proven_duplicate` |
-| `invalid_upstream` | Technical status `invalid`, checker/evidencia `invalid`, verdict ID y decisión nulos, publicación `ineligible`. | `invalid_upstream_technical_verdict`, `invalid_upstream_contract_mismatch` |
+| Decisión           | Binding técnico y estado                                                                                                              | Reason codes permitidos                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pass`             | Technical status `valid`, verdict `supported`, checker `passed` y evidencia `complete`.                                               | `pass_complete_admission`                                                                                                                            |
+| `review`           | Technical status `valid`, verdict `supported`, checker `missing` o `inconclusive`, evidencia `incomplete` y publicación `ineligible`. | `review_checker_missing`, `review_proof_inconclusive`, `review_probe_required`, `review_trace_authority_incomplete`                                  |
+| `reject`           | Technical status `valid`, verdict `supported`, checker y evidencia `contradicted`, publicación `ineligible`.                          | `reject_semantic_contradiction`, `reject_effective_protection`, `reject_tampered_input`, `reject_unsafe_source_reference`, `reject_proven_duplicate` |
+| `invalid_upstream` | Technical status `invalid`, checker/evidencia `invalid`, verdict ID y decisión nulos, publicación `ineligible`.                       | `invalid_upstream_technical_verdict`, `invalid_upstream_contract_mismatch`                                                                           |
 
 Los estados de checker son `passed`, `contradicted`, `inconclusive`, `missing`
 e `invalid`. Los estados de evidencia son `complete`, `incomplete`,
@@ -91,12 +94,12 @@ campos separados.
 
 Los goldens fijan estas combinaciones sin cambiar el verdict técnico:
 
-| Fixture | Admission | TechnicalVerdict | Checker | Evidencia | Elegibilidad | Rol |
-| --- | --- | --- | --- | --- | --- | --- |
-| `pass-unique.valid.json` | `pass` | `supported` | `passed` | `complete` | `eligible` | `unique` |
-| `review-checker-missing.valid.json` | `review` | `supported` | `missing` | `incomplete` | `ineligible` | `unique` |
-| `reject-protection.valid.json` | `reject` | `supported` | `contradicted` | `contradicted` | `ineligible` | `unique` |
-| `invalid-upstream.valid.json` | `invalid_upstream` | `null` | `invalid` | `invalid` | `ineligible` | `unique` |
+| Fixture                             | Admission          | TechnicalVerdict | Checker        | Evidencia      | Elegibilidad | Rol      |
+| ----------------------------------- | ------------------ | ---------------- | -------------- | -------------- | ------------ | -------- |
+| `pass-unique.valid.json`            | `pass`             | `supported`      | `passed`       | `complete`     | `eligible`   | `unique` |
+| `review-checker-missing.valid.json` | `review`           | `supported`      | `missing`      | `incomplete`   | `ineligible` | `unique` |
+| `reject-protection.valid.json`      | `reject`           | `supported`      | `contradicted` | `contradicted` | `ineligible` | `unique` |
+| `invalid-upstream.valid.json`       | `invalid_upstream` | `null`           | `invalid`      | `invalid`      | `ineligible` | `unique` |
 
 En la cadena preparada, FILTER solo recibe el conjunto exacto de verdicts
 `supported`. Un `refuted` o `inconclusive` no se transforma en AdmissionResult,
@@ -115,26 +118,26 @@ pero `writer_enabled=false` y `post_scan_contract_emission=false`.
 
 Las métricas de verdad y publicación quedan cerradas así:
 
-| Métrica | Artefacto primario | Derivación | Denominador | Autoridad actual |
-| --- | --- | --- | --- | --- |
-| `canonical_candidates` | `canonical_candidates.json` | `array_length` | `null` | `oracle_free_primary` |
-| `validation_candidates` | `tool-outputs/candidates/validation_candidates.json` | `array_length` | `canonical_candidates` | `oracle_free_primary` |
-| `supported` | `tool-outputs/validate/validation_results.json` | `count:result=supported` | `validation_candidates` | `oracle_free_primary` |
-| `refuted` | `tool-outputs/validate/validation_results.json` | `count:result=refuted` | `validation_candidates` | `oracle_free_primary` |
-| `inconclusive` | `tool-outputs/validate/validation_results.json` | `count:result=inconclusive` | `validation_candidates` | `oracle_free_primary` |
-| `supported_findings` | `tool-outputs/validate/validation_results.json` | `count:finding_class=supported_finding` | `validation_candidates` | `oracle_free_primary` |
-| `validation_review_queue` | `tool-outputs/validate/validation_results.json` | `count:finding_class=review_queue` | `validation_candidates` | `oracle_free_primary` |
-| `validation_reviewable_leads` | `tool-outputs/validate/validation_results.json` | `count:finding_class=reviewable_lead` | `validation_candidates` | `oracle_free_primary` |
-| `validation_non_findings` | `tool-outputs/validate/validation_results.json` | `count:finding_class=non_finding` | `validation_candidates` | `oracle_free_primary` |
-| `admission_input_supported` | `tool-outputs/filter/filter_results.json` | `array_length` | `supported` | `oracle_free_primary` |
-| `admission_pass` | `tool-outputs/filter/filter_results.json` | `count:decision=pass` | `admission_input_supported` | `oracle_free_primary` |
-| `admission_review` | `tool-outputs/filter/filter_results.json` | `count:decision=review` | `admission_input_supported` | `oracle_free_primary` |
-| `admission_reject` | `tool-outputs/filter/filter_results.json` | `count:decision=reject` | `admission_input_supported` | `oracle_free_primary` |
-| `admission_duplicate` | `tool-outputs/filter/filter_results.json` | `count:decision=duplicate` | `admission_input_supported` | `legacy_filter_runtime_only` |
-| `finding_envelopes_all` | `finding_envelopes.json` | `array_length` | `null` | `runtime_writer_disabled` |
-| `published_findings` | `findings.json` | `array_length` | `finding_envelopes_all` | `runtime_writer_disabled` |
-| `review_envelopes` | `review_queue.json` | `array_length` | `null` | `runtime_writer_disabled` |
-| `matched_findings` | `match decisions` | `count:decision=matched` | `predeclared_scoreable_truth_items` | `post_scan_excluded` |
+| Métrica                       | Artefacto primario                                   | Derivación                              | Denominador                         | Autoridad actual             |
+| ----------------------------- | ---------------------------------------------------- | --------------------------------------- | ----------------------------------- | ---------------------------- |
+| `canonical_candidates`        | `canonical_candidates.json`                          | `array_length`                          | `null`                              | `oracle_free_primary`        |
+| `validation_candidates`       | `tool-outputs/candidates/validation_candidates.json` | `array_length`                          | `canonical_candidates`              | `oracle_free_primary`        |
+| `supported`                   | `tool-outputs/validate/validation_results.json`      | `count:result=supported`                | `validation_candidates`             | `oracle_free_primary`        |
+| `refuted`                     | `tool-outputs/validate/validation_results.json`      | `count:result=refuted`                  | `validation_candidates`             | `oracle_free_primary`        |
+| `inconclusive`                | `tool-outputs/validate/validation_results.json`      | `count:result=inconclusive`             | `validation_candidates`             | `oracle_free_primary`        |
+| `supported_findings`          | `tool-outputs/validate/validation_results.json`      | `count:finding_class=supported_finding` | `validation_candidates`             | `oracle_free_primary`        |
+| `validation_review_queue`     | `tool-outputs/validate/validation_results.json`      | `count:finding_class=review_queue`      | `validation_candidates`             | `oracle_free_primary`        |
+| `validation_reviewable_leads` | `tool-outputs/validate/validation_results.json`      | `count:finding_class=reviewable_lead`   | `validation_candidates`             | `oracle_free_primary`        |
+| `validation_non_findings`     | `tool-outputs/validate/validation_results.json`      | `count:finding_class=non_finding`       | `validation_candidates`             | `oracle_free_primary`        |
+| `admission_input_supported`   | `tool-outputs/filter/filter_results.json`            | `array_length`                          | `supported`                         | `oracle_free_primary`        |
+| `admission_pass`              | `tool-outputs/filter/filter_results.json`            | `count:decision=pass`                   | `admission_input_supported`         | `oracle_free_primary`        |
+| `admission_review`            | `tool-outputs/filter/filter_results.json`            | `count:decision=review`                 | `admission_input_supported`         | `oracle_free_primary`        |
+| `admission_reject`            | `tool-outputs/filter/filter_results.json`            | `count:decision=reject`                 | `admission_input_supported`         | `oracle_free_primary`        |
+| `admission_duplicate`         | `tool-outputs/filter/filter_results.json`            | `count:decision=duplicate`              | `admission_input_supported`         | `legacy_filter_runtime_only` |
+| `finding_envelopes_all`       | `finding_envelopes.json`                             | `array_length`                          | `null`                              | `runtime_writer_disabled`    |
+| `published_findings`          | `findings.json`                                      | `array_length`                          | `finding_envelopes_all`             | `runtime_writer_disabled`    |
+| `review_envelopes`            | `review_queue.json`                                  | `array_length`                          | `null`                              | `runtime_writer_disabled`    |
+| `matched_findings`            | `match decisions`                                    | `count:decision=matched`                | `predeclared_scoreable_truth_items` | `post_scan_excluded`         |
 
 `admission_duplicate` conserva una métrica del runtime legacy
 `filter_results.json`; su autoridad es `legacy_filter_runtime_only`. No añade
@@ -157,15 +160,15 @@ Los defaults se fijan a
 `d53b82012f6c2c5f36b2d16765e589320beea4b1` y evidence root
 `sha256:2f0e9f8056d7120d3cbb4856b65fd6a9c22546912397bf01b09e68822f45188e`.
 
-| Campo | Default/contrato preparado |
-| --- | --- |
-| `mode` | `audit_only` |
-| `analysis_profile` en `audit_only` | `generic_blind` |
-| `analysis_profile` en `full` | `generic_blind` |
-| `run_exploit` | `false`; requiere `full` y un `true` explícito |
-| Perfil de release administrada | `generic_blind`; rechaza `compatibility` antes de Core |
-| Desarrollo no administrado | admite `compatibility` o `generic_blind` si se solicitan explícitamente |
-| Fallo FILTER | `synthetic_result=false`, `downstream_exploit=false` |
+| Campo                              | Default/contrato preparado                                              |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| `mode`                             | `audit_only`                                                            |
+| `analysis_profile` en `audit_only` | `generic_blind`                                                         |
+| `analysis_profile` en `full`       | `generic_blind`                                                         |
+| `run_exploit`                      | `false`; requiere `full` y un `true` explícito                          |
+| Perfil de release administrada     | `generic_blind`; rechaza `compatibility` antes de Core                  |
+| Desarrollo no administrado         | admite `compatibility` o `generic_blind` si se solicitan explícitamente |
+| Fallo FILTER                       | `synthetic_result=false`, `downstream_exploit=false`                    |
 
 `audit_only` ejecuta el producto hasta FILTER y omite las fases posteriores. El
 nombre `generic_blind` sella la procedencia/origen exigidos por el contrato; por
@@ -192,12 +195,12 @@ escenarios sintéticos. Sus columnas son: escenario, TechnicalVerdict,
 AdmissionResult, findings publicados, reviews, integridad de medición, verdad
 del verdict, product health y elegibilidad blind.
 
-| Escenario | Verdict | Admission | Findings | Reviews | Measurement | Verdict truth | Product health | Blind |
-| --- | --- | --- | ---: | ---: | --- | --- | --- | --- |
-| `positive` | `supported` | `pass` | 1 | 0 | `passed` | `passed` | `passed` | `ineligible` |
-| `patch` | `refuted` | `null` | 0 | 0 | `passed` | `passed` | `passed` | `ineligible` |
-| `near_miss` | `inconclusive` | `null` | 0 | 0 | `passed` | `passed` | `passed` | `ineligible` |
-| `filter_failure` | `supported` | `null` | 0 | 0 | `passed_with_observations` | `failed` | `failed` | `ineligible` |
+| Escenario        | Verdict        | Admission | Findings | Reviews | Measurement                | Verdict truth | Product health | Blind        |
+| ---------------- | -------------- | --------- | -------: | ------: | -------------------------- | ------------- | -------------- | ------------ |
+| `positive`       | `supported`    | `pass`    |        1 |       0 | `passed`                   | `passed`      | `passed`       | `ineligible` |
+| `patch`          | `refuted`      | `null`    |        0 |       0 | `passed`                   | `passed`      | `passed`       | `ineligible` |
+| `near_miss`      | `inconclusive` | `null`    |        0 |       0 | `passed`                   | `passed`      | `passed`       | `ineligible` |
+| `filter_failure` | `supported`    | `null`    |        0 |       0 | `passed_with_observations` | `failed`      | `failed`       | `ineligible` |
 
 `positive` prueba coherencia de fixtures, no una detección real. `patch` no
 publica. `near_miss` no entra en FILTER ni en review. `filter_failure` conserva

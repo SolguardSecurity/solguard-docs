@@ -18,6 +18,9 @@ Cada proyecto vive bajo `SOLGUARD_PROJECTS_DIR` y contiene:
 | `rejected_hypotheses.md`    | Nota de compatibilidad y referencia a resultados de validacion.   |
 | `findings.md`               | Solo findings soportados.                                         |
 | `review_queue.md`           | Candidatos inconclusos y leads revisables.                        |
+| `finding_envelopes.json`    | Colección canónica futura de todo FILTER Pass; writer desactivado. |
+| `findings.json`             | Proyección canónica futura de findings publicables.               |
+| `review_queue.json`         | Reviews canónicas futuras desde FILTER `review|reject`.           |
 | `validation_plan.md`        | Guia operativa de validacion.                                     |
 | `analysis_log.md`           | Log humano de ejecucion.                                          |
 | `profile.json`              | Duraciones, contadores y perfil de runtime.                       |
@@ -79,6 +82,14 @@ liga el tree hash pre/post, su input y el artefacto exacto de la fase; TRACE lig
 ademas el receipt MAP y FILTER el receipt TRACE. La ausencia o divergencia de
 cualquiera impide un estado limpio. El contrato completo esta en
 [Integridad de fuentes](../solguard-core/integridad-de-fuentes.md).
+
+Las tres colecciones JSON canónicas de raíz están publicadas reader-first por
+C1-009, pero su writer runtime permanece desactivado hasta `DECIDE-604`. No se
+debe inferir un array vacío ni reconstruirlas desde los Markdown o desde
+`validation_results.json`. Cuando existan, cada miembro se valida y se presenta
+según [Findings y revisiones canónicos v1](../solguard-core/finding-review-envelopes-v1.md).
+La compatibilidad legacy es diagnóstica y una ruta canónica inválida nunca
+autoriza fallback.
 
 ## Candidatos
 

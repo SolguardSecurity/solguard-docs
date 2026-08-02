@@ -14,13 +14,16 @@ const DOCUMENT_URL = new URL(
   import.meta.url,
 );
 const EXPECTED_CONTRACT_ROOT =
-  "a9ac2edfb5a00f5bd6eea59874382ee0934cb4bc16c3379f9288a6dadc7697f4";
+  "7844f38a7c8886f2950e2cfa413b20917ab521ce8f7ad58f253892a3d4840448";
 
 const EXPECTED_TOP_LEVEL_KEYS = [
   "schema_version",
   "contribution_id",
   "parent_gate",
   "dependency_state",
+  "assurance_mode",
+  "assurance_level",
+  "independent_custody_claimed",
   "authoritative",
   "writer_enabled",
   "acceptance_enabled",
@@ -33,11 +36,7 @@ const EXPECTED_TOP_LEVEL_KEYS = [
   "gate_separation",
   "truth_matrix",
 ];
-const EXPECTED_TECHNICAL_DECISIONS = [
-  "supported",
-  "refuted",
-  "inconclusive",
-];
+const EXPECTED_TECHNICAL_DECISIONS = ["supported", "refuted", "inconclusive"];
 const EXPECTED_ADMISSION_DECISIONS = [
   "pass",
   "review",
@@ -87,9 +86,29 @@ const EXPECTED_GATE_DECISIONS = [
   "blind_evaluation_eligibility",
 ];
 const EXPECTED_SCENARIOS = [
-  ["positive", "supported", "pass", 1, 0, "passed", "passed", "passed", "ineligible"],
+  [
+    "positive",
+    "supported",
+    "pass",
+    1,
+    0,
+    "passed",
+    "passed",
+    "passed",
+    "ineligible",
+  ],
   ["patch", "refuted", null, 0, 0, "passed", "passed", "passed", "ineligible"],
-  ["near_miss", "inconclusive", null, 0, 0, "passed", "passed", "passed", "ineligible"],
+  [
+    "near_miss",
+    "inconclusive",
+    null,
+    0,
+    0,
+    "passed",
+    "passed",
+    "passed",
+    "ineligible",
+  ],
   [
     "filter_failure",
     "supported",
@@ -145,7 +164,13 @@ export function validateTruthDocsContract(document) {
   assert.equal(document.parent_gate, "TRUTH-108");
   assert.equal(
     document.dependency_state,
-    "prepared_drafts_pending_independent_acceptance",
+    "accepted_authoritative_development_ledger",
+  );
+  assert.equal(document.assurance_mode, "development");
+  assert.equal(document.assurance_level, "single-custodian");
+  requireFalse(
+    document.independent_custody_claimed,
+    "independent custody claim",
   );
   requireFalse(document.authoritative, "documentation authority");
   requireFalse(document.writer_enabled, "documentation writer");
@@ -158,6 +183,8 @@ export function validateTruthDocsContract(document) {
     tree: "0787487bf8a7ea52fdfc2b643144352ea461129a",
     evidence_root:
       "sha256:3adb7498fd95ee04ee4217297fe02dbd761c8240ae955e8d3f5c610d6f822b7c",
+    acceptance_revision: 50,
+    assurance_level: "single-custodian",
   });
   requirePinnedSource(document.dependencies["C1-017"], {
     repository: "SolguardSecurity/solguard-agents",
@@ -165,6 +192,8 @@ export function validateTruthDocsContract(document) {
     tree: "0efa887690ff041259a42af5da041f2a1f5929d7",
     evidence_root:
       "sha256:28b107a47bf12cf8471e9133bc8244045feb6e4d6017ac0bdf67d3bcf9decea7",
+    acceptance_revision: 51,
+    assurance_level: "single-custodian",
   });
 
   const technical = document.technical_verdict;
@@ -246,7 +275,10 @@ export function validateTruthDocsContract(document) {
     check_schema_version: "solguard-oracle-free-metric-lineage-check.v1",
   });
   requireFalse(lineage.writer_enabled, "canonical metric writer");
-  requireFalse(lineage.post_scan_contract_emission, "post-scan contract emission");
+  requireFalse(
+    lineage.post_scan_contract_emission,
+    "post-scan contract emission",
+  );
   assert.equal(lineage.publication_authority, "MEASURE-901");
   assert.equal(lineage.runtime_writer_authority, "EVAL-908");
   assert.equal(lineage.null_semantics, "unavailable_never_zero");
@@ -296,8 +328,14 @@ export function validateTruthDocsContract(document) {
   assert.equal(defaults.run_exploit_requires_mode, "full");
   assert.equal(defaults.managed_release_profile, "generic_blind");
   assert.deepEqual(defaults.managed_release_rejects, ["compatibility"]);
-  requireFalse(defaults.filter_failure.synthetic_result, "synthetic FILTER result");
-  requireFalse(defaults.filter_failure.downstream_exploit, "post-FILTER EXPLOIT");
+  requireFalse(
+    defaults.filter_failure.synthetic_result,
+    "synthetic FILTER result",
+  );
+  requireFalse(
+    defaults.filter_failure.downstream_exploit,
+    "post-FILTER EXPLOIT",
+  );
 
   const gates = document.gate_separation;
   requirePinnedSource(gates, {
@@ -315,7 +353,10 @@ export function validateTruthDocsContract(document) {
   assert.equal(gates.blind_default, "ineligible");
 
   const matrix = document.truth_matrix;
-  assert.equal(matrix.schema_version, "solguard-truth-authority-chain-matrix.v1");
+  assert.equal(
+    matrix.schema_version,
+    "solguard-truth-authority-chain-matrix.v1",
+  );
   assert.equal(matrix.commit, document.dependencies["C1-016"].commit);
   requireFalse(matrix.authoritative, "truth matrix authority");
   requireFalse(matrix.writer_enabled, "truth matrix writer");
@@ -337,6 +378,10 @@ export function validateTruthDocsContract(document) {
     admissionReasons: admission.reason_codes.length,
     metrics: lineage.metrics.length,
     scenarios: matrix.scenarios.length,
+    dependencyState: document.dependency_state,
+    assuranceMode: document.assurance_mode,
+    assuranceLevel: document.assurance_level,
+    independentCustodyClaimed: false,
     writerEnabled: false,
     acceptanceEnabled: false,
     measuredCapability: null,
@@ -345,14 +390,20 @@ export function validateTruthDocsContract(document) {
 
 export function validateTruthDocumentation(markdown, document) {
   assert.equal(typeof markdown, "string");
-  assert.equal(markdown.startsWith("# Veredictos, admisión, métricas y defaults v1\n"), true);
+  assert.equal(
+    markdown.split(/\r?\n/u, 1)[0],
+    "# Veredictos, admisión, métricas y defaults v1",
+  );
   const normalizedMarkdown = markdown.replace(/\s+/gu, " ");
   const requiredTokens = new Set([
     "C1-018",
     "TRUTH-108",
-    "prepared_drafts_pending_independent_acceptance",
+    "accepted_authoritative_development_ledger",
+    "single-custodian",
+    "revisiones 50 y 51",
+    "no se alega custodia independiente",
     "no establece capacidad medida",
-    "no acepta ninguna contribución",
+    "no crea ni modifica esas aceptaciones",
     document.dependencies["C1-016"].commit,
     document.dependencies["C1-017"].commit,
     document.technical_verdict.commit,
@@ -408,10 +459,7 @@ export function validateTruthDocumentation(markdown, document) {
   );
   assert.doesNotMatch(normalizedMarkdown, /C1-018 (?:está )?aceptada/iu);
   assert.doesNotMatch(normalizedMarkdown, /TRUTH-108 (?:está )?cerrado/iu);
-  assert.doesNotMatch(
-    normalizedMarkdown,
-    /capacidad medida:\s*(?:sí|true)/iu,
-  );
+  assert.doesNotMatch(normalizedMarkdown, /capacidad medida:\s*(?:sí|true)/iu);
   return { requiredTokens: requiredTokens.size, claimsForbidden: 3 };
 }
 
@@ -430,7 +478,9 @@ if (
   pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url
 ) {
   if (process.argv.length !== 2) {
-    throw new Error("truth documentation verifier accepts no arguments or writer mode");
+    throw new Error(
+      "truth documentation verifier accepts no arguments or writer mode",
+    );
   }
   process.stdout.write(`${JSON.stringify(validatePublishedTruthDocs())}\n`);
 }
