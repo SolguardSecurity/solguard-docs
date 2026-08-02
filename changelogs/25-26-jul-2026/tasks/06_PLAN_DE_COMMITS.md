@@ -164,6 +164,22 @@ de `LEDGER-001`; `C7-016` lo ejerce contra el
 dossier real y es la prueba end-to-end final, no una publicación tardía del
 schema.
 
+El bootstrap declara un perfil de assurance cerrado antes de generar claves:
+
+- `production` / `independent-custodians`: cuatro claves Ed25519 y cuatro
+  custodios humanos distintos; es el único perfil que puede afirmar independencia
+  de custodia;
+- `development` / `single-custodian`: cuatro claves Ed25519, key IDs,
+  human identities, runs y contexts distintos bajo exactamente un
+  `custodian_identity`; nunca se describe como independiente.
+
+Ambos perfiles rechazan key IDs o material público duplicado. Ledger, event,
+lease, authoritative head, derived evaluation y commit receipt incluyen el par
+`assurance_mode`/`assurance_level`. El par queda inmutable tras genesis: cambiarlo
+requiere nueva versión y nueva genesis. El perfil development no satisface los
+gates posteriores que exigen custodios, holdouts, evaluadores o adjudicadores
+humanos independientes.
+
 El orden real de bootstrap es estricto:
 
 1. crear `C0-101..115` sin marcarlos accepted;
@@ -175,8 +191,11 @@ El orden real de bootstrap es estricto:
    `C0-004` (`GOV-004`), todavía pending;
 4. ejecutar `C0-012..017` schema → readers → prewriter matrix → writer →
    new-new de `LEDGER-001`, sin emitir un evento previo a genesis;
-5. celebrar una única transacción genesis externa con evidence root y
-   implementador/verificador separados por contribution y nodo; el tentative
+5. celebrar una única transacción genesis autoritativa con comprobante de
+   ausencia previo, evidence/verifier root único por miembro y cuatro firmas
+   Ed25519 ligadas al role policy. Implementador/verificador conservan
+   human identity, run, context y clave separados; su `custodian_identity` es
+   distinto en production y el mismo, declarado, en development. El tentative
    post-state acepta exactamente
    `C0-001 → GOV-001 → C0-003 → GOV-003 → C0-004 → GOV-004 →
     C0-012 → C0-013/C0-014 → C0-015 → C0-016 → C0-017 → LEDGER-001`,
@@ -193,8 +212,10 @@ El orden real de bootstrap es estricto:
    7, manteniendo sus dependencias normales.
 
 Genesis no acepta `GOV-005`, ningún commit meramente documental, claim ni
-campaign, y no permite que writer/implementer se autoverifique. Si la ceremonia
-falla, los cuatro nodos y sus contribuciones permanecen `pending`.
+campaign, y no permite reutilizar identidad, run, context, key ID o material de
+clave entre roles. En development la coincidencia de custodio es obligatoria y
+explícita, no independencia. Si la ceremonia falla, los cuatro nodos y sus
+contribuciones permanecen `pending`.
 
 Aunque esta tabla se muestra después por legibilidad, se ejecuta **antes de
 cualquier otro commit C0**. Inicializa el changelog nuevo de cada repositorio

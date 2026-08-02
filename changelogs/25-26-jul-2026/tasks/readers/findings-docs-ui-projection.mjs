@@ -575,12 +575,12 @@ function assertPin() {
   );
   invariant(
     PIN.dependency_acceptance?.["C1-009"] ===
-      "prepared_draft_pending_independent_acceptance",
+      "prepared_draft_pending_development_single_custodian_acceptance",
     "C1-009 status drifted",
   );
   invariant(
     PIN.dependency_acceptance?.["C1-009C"] ===
-      "prepared_draft_pending_independent_acceptance",
+      "prepared_draft_pending_development_single_custodian_acceptance",
     "C1-009C status drifted",
   );
   for (const [role, expected] of Object.entries(ROLE_DEFINITIONS)) {

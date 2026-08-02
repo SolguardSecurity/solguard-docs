@@ -1,0 +1,168 @@
+{
+  "schema_version": "solguard-governance-publication.v1",
+  "publication_version": 1,
+  "program_id": "solguard-detection-maturity-2026-07-25",
+  "program_version": "solguard-detection-maturity-2026-07-25.3",
+  "lifecycle_state": "pre_genesis_pending",
+  "claim_authority": "none",
+  "contribution": {
+    "contribution_id": "C0-008",
+    "parent_primary_id": "GOV-002",
+    "owner_repository": "solguard-docs",
+    "acceptance_state": "pending",
+    "cannot_accept_parent_or_claim": true
+  },
+  "hard_dependencies": [
+    {
+      "contribution_id": "C0-002",
+      "required_state": "accepted",
+      "required_publication_binding": "exact_accepted_implementation_ref_and_evidence_root",
+      "observed_state": "pending_draft",
+      "dependency_satisfied": false,
+      "accepted_implementation_ref": null,
+      "accepted_evidence_root": null,
+      "publication_receipt": null,
+      "candidate_branch": "codex/c0-002-product-claim-dictionary",
+      "candidate_commit": "6744458f24243095d2a64c8fb06613b059d28133",
+      "candidate_evidence_root": "1ec12c67f478da6c8bd06fe696ebc381faca771b7aebf1f9e6a38081ac2c3a93"
+    }
+  ],
+  "documents": [
+    {
+      "document_id": "governance-index",
+      "path": "docs/governance/README.md",
+      "sha256": "abc2b97ae07bbf40c2146c4479c4436094948794cc9bd5abf01e7c6f5306e771"
+    },
+    {
+      "document_id": "claim-dictionary-json",
+      "path": "docs/governance/product-claim-dictionary.v1.json",
+      "sha256": "c9f4087cdf81a3537b5f343d836d15946540ea8410577e5ad46ec95e52e4f4ec"
+    },
+    {
+      "document_id": "claim-dictionary-markdown",
+      "path": "docs/governance/product-claim-dictionary.md",
+      "sha256": "99389e3e4d66833391dbe384cb0fa8f897fd746d76298cfdcc42f41eaa34dbbc"
+    },
+    {
+      "document_id": "architecture-decisions",
+      "path": "docs/governance/architecture-decisions.md",
+      "sha256": "bd08eb878646747c7ea8bbc85fb26a5fb090e92f98df1771b0924cc609ce6445"
+    },
+    {
+      "document_id": "evidence-rules",
+      "path": "docs/governance/evidence-rules.md",
+      "sha256": "0b1d32a5fbcd46f87f5c287601b4bf78399d65d7450bdffe966db1b2113399d1"
+    }
+  ],
+  "source_documents": [
+    {
+      "source_id": "maturity-architecture-contract",
+      "path": "changelogs/25-26-jul-2026/tasks/01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md",
+      "sha256": "5445422db207e4b6ed34e4373256df97e21dae9c022664f2968bf998a0d19530"
+    },
+    {
+      "source_id": "structural-program",
+      "path": "changelogs/25-26-jul-2026/tasks/02_PROGRAMA_ESTRUCTURAL.md",
+      "sha256": "0c9d0f7d5a7753f6bffea322503a47f230157eeac62d40ad6a0ea74e87a10dd5"
+    },
+    {
+      "source_id": "ledger-and-dependencies",
+      "path": "changelogs/25-26-jul-2026/tasks/09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md",
+      "sha256": "88df94f627f9e27f897889b822820bd00a3bee336735015780724a810810fe9f"
+    }
+  ],
+  "required_links": [
+    {
+      "source": "README.md",
+      "target": "docs/governance/README.md"
+    },
+    {
+      "source": "docs/governance/README.md",
+      "target": "product-claim-dictionary.md"
+    },
+    {
+      "source": "docs/governance/README.md",
+      "target": "architecture-decisions.md"
+    },
+    {
+      "source": "docs/governance/README.md",
+      "target": "evidence-rules.md"
+    },
+    {
+      "source": "docs/governance/README.md",
+      "target": "governance-publication.v1.json"
+    },
+    {
+      "source": "docs/governance/README.md",
+      "target": "../../changelogs/25-26-jul-2026/tasks/01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md"
+    },
+    {
+      "source": "docs/governance/README.md",
+      "target": "../../changelogs/25-26-jul-2026/tasks/02_PROGRAMA_ESTRUCTURAL.md"
+    },
+    {
+      "source": "docs/governance/README.md",
+      "target": "../../changelogs/25-26-jul-2026/tasks/09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md"
+    },
+    {
+      "source": "docs/governance/architecture-decisions.md",
+      "target": "product-claim-dictionary.md"
+    },
+    {
+      "source": "docs/governance/architecture-decisions.md",
+      "target": "evidence-rules.md"
+    },
+    {
+      "source": "docs/governance/architecture-decisions.md",
+      "target": "../../changelogs/25-26-jul-2026/tasks/01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md"
+    },
+    {
+      "source": "docs/governance/architecture-decisions.md",
+      "target": "../../changelogs/25-26-jul-2026/tasks/02_PROGRAMA_ESTRUCTURAL.md"
+    },
+    {
+      "source": "docs/governance/evidence-rules.md",
+      "target": "product-claim-dictionary.md"
+    },
+    {
+      "source": "docs/governance/evidence-rules.md",
+      "target": "architecture-decisions.md"
+    },
+    {
+      "source": "docs/governance/evidence-rules.md",
+      "target": "../../changelogs/25-26-jul-2026/tasks/09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md"
+    }
+  ],
+  "validation": {
+    "architecture_decision_ids": [
+      "ADR-001",
+      "ADR-002",
+      "ADR-003",
+      "ADR-004",
+      "ADR-005",
+      "ADR-006",
+      "ADR-007",
+      "ADR-008",
+      "ADR-009",
+      "ADR-010"
+    ],
+    "evidence_rule_ids": [
+      "EVD-001",
+      "EVD-002",
+      "EVD-003",
+      "EVD-004",
+      "EVD-005",
+      "EVD-006",
+      "EVD-007",
+      "EVD-008",
+      "EVD-009",
+      "EVD-010",
+      "EVD-011",
+      "EVD-012"
+    ],
+    "links_required": true,
+    "content_hashes_required": true,
+    "negative_authority_tests_required": true
+  },
+  "publication_root": "f69b67393dd5bea73d9781d8c550dd8c5db2592affb5ab229da106401a1bc889"
+}

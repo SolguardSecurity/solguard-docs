@@ -12,8 +12,8 @@
   "writer_enabled": false,
   "runtime_writer_authority": "DECIDE-604",
   "dependency_acceptance": {
-    "C1-009": "prepared_draft_pending_independent_acceptance",
-    "C1-009C": "prepared_draft_pending_independent_acceptance"
+    "C1-009": "prepared_draft_pending_development_single_custodian_acceptance",
+    "C1-009C": "prepared_draft_pending_development_single_custodian_acceptance"
   },
   "roles": {
     "finding_envelopes_all": {

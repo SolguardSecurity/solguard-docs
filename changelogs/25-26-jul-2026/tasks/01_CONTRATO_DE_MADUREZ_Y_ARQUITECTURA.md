@@ -996,6 +996,27 @@ rederivar la misma afirmación mediante una técnica/producer cuyo path no deriv
 del candidate ni del witness que confirma. El evaluator publica los ancestor
 set roots y rechaza group falsificado, ancestor oculto o falsa independencia.
 
+### 5.4 Perfiles de assurance y custodia del ledger
+
+El ledger declara exactamente uno de estos pares cerrados:
+
+| `assurance_mode` | `assurance_level` | Role policy |
+|---|---|---|
+| `production` | `independent-custodians` | cuatro claves Ed25519 y cuatro custodios humanos distintos |
+| `development` | `single-custodian` | cuatro claves Ed25519 distintas bajo exactamente un custodio declarado |
+
+En ambos perfiles son distintos `key_id`, material público Ed25519,
+`human_identity`, `run_id` y `context_id`; cualquier duplicado falla cerrado.
+Development permite compartir sólo `custodian_identity`, lo rotula en ledger y
+receipts y prohíbe describir el resultado como independiente. Production no
+admite esa coincidencia. No existe fallback automático entre perfiles.
+
+El par de assurance se fija antes de genesis, aparece en cada event, lease,
+head, derived evaluation y commit receipt, y es inmutable dentro de la cadena.
+Cambiarlo exige una nueva versión de programa y nueva genesis. Ningún artefacto
+`single-custodian` satisface por sí solo un gate o claim que requiera
+independencia humana, custodia ciega, evaluación externa o adjudicación externa.
+
 ## 6. Separación de motores de hipótesis
 
 ### 6.1 Camino conocido
