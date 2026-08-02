@@ -4,14 +4,19 @@
 
 - Program: `25-jul-2026`
 - Status: `unpublished`
-- Task IDs: `C0-108`, `C0-014`, `C0-002`, `C0-008`, `C1-009D`
-- Parent gates: `GOV-005`, `LEDGER-001`, `GOV-002`, `TRUTH-105`
+- Task IDs: `C0-108`, `C0-014`, `C0-002`, `C0-008`, `C1-009D`, `C1-018`
+- Parent gates: `GOV-005`, `LEDGER-001`, `GOV-002`, `TRUTH-105`, `TRUTH-108`
 - Depends-On: `solguard-economic@4aa743d4f534a11b6b37ce585835ce3fad0f569e`
 - Hard contribution dependencies for `C0-014`:
   `solguard-agents@9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778` (corrected `C0-012`
   publication candidate) and
   `solguard-deploy@5d8d0a3609b0b191cae89461c7c5946d1c6b3f89` (corrected `C0-013`
   reader candidate)
+- Hard contribution dependencies for `C1-018`:
+  `solguard-deploy@8d8e1e432989ceb697e9beaa54cd1fc2973856ad` (`C1-016`) and
+  `solguard-agents@2986e2e73ef9be1c41e35e65a232f36ff2fab0f3` (`C1-017`).
+  The authoritative development ledger accepts them at revisions 50 and 51
+  with `assurance_level: single-custodian`; no independent custody is claimed.
 - Hard contribution dependencies for `C1-009D`:
   `solguard-core@1ad350d8d3f54c227ca8f81b9cb42c4bf6a0494b` (`C1-009` publication) and
   `solguard-deploy@cb223071c0dab18190041129490702b8282f27bb` (`C1-009C` reader).
@@ -33,6 +38,10 @@ linked here without being copied or rewritten.
 
 - C0-014 adds a separate read-only consumer of the existing v1
   acceptance-ledger contract; it does not change or republish the schema.
+- C1-018 adds a read-only documentation contract over the owner-published
+  TechnicalVerdict and AdmissionResult schemas, oracle-free metric lineage,
+  runtime defaults and separated gates. It republishes no product schema and
+  activates no writer.
 - C1-009D adds a read-only Docs/UI consumer of the existing C1-009 finding and
   review schemas. Its byte-pinned fixtures are non-authoritative consumer test
   inputs; it does not change or republish either product contract.
@@ -51,7 +60,7 @@ linked here without being copied or rewritten.
 
 ### Validation evidence
 
-- Central final-plan validation: `node validate-final-plan.mjs` - PASS (71,663
+- Central final-plan validation: `node validate-final-plan.mjs` - PASS (78,360
   checks).
 - Structural changelog validation: PASS (required fields, exact historical
   link, UTF-8, and terminal newline).
@@ -63,6 +72,23 @@ linked here without being copied or rewritten.
   acceptance material, deterministic output, schema/count/ID-set/formula
   tamper, stale revision expectations, strict JSON, hardlinks and forbidden
   writer modes.
+- C1-018 truth documentation verification: PASS, covering exact owner schema
+  pins, 3 technical decisions, 22 technical reason codes, 14 obligations, 4
+  admission decisions, 12 admission reasons, 18 metric routes, safe defaults
+  and 4 synthetic matrix scenarios. Negative mutations reject writer/authority
+  escalation, enum relabeling, a compatibility default and forged blind
+  eligibility.
+- Integrated C1-018 contract root:
+  `7844f38a7c8886f2950e2cfa413b20917ab521ce8f7ad58f253892a3d4840448`.
+- Complete integrated Docs Node suite: PASS (41/41).
+- Cross-repository C1-018 verification: Deploy PASS (54/55, with the one
+  Windows symlink-creation case explicitly skipped after `EPERM`) and Backend
+  PASS (31/31 Node and 67/67 Rust).
+- Central final-plan validation after C1-018: PASS (78,360 checks; 1,671 ledger
+  items remain unchanged).
+- GitHub Actions: N/A. Neither the integrated branch nor `main` contains a
+  workflow, so no remote CI run exists to cite; the exhaustive local and
+  cross-repository contract suites above are the validation evidence.
 - C1-009D Docs/UI projection tests: PASS (9/9), covering all three canonical
   roles, empty arrays, public eligibility, review isolation, exact schema and
   golden pins, strict JSON/UTF-8, schema mixing, duplicate IDs, Markdown
@@ -99,6 +125,11 @@ linked here without being copied or rewritten.
   `C0-008` or `GOV-002`; ledger and
   checklist state remain unchanged until the external atomic genesis and later
   valid transitions.
+- C1-018 does not accept itself or TRUTH-108. C1-016 and C1-017 are accepted
+  only by the authoritative development ledger under `single-custodian`
+  assurance. Its examples are synthetic contract fixtures, all writers remain
+  disabled, and it establishes no measured product, release or
+  blind-generalization capability.
 - C1-009D does not accept C1-009, C1-009C, C1-009D or TRUTH-105. The
   DECIDE-604 runtime writer remains disabled, canonical runtime artifacts have
   not been observed, and this view establishes no measured product capability.

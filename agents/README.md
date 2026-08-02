@@ -54,6 +54,13 @@ Document product behavior, tools, architecture, releases, labs and user-facing w
   reader validates explicit v1 state, counts, ID/DAG roots and immutable
   acceptance material before rendering; commits, branches, pull requests and
   planned subjects never imply acceptance, and the reader has no writer mode
+- truth documentation pins TechnicalVerdict and AdmissionResult owner bytes,
+  oracle-free metric lineage, safe runtime defaults and four independent gate
+  decisions. `duplicate` remains a presentation role rather than an admission
+  decision; unavailable metrics remain null, all writers stay disabled and
+  synthetic scenarios establish no measured capability or acceptance. Its
+  C1-016/C1-017 dependencies are accepted only by the authoritative development
+  ledger with `single-custodian` assurance; no independent custody is claimed
 - canonical finding, public-finding and product-review views are distinct
   read-only roles pinned to Core schemas and the Deploy route reader. Reviews
   never count as findings, public findings require eligible plus
