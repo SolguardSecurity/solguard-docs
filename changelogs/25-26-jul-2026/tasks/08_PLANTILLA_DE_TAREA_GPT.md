@@ -1049,6 +1049,15 @@ evidence producer que verifica; release approver es distinto de dossier builder
 y verifier. Dos GPTs, chats, cuentas, worktrees o run IDs controlados por la
 misma persona **no** crean independencia humana.
 
+La única excepción de custodia es el perfil de bootstrap
+`development/single-custodian`: exige un solo `custodian_identity` declarado,
+pero mantiene cuatro claves Ed25519, key IDs, human identities, runs y contexts
+distintos. Sus reports, ledger y receipts se rotulan `single-custodian` y nunca
+usan `independent_verification_report` ni lenguaje de independencia. El perfil
+`production/independent-custodians` sigue exigiendo custodios distintos y es
+obligatorio para cualquier ceremonia ciega, claim o release que invoque
+independencia humana.
+
 ## Post-seal/reveal outputs
 
 Este bloque se incluye sólo para campaign y measurement; cada subtype omite los
@@ -1327,6 +1336,12 @@ Publica un único event/snapshot/commit receipt o ninguno; no existe
 `contribution_set_then_node_set` que coloque todos los consumers antes de sus
 producers.
 
+La propuesta genesis contiene `member_acceptances` en ese mismo orden, con
+evidence/verifier roots únicos, dependency-state hash y binding de
+implementación por contribution. Las cuatro firmas de roles se verifican contra
+el role policy. `assurance_mode` y `assurance_level` coinciden en proposal,
+lease, event, snapshot, head y receipt; cualquier drift aborta sin persistir.
+
 El ledger usa el enum cerrado
 `evidence_mode=bootstrap|implementation|candidate_epoch|validation|
 freeze_attestation|database_cutover|campaign|measurement|
@@ -1368,8 +1383,9 @@ El validador debe comprobar, como mínimo:
 - evidencia no `PENDING`, inmutable, localizable y ligada al node version;
 - firmas, roots, commits o tree/absence receipts y contract versions válidos y
   alcanzables;
-- identidades humanas y claves del verificador separadas de implementador y
-  evidence producer; en campaña, maintainer, custodio, selector, operador,
+- identidades humanas, runs, contexts y claves del verificador separadas de
+  implementador y evidence producer; la custodia se separa en production y se
+  declara compartida en development; en campaña, maintainer, custodio, selector, operador,
   evaluator/adjudicator y confirmator LIVE son pairwise distintos según §10;
 - dos GPT contexts, run IDs, cuentas o worktrees del mismo humano no satisfacen
   separación;

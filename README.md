@@ -10,6 +10,7 @@ orquesta y reconcilia.
 ## Indice principal
 
 - [Core: arquitectura, pipeline y autoridad operacional](docs/solguard-core/README.md)
+- [Verdict, admisión, métricas y defaults v1](docs/solguard-core/verdict-admission-metrics-defaults-v1.md)
 - [Backend HTTP](docs/solguard-backend/README.md)
 - [Herramientas MAP, TRACE, DISCOVER, VALIDATE, FILTER y EXPLOIT](docs/solguard-tools/README.md)
 - [Deploy, ejecucion sellada y fronteras de release](docs/solguard-deploy/README.md)
@@ -17,6 +18,7 @@ orquesta y reconcilia.
 - [Labs](docs/solguard-labs/README.md)
 - [Database e ingesta documental](docs/solguard-database/README.md)
 - [CLI local](docs/solguard-cli/README.md)
+- [Gobierno del programa](docs/governance/README.md)
 - [Notas de versiones historicas](releases/tabla.md)
 
 ## Estado de evidencia

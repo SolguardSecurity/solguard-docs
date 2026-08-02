@@ -1,0 +1,563 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solguard.dev/schemas/finding-envelope.v1.schema.json",
+  "title": "Solguard finding envelope v1",
+  "description": "CORE-owned immutable projection of one FILTER pass. Publication remains disabled until DECIDE-604.",
+  "x-solguard-owner": "solguard-core",
+  "x-solguard-contract-id": "solguard-finding-envelope.v1",
+  "x-solguard-writer-enabled": false,
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_version",
+    "finding_id",
+    "run_id",
+    "candidate_epoch_binding",
+    "run_input_membership_root",
+    "run_input_membership_count",
+    "producer",
+    "projection",
+    "candidate_id",
+    "candidate_digest",
+    "verdict_ref",
+    "admission_ref",
+    "origin",
+    "claim",
+    "scope",
+    "route",
+    "invariant",
+    "proof",
+    "verdict",
+    "presentation",
+    "coverage",
+    "bindings"
+  ],
+  "properties": {
+    "schema_version": { "const": "solguard-finding-envelope.v1" },
+    "contract_version": { "const": "v1" },
+    "finding_id": { "type": "string", "pattern": "^finding-envelope-v1-[a-z0-9][a-z0-9._:-]{2,127}$" },
+    "run_id": { "$ref": "#/$defs/canonical_id" },
+    "candidate_epoch_binding": { "$ref": "#/$defs/candidate_epoch_binding" },
+    "run_input_membership_root": { "$ref": "#/$defs/sha256" },
+    "run_input_membership_count": { "$ref": "#/$defs/nonnegative_integer" },
+    "producer": { "$ref": "#/$defs/producer" },
+    "projection": { "$ref": "#/$defs/projection" },
+    "candidate_id": { "$ref": "#/$defs/canonical_id" },
+    "candidate_digest": { "$ref": "#/$defs/sha256" },
+    "verdict_ref": { "$ref": "#/$defs/artifact_ref" },
+    "admission_ref": { "$ref": "#/$defs/artifact_ref" },
+    "origin": { "$ref": "#/$defs/origin" },
+    "claim": { "$ref": "#/$defs/claim" },
+    "scope": { "$ref": "#/$defs/scope" },
+    "route": { "$ref": "#/$defs/route" },
+    "invariant": { "$ref": "#/$defs/invariant" },
+    "proof": { "$ref": "#/$defs/proof" },
+    "verdict": { "$ref": "#/$defs/verdict" },
+    "presentation": { "$ref": "#/$defs/presentation" },
+    "coverage": { "$ref": "#/$defs/coverage" },
+    "bindings": { "$ref": "#/$defs/bindings" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "properties": { "publication_eligibility": { "const": "eligible" } },
+            "required": ["publication_eligibility"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": { "not": { "required": ["ineligibility"] } }
+        }
+      },
+      "else": {
+        "properties": {
+          "verdict": { "required": ["ineligibility"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "presentation": {
+            "properties": { "presentation_role": { "const": "duplicate" } },
+            "required": ["presentation_role"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "presentation": { "required": ["canonical_parent_id"] },
+          "verdict": {
+            "properties": {
+              "publication_eligibility": { "const": "ineligible" },
+              "ineligibility": {
+                "properties": { "kind": { "const": "duplicate" } },
+                "required": ["kind"]
+              }
+            },
+            "required": ["ineligibility"]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "presentation": { "not": { "required": ["canonical_parent_id"] } },
+          "verdict": {
+            "not": {
+              "properties": {
+                "ineligibility": {
+                  "properties": { "kind": { "const": "duplicate" } },
+                  "required": ["kind"]
+                }
+              },
+              "required": ["ineligibility"]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "canonical_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$" },
+    "version": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$" },
+    "nonnegative_integer": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "nonempty_text": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "string_set": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonempty_text" }
+    },
+    "id_set": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/canonical_id" }
+    },
+    "digest_set": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/sha256" }
+    },
+    "candidate_epoch_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "candidate_epoch_id",
+        "candidate_epoch_definition_id",
+        "candidate_epoch_root",
+        "candidate_epoch_open_event_id",
+        "candidate_epoch_open_event_root",
+        "binding_phase",
+        "candidate_epoch_freeze_event_id",
+        "candidate_epoch_freeze_event_root",
+        "candidate_accepted_input_membership_root",
+        "candidate_accepted_input_membership_count",
+        "accepted_tooling_membership_root",
+        "accepted_tooling_membership_count",
+        "resource_profile_id",
+        "resource_profile_version",
+        "resource_profile_root",
+        "resource_profile_policy_id",
+        "resource_profile_policy_version",
+        "resource_profile_policy_root",
+        "resource_profile_policy_compliance_root"
+      ],
+      "properties": {
+        "schema_version": { "const": "solguard-candidate-epoch-binding.v1" },
+        "candidate_epoch_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_definition_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_root": { "$ref": "#/$defs/sha256" },
+        "candidate_epoch_open_event_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_open_event_root": { "$ref": "#/$defs/sha256" },
+        "binding_phase": { "const": "post_freeze" },
+        "candidate_epoch_freeze_event_id": { "$ref": "#/$defs/canonical_id" },
+        "candidate_epoch_freeze_event_root": { "$ref": "#/$defs/sha256" },
+        "candidate_accepted_input_membership_root": { "$ref": "#/$defs/sha256" },
+        "candidate_accepted_input_membership_count": { "$ref": "#/$defs/nonnegative_integer" },
+        "accepted_tooling_membership_root": { "$ref": "#/$defs/sha256" },
+        "accepted_tooling_membership_count": { "$ref": "#/$defs/nonnegative_integer" },
+        "resource_profile_id": { "$ref": "#/$defs/canonical_id" },
+        "resource_profile_version": { "$ref": "#/$defs/version" },
+        "resource_profile_root": { "$ref": "#/$defs/sha256" },
+        "resource_profile_policy_id": { "$ref": "#/$defs/canonical_id" },
+        "resource_profile_policy_version": { "$ref": "#/$defs/version" },
+        "resource_profile_policy_root": { "$ref": "#/$defs/sha256" },
+        "resource_profile_policy_compliance_root": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "tool_version", "contract_version"],
+      "properties": {
+        "repo": { "const": "solguard-core" },
+        "tool_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "contract_version": { "const": "v1" }
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projector_id", "projector_version", "projector_root"],
+      "properties": {
+        "projector_id": { "const": "solguard-admission-to-product-envelopes" },
+        "projector_version": { "const": "1.0.0" },
+        "projector_root": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "content_digest"],
+      "properties": {
+        "artifact_id": { "$ref": "#/$defs/canonical_id" },
+        "content_digest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "origin_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin_class", "knowledge_taint", "artifact_id", "content_digest"],
+      "properties": {
+        "origin_class": { "$ref": "#/$defs/origin_class" },
+        "knowledge_taint": { "$ref": "#/$defs/knowledge_taint" },
+        "artifact_id": { "$ref": "#/$defs/canonical_id" },
+        "content_digest": { "$ref": "#/$defs/sha256" },
+        "rule_pack_id": { "$ref": "#/$defs/canonical_id" },
+        "rule_pack_root": { "$ref": "#/$defs/sha256" },
+        "model_id": { "$ref": "#/$defs/canonical_id" },
+        "model_root": { "$ref": "#/$defs/sha256" },
+        "tool_id": { "$ref": "#/$defs/canonical_id" },
+        "tool_root": { "$ref": "#/$defs/sha256" },
+        "retrieval_index_root": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "origin_class": {
+      "enum": ["semantic_generic", "rule_pack", "model_grounded", "historical_retrieval", "direct_tool_finding"]
+    },
+    "knowledge_taint": { "enum": ["open_world", "unknown", "train_derived", "known_pattern"] },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classes",
+        "primary_class",
+        "knowledge_taints",
+        "effective_knowledge_taint",
+        "taint_join_rule_id",
+        "taint_join_rule_version",
+        "taint_join_rule_root",
+        "taint_ancestor_set_root",
+        "taint_causal_paths_root",
+        "artifacts"
+      ],
+      "properties": {
+        "classes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/origin_class" } },
+        "primary_class": { "$ref": "#/$defs/origin_class" },
+        "knowledge_taints": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/knowledge_taint" } },
+        "effective_knowledge_taint": { "$ref": "#/$defs/knowledge_taint" },
+        "taint_join_rule_id": { "const": "solguard-knowledge-taint-max-join" },
+        "taint_join_rule_version": { "const": "1.0.0" },
+        "taint_join_rule_root": { "$ref": "#/$defs/sha256" },
+        "taint_ancestor_set_root": { "$ref": "#/$defs/sha256" },
+        "taint_causal_paths_root": { "$ref": "#/$defs/sha256" },
+        "artifacts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/origin_artifact" } }
+      }
+    },
+    "lower_bound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "asset", "native_unit"],
+      "properties": {
+        "amount": { "type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" },
+        "asset": { "$ref": "#/$defs/canonical_id" },
+        "native_unit": { "$ref": "#/$defs/canonical_id" },
+        "uncertainty_interval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lower", "upper"],
+          "properties": {
+            "lower": { "type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" },
+            "upper": { "type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" }
+          }
+        }
+      }
+    },
+    "actor_prerequisites": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["privilege", "capital", "timing", "repetitions", "protocol_state"],
+      "properties": {
+        "privilege": { "$ref": "#/$defs/nonempty_text" },
+        "capital": { "$ref": "#/$defs/nonempty_text" },
+        "timing": { "$ref": "#/$defs/nonempty_text" },
+        "repetitions": { "$ref": "#/$defs/nonempty_text" },
+        "protocol_state": { "$ref": "#/$defs/nonempty_text" }
+      }
+    },
+    "materiality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "materiality_profile_id",
+        "materiality_profile_version",
+        "materiality_profile_root",
+        "policy_set_commitment_root",
+        "impact_class",
+        "proven_lower_bound",
+        "time_horizon",
+        "actor_prerequisites",
+        "product_materiality_status"
+      ],
+      "properties": {
+        "materiality_profile_id": { "$ref": "#/$defs/canonical_id" },
+        "materiality_profile_version": { "$ref": "#/$defs/version" },
+        "materiality_profile_root": { "$ref": "#/$defs/sha256" },
+        "policy_set_commitment_root": { "$ref": "#/$defs/sha256" },
+        "impact_class": { "$ref": "#/$defs/canonical_id" },
+        "proven_lower_bound": { "$ref": "#/$defs/lower_bound" },
+        "time_horizon": { "$ref": "#/$defs/nonempty_text" },
+        "actor_prerequisites": { "$ref": "#/$defs/actor_prerequisites" },
+        "product_materiality_status": { "enum": ["native_lower_bound_proven", "non_economic", "unclassified"] }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "vulnerability_class", "economic_family", "materiality"],
+      "properties": {
+        "title": { "$ref": "#/$defs/nonempty_text" },
+        "vulnerability_class": { "$ref": "#/$defs/canonical_id" },
+        "economic_family": { "$ref": "#/$defs/canonical_id" },
+        "materiality": { "$ref": "#/$defs/materiality" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["language", "framework", "components", "entrypoints", "actors", "assets", "states"],
+      "properties": {
+        "language": { "$ref": "#/$defs/canonical_id" },
+        "framework": { "$ref": "#/$defs/canonical_id" },
+        "components": { "$ref": "#/$defs/id_set" },
+        "entrypoints": { "$ref": "#/$defs/id_set" },
+        "actors": { "$ref": "#/$defs/id_set" },
+        "assets": { "$ref": "#/$defs/id_set" },
+        "states": { "$ref": "#/$defs/id_set" }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flow_id", "route_digest", "ordered_operations"],
+      "properties": {
+        "flow_id": { "$ref": "#/$defs/canonical_id" },
+        "route_digest": { "$ref": "#/$defs/sha256" },
+        "ordered_operations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/canonical_id" } }
+      }
+    },
+    "independent_derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_ref", "artifact_digest", "json_pointer"],
+      "properties": {
+        "artifact_ref": { "$ref": "#/$defs/canonical_id" },
+        "artifact_digest": { "$ref": "#/$defs/sha256" },
+        "json_pointer": { "type": "string", "pattern": "^(?:/(?:[^~/]|~0|~1)*)*$" }
+      }
+    },
+    "invariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invariant_id", "predicate", "quantifier", "independent_derivation"],
+      "properties": {
+        "invariant_id": { "$ref": "#/$defs/canonical_id" },
+        "predicate": { "$ref": "#/$defs/nonempty_text" },
+        "quantifier": { "enum": ["forall", "exists", "bounded_forall", "bounded_exists"] },
+        "independent_derivation": { "$ref": "#/$defs/independent_derivation" }
+      }
+    },
+    "proof_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "asset", "native_unit", "direction"],
+      "properties": {
+        "amount": { "type": "string", "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$" },
+        "asset": { "$ref": "#/$defs/canonical_id" },
+        "native_unit": { "$ref": "#/$defs/canonical_id" },
+        "direction": { "enum": ["adverse", "beneficial", "neutral"] }
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "artifact_ref", "artifact_digest", "json_pointer"],
+      "properties": {
+        "authority": { "enum": ["source", "map", "trace", "discover", "economic", "value", "invariant", "validate", "filter", "core"] },
+        "artifact_ref": { "$ref": "#/$defs/canonical_id" },
+        "artifact_digest": { "$ref": "#/$defs/sha256" },
+        "json_pointer": { "type": "string", "pattern": "^(?:/(?:[^~/]|~0|~1)*)*$" }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "certificate_id",
+        "certificate_digest",
+        "status",
+        "obligations",
+        "state_before",
+        "state_after",
+        "delta",
+        "constraints",
+        "solver_or_probe_receipts",
+        "evidence_refs",
+        "counterevidence_refs"
+      ],
+      "properties": {
+        "certificate_id": { "$ref": "#/$defs/canonical_id" },
+        "certificate_digest": { "$ref": "#/$defs/sha256" },
+        "status": { "const": "complete" },
+        "obligations": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/canonical_id" } },
+        "state_before": { "$ref": "#/$defs/sha256" },
+        "state_after": { "$ref": "#/$defs/sha256" },
+        "delta": { "$ref": "#/$defs/proof_delta" },
+        "constraints": { "$ref": "#/$defs/string_set" },
+        "solver_or_probe_receipts": { "$ref": "#/$defs/id_set" },
+        "evidence_refs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/evidence_ref" } },
+        "counterevidence_refs": { "type": "array", "items": { "$ref": "#/$defs/evidence_ref" } }
+      }
+    },
+    "ineligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reason_code",
+        "policy_id",
+        "policy_version",
+        "policy_root",
+        "rule_id",
+        "scope_root",
+        "decision_event_id",
+        "actor_id",
+        "actor_key_id",
+        "justification_refs",
+        "created_at"
+      ],
+      "properties": {
+        "kind": { "enum": ["duplicate", "policy_suppression", "temporary_safety_hold"] },
+        "reason_code": { "type": "string", "pattern": "^[a-z][a-z0-9_]{2,127}$" },
+        "policy_id": { "$ref": "#/$defs/canonical_id" },
+        "policy_version": { "$ref": "#/$defs/version" },
+        "policy_root": { "$ref": "#/$defs/sha256" },
+        "rule_id": { "$ref": "#/$defs/canonical_id" },
+        "scope_root": { "$ref": "#/$defs/sha256" },
+        "decision_event_id": { "$ref": "#/$defs/canonical_id" },
+        "actor_id": { "$ref": "#/$defs/canonical_id" },
+        "actor_key_id": { "$ref": "#/$defs/canonical_id" },
+        "justification_refs": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/artifact_ref" } },
+        "created_at": { "type": "string", "format": "date-time" },
+        "expires_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["validate_decision", "validate_reason", "filter_decision", "publication_eligibility"],
+      "properties": {
+        "validate_decision": { "const": "supported" },
+        "validate_reason": { "type": "string", "pattern": "^[a-z][a-z0-9_]{2,127}$" },
+        "filter_decision": { "const": "pass" },
+        "publication_eligibility": { "enum": ["eligible", "ineligible"] },
+        "ineligibility": { "$ref": "#/$defs/ineligibility" }
+      }
+    },
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "rubric_id", "rubric_version", "rubric_root", "component_scores"],
+      "properties": {
+        "value": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "rubric_id": { "$ref": "#/$defs/canonical_id" },
+        "rubric_version": { "$ref": "#/$defs/version" },
+        "rubric_root": { "$ref": "#/$defs/sha256" },
+        "component_scores": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 100 }
+        }
+      }
+    },
+    "probability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "interval", "calibration_model_id", "calibration_model_root", "calibration_population_root"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0, "maximum": 1 },
+        "interval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lower", "upper"],
+          "properties": {
+            "lower": { "type": "number", "minimum": 0, "maximum": 1 },
+            "upper": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "calibration_model_id": { "$ref": "#/$defs/canonical_id" },
+        "calibration_model_root": { "$ref": "#/$defs/sha256" },
+        "calibration_population_root": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dedupe_group", "presentation_role", "rank", "evidence_completeness_score"],
+      "properties": {
+        "dedupe_group": { "$ref": "#/$defs/canonical_id" },
+        "presentation_role": { "enum": ["unique", "representative", "duplicate"] },
+        "canonical_parent_id": { "$ref": "#/$defs/canonical_id" },
+        "rank": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "evidence_completeness_score": { "$ref": "#/$defs/score" },
+        "calibrated_actionability_probability": { "$ref": "#/$defs/probability" }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "debts"],
+      "properties": {
+        "status": { "const": "complete" },
+        "debts": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_tree_sha256",
+        "runtime_manifest_sha256",
+        "candidate_epoch_binding_digest",
+        "run_input_membership_root",
+        "run_input_membership_count",
+        "parent_artifact_ids",
+        "parent_roots"
+      ],
+      "properties": {
+        "source_tree_sha256": { "$ref": "#/$defs/sha256" },
+        "runtime_manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "candidate_epoch_binding_digest": { "$ref": "#/$defs/sha256" },
+        "run_input_membership_root": { "$ref": "#/$defs/sha256" },
+        "run_input_membership_count": { "$ref": "#/$defs/nonnegative_integer" },
+        "parent_artifact_ids": { "type": "array", "minItems": 3, "uniqueItems": true, "items": { "$ref": "#/$defs/canonical_id" } },
+        "parent_roots": { "type": "array", "minItems": 3, "uniqueItems": true, "items": { "$ref": "#/$defs/sha256" } }
+      }
+    }
+  }
+}

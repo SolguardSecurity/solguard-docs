@@ -1,1 +1,12 @@
 *.md linguist-detectable
+changelogs/25-26-jul-2026/tasks/readers/fixtures/findings-contract-v1/*.json text eol=lf
+
+# C0-008 binds these publication inputs by their exact repository bytes.
+docs/governance/README.md text eol=lf
+docs/governance/product-claim-dictionary.v1.json text eol=lf
+docs/governance/product-claim-dictionary.md text eol=lf
+docs/governance/architecture-decisions.md text eol=lf
+docs/governance/evidence-rules.md text eol=lf
+changelogs/25-26-jul-2026/tasks/01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md text eol=lf
+changelogs/25-26-jul-2026/tasks/02_PROGRAMA_ESTRUCTURAL.md text eol=lf
+changelogs/25-26-jul-2026/tasks/09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md text eol=lf

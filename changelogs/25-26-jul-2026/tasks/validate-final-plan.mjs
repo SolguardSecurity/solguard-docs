@@ -422,6 +422,65 @@ function validateR2AbsenceAmendment(ledger) {
   );
 }
 
+function validateAssuranceProfile(ledger) {
+  check(ledger.assurance_mode === "development", "ASSURANCE_MODE", String(ledger.assurance_mode));
+  check(
+    ledger.assurance_level === "single-custodian",
+    "ASSURANCE_LEVEL",
+    String(ledger.assurance_level),
+  );
+  const profiles = ledger.live_authorization_contract?.assurance_profiles;
+  check(profiles?.production?.assurance_level === "independent-custodians", "PRODUCTION_ASSURANCE_LEVEL");
+  check(profiles?.production?.required_distinct_custodian_count === 4, "PRODUCTION_CUSTODIAN_COUNT");
+  check(profiles?.development?.assurance_level === "single-custodian", "DEVELOPMENT_ASSURANCE_LEVEL");
+  check(profiles?.development?.required_distinct_custodian_count === 1, "DEVELOPMENT_CUSTODIAN_COUNT");
+  check(profiles?.development?.required_distinct_ed25519_public_key_count === 4, "DEVELOPMENT_KEY_COUNT");
+  check(profiles?.development?.independence_claim === "forbidden", "DEVELOPMENT_INDEPENDENCE_CLAIM");
+  check(profiles?.immutable_after_genesis === true, "ASSURANCE_IMMUTABLE_AFTER_GENESIS");
+  const activeVerifierSubjects = [...(ledger.nodes ?? []), ...(ledger.contributions ?? [])].filter(
+    (subject) => subject.verifier_descriptor,
+  );
+  for (const subject of activeVerifierSubjects) {
+    const descriptor = subject.verifier_descriptor;
+    check(
+      descriptor.type ===
+        (subject.kind === "contribution"
+          ? "single_custodian_contribution_verification"
+          : "single_custodian_verification"),
+      "DEVELOPMENT_VERIFIER_TYPE",
+      `${subject.id ?? subject.contribution_id}:${descriptor.type}`,
+    );
+    check(
+      descriptor.separation ===
+        "different_role_context_and_credentials_same_declared_custodian",
+      "DEVELOPMENT_VERIFIER_SEPARATION",
+      subject.id ?? subject.contribution_id,
+    );
+    check(
+      descriptor.forbidden?.includes("independence_claim"),
+      "DEVELOPMENT_VERIFIER_INDEPENDENCE_FORBIDDEN",
+      subject.id ?? subject.contribution_id,
+    );
+    check(
+      !descriptor.forbidden?.includes("implementer_self_acceptance"),
+      "DEVELOPMENT_VERIFIER_NO_FALSE_SELF_ACCEPTANCE_CLAIM",
+      subject.id ?? subject.contribution_id,
+    );
+  }
+  for (const field of ["assurance_mode", "assurance_level"]) {
+    check(
+      ledger.transition_contract?.common_event_required?.includes(field),
+      "ASSURANCE_EVENT_FIELD",
+      field,
+    );
+    check(
+      ledger.transition_contract?.commit_receipt?.required?.includes(field),
+      "ASSURANCE_RECEIPT_FIELD",
+      field,
+    );
+  }
+}
+
 function validateIdsAndGraph(ledger) {
   const nodes = ledger.nodes ?? [];
   const contributions = ledger.contributions ?? [];
@@ -2013,6 +2072,7 @@ function main() {
   if (!ledger) finish();
   check(Array.isArray(ledger.nodes), "NODES_NOT_ARRAY");
   check(Array.isArray(ledger.contributions), "CONTRIBUTIONS_NOT_ARRAY");
+  validateAssuranceProfile(ledger);
   validateCounts(ledger);
   validateR2AbsenceAmendment(ledger);
   const graph = validateIdsAndGraph(ledger);

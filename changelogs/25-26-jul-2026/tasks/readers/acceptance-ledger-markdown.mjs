@@ -13,12 +13,17 @@ export const ACCEPTANCE_LEDGER_READER_PINS = Object.freeze({
     schemaPublisher: Object.freeze({
         repository: "solguard-agents",
         taskId: "C0-012",
-        commit: "f093848824173f6c5cdb1a7a89dd4acbe5d90ab2",
+        commit: "9da4ae8f45bf6893845a873d5bc7c1c7ac7fa778",
+    }),
+    assuranceAmendment: Object.freeze({
+        repository: "solguard-agents",
+        changeId: "single-custodian-assurance",
+        commit: "7769407d9ac2d68c8f8ef861736aa6ea4198ab13",
     }),
     validatingReader: Object.freeze({
         repository: "solguard-deploy",
         taskId: "C0-013",
-        commit: "36ca97b6f8117df77039eea397763b5a3a35a310",
+        commit: "5d8d0a3609b0b191cae89461c7c5946d1c6b3f89",
     }),
 });
 
@@ -66,6 +71,8 @@ const EVENT_FIELDS = Object.freeze([
     "schema_version",
     "canonical_preimage_domain",
     "program_id",
+    "assurance_mode",
+    "assurance_level",
     "ledger_revision_before",
     "event_id",
     "event_self_hash",
@@ -96,6 +103,8 @@ const LEDGER_FIELDS = Object.freeze([
     "schema_version",
     "program_id",
     "program_version",
+    "assurance_mode",
+    "assurance_level",
     "ledger_revision",
     "generated_view",
     "specification",
@@ -867,6 +876,17 @@ export function validateAcceptanceLedgerForView(document, expectations = {}) {
     );
     assertId(ledger.program_id, "ledger.program_id");
     assertId(ledger.program_version, "ledger.program_version");
+    invariant(
+        ledger.assurance_mode === "production" || ledger.assurance_mode === "development",
+        "ledger assurance mode is invalid",
+    );
+    invariant(
+        ledger.assurance_level ===
+            (ledger.assurance_mode === "production"
+                ? "independent-custodians"
+                : "single-custodian"),
+        "ledger assurance mode and level are inconsistent",
+    );
     assertInteger(ledger.ledger_revision, 0, "ledger.ledger_revision");
     assertString(ledger.generated_view, "ledger.generated_view");
     invariant(ledger.id_set_hash_algorithm === ID_SET_ALGORITHM, "ledger ID-set algorithm drifted");
@@ -1159,6 +1179,8 @@ export function renderAcceptanceLedgerMarkdown(document, expectations = {}) {
         `- Schema: ${mdCode(ledger.schema_version)}`,
         `- Program: ${mdCode(ledger.program_id)}`,
         `- Program version: ${mdCode(ledger.program_version)}`,
+        `- Assurance mode: ${mdCode(ledger.assurance_mode)}`,
+        `- Assurance level: ${mdCode(ledger.assurance_level)}`,
         `- Ledger revision: ${mdCode(ledger.ledger_revision)}`,
         `- Counted ID-set root: ${mdCode(ledger.id_set_sha256)}`,
         `- Program DAG root: ${mdCode(validation.programDagRoot)}`,

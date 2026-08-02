@@ -450,6 +450,21 @@ El ledger contiene **809 aristas contractuales de nodo** y **1187 bindings contr
 
 La expansión contribution→contract permanece machine-readable en `contributions[].dependencies`.
 
+<!-- GENERATED:ASSURANCE-PROFILES:BEGIN -->
+### 4.0 Perfil de assurance y custodia
+
+El par `assurance_mode`/`assurance_level` es obligatorio en ledger, event, lease, authoritative head, derived evaluation y commit receipt; debe coincidir durante toda la cadena.
+
+| Modo | Nivel | Claves Ed25519 | Custodios | Claim permitido |
+|---|---|---:|---:|---|
+| `production` | `independent-custodians` | 4 distintas | 4 distintos | independencia de custodia |
+| `development` | `single-custodian` | 4 distintas | exactamente 1 declarado | sólo ejecución single-custodian; independencia prohibida |
+
+Ambos modos rechazan key IDs, human identities o material público Ed25519 duplicado. Cambiar el perfil tras genesis exige nueva versión de programa y nueva genesis. El modo development no satisface gates ni claims que exigen custodios, holdouts, evaluadores o adjudicadores humanos independientes.
+
+En el snapshot activo development, cada `verifier_descriptor` se rotula `single_custodian_verification` (o su variante de contribution) y separa rol, contexto, credencial y clave bajo el mismo custodio declarado; no usa etiquetas de verificación independiente. El perfil production conserva los descriptores independientes.
+<!-- GENERATED:ASSURANCE-PROFILES:END -->
+
 ## 4. Schema `solguard-acceptance-ledger.v1`
 
 <!-- GENERATED:LEDGER-CONFORMANCE:BEGIN -->

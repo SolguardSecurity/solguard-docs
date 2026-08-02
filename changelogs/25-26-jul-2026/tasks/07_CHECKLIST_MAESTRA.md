@@ -8,6 +8,8 @@ Esta vista se genera exclusivamente desde `acceptance-ledger.v1.json`; no se mar
 |---|---|
 | Programa | `solguard-detection-maturity-2026-07-25` |
 | Versión | `solguard-detection-maturity-2026-07-25.4` |
+| Assurance mode | `development` |
+| Assurance level | `single-custodian` |
 | Revisión seed | `0` |
 | Node ID-set root | `6fab73e53ff6adbb1cdb940e611a83774d0e0d48a85f3a96650b6bd3af374e3b` |
 | Contribution ID-set root | `d9b86f98702c0da74b8324b400302ae9f6c437625467dfff2b2c3fd136020885` |
@@ -22,7 +24,7 @@ Todos los sets usan JCS/RFC 8785, separación de dominio y rechazo de claves ló
 ## 2. Reglas de progreso
 
 1. `pending` significa no aceptado; implementación o tests locales no cambian el ledger.
-2. Cada transición exige evidencia content-addressed, verificador independiente y commit receipt linealizable.
+2. Cada transición exige evidencia content-addressed, identidades/runs/contexts/claves separados y commit receipt linealizable; la separación de custodio depende del perfil de assurance explícito.
 3. Una contribution no acepta su primary; el integrador exige el set exacto y E2E.
 4. Un derived se materializa como `satisfied|unsatisfied` con operands exactos; nunca se marca a mano.
 5. Sólo un primary `terminalizable=true` admite nonpass tipado o `terminal_not_run` demostrado en el mismo epoch.
