@@ -16,6 +16,27 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const LEDGER_PATH = join(HERE, "acceptance-ledger.v1.json");
 const COMMITS_PATH = join(HERE, "06_PLAN_DE_COMMITS.md");
 const CONTRACTS_PATH = join(HERE, "09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md");
+const PROGRAM_VERSION = "solguard-detection-maturity-2026-07-25.4";
+const PREVIOUS_PROGRAM_VERSION = "solguard-detection-maturity-2026-07-25.3";
+const HARD_DEPENDENCY_GRAPH_ROOT =
+  "d6e86a36f754b7624806a23a8e2e3b52da0070c2c5aea786c347cee75659d835";
+const R2_ABSENCE_RECEIPT_IDS = Object.freeze([
+  "C2-CON-11",
+  "C2-CON-RM-10",
+  "C2-CON-RM-14",
+  "C2-CON-RM-15",
+]);
+const C2_CON_01_MEMBER_REPOSITORIES = Object.freeze([
+  "solguard-core",
+  "solguard-discover",
+  "solguard-economic",
+  "solguard-filter",
+  "solguard-invariant",
+  "solguard-map",
+  "solguard-trace",
+  "solguard-validate",
+  "solguard-value",
+]);
 const REAL_TARGET =
   "C:\\Users\\Roger Gómez Martínez\\Documents\\GitHub\\solguard-docs\\changelogs\\25-jul-2026\\tasks";
 
@@ -247,6 +268,158 @@ function validateCounts(ledger) {
       `${ledger.state_counts?.[field]} != ${expected}`,
     );
   }
+}
+
+function hardDependencyGraphPayload(ledger) {
+  const hardEdges = (edges) => (edges ?? [])
+    .filter((edge) => edge.type === "hard")
+    .map((edge) => structuredClone(edge))
+    .sort((left, right) => codeUnitCompare(jsonCanonical(left), jsonCanonical(right)));
+  return {
+    nodes: ledger.nodes
+      .map((node) => ({ id: node.id, dependencies: hardEdges(node.dependencies) }))
+      .sort((left, right) => codeUnitCompare(left.id, right.id)),
+    contributions: ledger.contributions
+      .map((item) => ({
+        contribution_id: item.contribution_id,
+        parent_primary_id: item.parent_primary_id,
+        parent_primary_ids: item.parent_primary_ids,
+        integration_gate: item.integration_gate,
+        declared_parent_id: item.declared_parent_id,
+        dependencies: hardEdges(item.dependencies),
+        hard_contribution_dependencies: (item.hard_contribution_dependencies ?? [])
+          .map((edge) => structuredClone(edge))
+          .sort((left, right) => codeUnitCompare(jsonCanonical(left), jsonCanonical(right))),
+      }))
+      .sort((left, right) => codeUnitCompare(left.contribution_id, right.contribution_id)),
+  };
+}
+
+function validateR2AbsenceAmendment(ledger) {
+  const r2 = ledger.contributions.filter((item) => item.parent_primary_id?.startsWith("RUN-"));
+  const receipts = r2.filter(
+    (item) => item.contribution_type === "absence_receipt_contribution",
+  );
+  const implementations = r2.filter(
+    (item) => item.contribution_type !== "absence_receipt_contribution",
+  );
+  check(r2.length === 80, "R2_CONTRIBUTION_COUNT", String(r2.length));
+  check(implementations.length === 76, "R2_IMPLEMENTATION_COUNT", String(implementations.length));
+  check(receipts.length === 4, "R2_ABSENCE_RECEIPT_COUNT", String(receipts.length));
+  check(
+    sameSet(
+      receipts.map((item) => item.contribution_id),
+      R2_ABSENCE_RECEIPT_IDS,
+    ),
+    "R2_ABSENCE_RECEIPT_IDS",
+    receipts.map((item) => item.contribution_id).join(","),
+  );
+  check(
+    implementations.every((item) => Boolean(item.expected_commit)),
+    "R2_IMPLEMENTATION_EXPECTED_COMMIT",
+  );
+  const domains = new Set();
+  for (const id of R2_ABSENCE_RECEIPT_IDS) {
+    const item = ledger.contributions.find((candidate) => candidate.contribution_id === id);
+    check(Boolean(item), "R2_RECEIPT_MISSING", id);
+    if (!item) continue;
+    check(!item.expected_commit, "R2_RECEIPT_PLANS_COMMIT", id);
+    check(item.expected_receipt?.no_repository_write === true, "R2_NO_REPOSITORY_WRITE", id);
+    check(
+      item.predicate?.must_hold?.includes("no_repository_write"),
+      "R2_NO_REPOSITORY_WRITE_PREDICATE",
+      id,
+    );
+    check(
+      item.evidence_descriptor?.forbidden?.includes("source_tree_writes"),
+      "R2_SOURCE_TREE_WRITES_NOT_FORBIDDEN",
+      id,
+    );
+    check(Boolean(item.expected_receipt?.receipt_domain), "R2_RECEIPT_DOMAIN", id);
+    if (item.expected_receipt?.receipt_domain) domains.add(item.expected_receipt.receipt_domain);
+  }
+  check(domains.size === 4, "R2_RECEIPT_DOMAIN_UNIQUENESS", String(domains.size));
+
+  const c11 = ledger.contributions.find((item) => item.contribution_id === "C2-CON-11");
+  check(c11?.owner_repo === "solguard-diff", "C2_CON_11_OWNER");
+  check(c11?.parent_primary_id === "RUN-201", "C2_CON_11_PARENT");
+  check(
+    c11?.expected_receipt?.repository_binding?.commit_sha ===
+      "2bb4239eb50b503b63233435f39e562dd169193c",
+    "C2_CON_11_COMMIT_BINDING",
+  );
+  check(
+    c11?.expected_receipt?.repository_binding?.git_tree_sha ===
+      "3294eb3a3d73a1218a0d61636acf66775833d794",
+    "C2_CON_11_TREE_BINDING",
+  );
+  check(
+    c11?.expected_receipt?.inventory_binding?.contribution_id === "C2-CON-01",
+    "C2_CON_11_INVENTORY_ID",
+  );
+  check(
+    c11?.expected_receipt?.inventory_binding?.inventory_root ===
+      "18dd2a95377007e95c7140fe6156d59138dbf00ae88ca6c5cdddac7a21e4470f",
+    "C2_CON_11_INVENTORY_ROOT",
+  );
+  check(c11?.expected_receipt?.inventory_binding?.group_count === 9, "C2_CON_01_GROUP_COUNT");
+  check(c11?.expected_receipt?.inventory_binding?.member_count === 29, "C2_CON_01_MEMBER_COUNT");
+  check(
+    sameSet(
+      c11?.expected_receipt?.inventory_binding?.member_repositories ?? [],
+      C2_CON_01_MEMBER_REPOSITORIES,
+    ),
+    "C2_CON_01_MEMBER_REPOSITORIES",
+  );
+  check(
+    !(c11?.expected_receipt?.inventory_binding?.member_repositories ?? []).includes(
+      "solguard-diff",
+    ),
+    "C2_CON_01_DIFF_MEMBER_FORBIDDEN",
+  );
+  check(
+    c11?.expected_receipt?.receipt_root_policy ===
+      "recompute_from_closed_receipt_after_amendment",
+    "C2_CON_11_ROOT_RECOMPUTE_POLICY",
+  );
+  check(
+    !["immutable_receipt_root", "receipt_root", "evidence_root"].some(
+      (field) => field in (c11?.expected_receipt ?? {}),
+    ),
+    "C2_CON_11_PRECOMPUTED_ROOT_FORBIDDEN",
+  );
+  check(
+    c11?.hard_contribution_dependencies?.[0]?.contribution_id === "C2-CON-10",
+    "C2_CON_11_HARD_ORDER",
+  );
+
+  const rm10 = ledger.contributions.find((item) => item.contribution_id === "C2-CON-RM-10");
+  check(
+    rm10?.expected_receipt?.generation_policy === "deferred_until_hard_order_position",
+    "C2_CON_RM_10_DEFERRED",
+  );
+  check(
+    rm10?.expected_receipt?.repository_binding_policy?.fresh_scan_required === true,
+    "C2_CON_RM_10_FRESH_SCAN",
+  );
+  check(
+    rm10?.expected_receipt?.receipt_root_policy ===
+      "new_unique_root_not_reused_from_C2-CON-11",
+    "C2_CON_RM_10_DISTINCT_ROOT",
+  );
+  check(
+    rm10?.hard_contribution_dependencies?.[0]?.contribution_id === "C2-CON-RM-09",
+    "C2_CON_RM_10_HARD_ORDER",
+  );
+  const graphRoot = sha256Domain(
+    "solguard:hard-dependency-graph:v1",
+    hardDependencyGraphPayload(ledger),
+  );
+  check(
+    graphRoot === HARD_DEPENDENCY_GRAPH_ROOT,
+    "HARD_DEPENDENCY_GRAPH_ROOT",
+    `${graphRoot} != ${HARD_DEPENDENCY_GRAPH_ROOT}`,
+  );
 }
 
 function validateAssuranceProfile(ledger) {
@@ -1782,14 +1955,18 @@ function validateMarkdown(ledger) {
   }
 
   check(
-    ledger.program_version === "solguard-detection-maturity-2026-07-25.4",
+    ledger.program_version === PROGRAM_VERSION,
     "PROGRAM_VERSION",
     String(ledger.program_version),
   );
   const allText = [...contents.values()].join("\n");
   check(
-    !/solguard-detection-maturity-2026-07-25\.[23]\b/.test(`${allText}\n${JSON.stringify(ledger)}`),
-    "STALE_PROGRAM_VERSION",
+    allText.includes(PREVIOUS_PROGRAM_VERSION),
+    "NORMATIVE_ERRATA_PREVIOUS_VERSION_MISSING",
+  );
+  check(
+    !/solguard-detection-maturity-2026-07-25\.2\b/.test(`${allText}\n${JSON.stringify(ledger)}`),
+    "STALE_PROGRAM_VERSION_2",
   );
   check(!/claim_required_pass/i.test(`${allText}\n${JSON.stringify(ledger)}`), "STALE_CLAIM_REQUIRED_PASS");
 
@@ -1897,6 +2074,7 @@ function main() {
   check(Array.isArray(ledger.contributions), "CONTRIBUTIONS_NOT_ARRAY");
   validateAssuranceProfile(ledger);
   validateCounts(ledger);
+  validateR2AbsenceAmendment(ledger);
   const graph = validateIdsAndGraph(ledger);
   validateScopesAndRows(ledger, graph);
   const candidateData = validateCanonicalCandidateSets(ledger, graph);

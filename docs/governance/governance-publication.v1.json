@@ -2,7 +2,7 @@
   "schema_version": "solguard-governance-publication.v1",
   "publication_version": 1,
   "program_id": "solguard-detection-maturity-2026-07-25",
-  "program_version": "solguard-detection-maturity-2026-07-25.3",
+  "program_version": "solguard-detection-maturity-2026-07-25.4",
   "lifecycle_state": "pre_genesis_pending",
   "claim_authority": "none",
   "contribution": {
@@ -63,12 +63,12 @@
     {
       "source_id": "structural-program",
       "path": "changelogs/25-26-jul-2026/tasks/02_PROGRAMA_ESTRUCTURAL.md",
-      "sha256": "0c9d0f7d5a7753f6bffea322503a47f230157eeac62d40ad6a0ea74e87a10dd5"
+      "sha256": "861eea94694837d26d1373a4aa3d6df1adedc30cd49f3d7fcbd44f1af626d7c0"
     },
     {
       "source_id": "ledger-and-dependencies",
       "path": "changelogs/25-26-jul-2026/tasks/09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md",
-      "sha256": "88df94f627f9e27f897889b822820bd00a3bee336735015780724a810810fe9f"
+      "sha256": "eecafb227395645a7474fcb72194aebca22ed512377e9d2e3d832781c67bc92e"
     }
   ],
   "required_links": [
@@ -164,5 +164,5 @@
     "content_hashes_required": true,
     "negative_authority_tests_required": true
   },
-  "publication_root": "f69b67393dd5bea73d9781d8c550dd8c5db2592affb5ab229da106401a1bc889"
+  "publication_root": "1765a35843598612a6e22d3a69c156aa857767ef956953745fe08dede2488e1b"
 }

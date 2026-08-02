@@ -27,6 +27,12 @@ Perfil activo: `development` / `single-custodian`. No declara independencia huma
 Los verificadores activos separan rol, contexto, credencial y clave, pero permanecen bajo el mismo custodio declarado. El perfil production conserva cuatro custodios distintos y verificación independiente.
 <!-- GENERATED:CANONICAL-STATUS:END -->
 
+<!-- GENERATED:R2-DIFF-ERRATA:BEGIN -->
+Errata normativa `ERRATA-R2-DIFF-ABSENCE-2026-07-28`: la revisión congelada `solguard-detection-maturity-2026-07-25.3` clasificó incorrectamente `C2-CON-11` y `C2-CON-RM-10` como implementaciones. `solguard-detection-maturity-2026-07-25.4` conserva las 80 contributions de R2 y su grafo duro: **76 implementaciones + 4 receipts de ausencia**. `solguard-diff` no se modifica.
+
+Registro completo: [ERRATA_2026-07-28_R2_SOLGUARD_DIFF.md](ERRATA_2026-07-28_R2_SOLGUARD_DIFF.md). Las diez PR R2 ya publicadas permanecen draft y pending; la checklist continúa sin marcar.
+<!-- GENERATED:R2-DIFF-ERRATA:END -->
+
 ## 1. Propósito
 
 Este programa transforma la

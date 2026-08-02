@@ -142,7 +142,7 @@ La tabla principal cubre contratos materiales de producto/runtime. Esta tabla ci
 
 | Schema ID | Owner/authority | Uso/locator canónico observado |
 |---|---|---|
-| `solguard-absence-receipt-contribution.v1` | AGENTS/governance evidence authority | `08_PLANTILLA_DE_TAREA_GPT.md`, `ledger.contributions[].evidence_descriptor.schema` |
+| `solguard-absence-receipt-contribution.v1` | AGENTS/governance evidence authority | `08_PLANTILLA_DE_TAREA_GPT.md`, `ledger.contributions[].evidence_descriptor.schema`, `rebuild-final-plan.mjs` |
 | `solguard-acceptance-dossier-manifest.v1` | product contract registry §3 | `01_CONTRATO_DE_MADUREZ_Y_ARQUITECTURA.md`, `05_VALIDACION_CIEGA_Y_RELEASE.md`, `06_PLAN_DE_COMMITS.md`, `09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md (generated)`, `ledger.contributions[].dependencies[].contract_id`, `ledger.nodes[].dependencies[].contract_id` |
 | `solguard-acceptance-ledger-commit-receipt.v1` | AGENTS/DEPLOY release governance | `ledger.transition_contract.commit_receipt.schema`, `rebuild-final-plan.mjs` |
 | `solguard-acceptance-ledger-event.v1` | product contract registry §3 | `08_PLANTILLA_DE_TAREA_GPT.md`, `09_CONTRATOS_LEDGER_Y_DEPENDENCIAS.md (generated)`, `ledger.contributions[].dependencies[].contract_id`, `ledger.nodes[].dependencies[].contract_id` |
@@ -1584,7 +1584,7 @@ Tabla generada desde `acceptance-ledger.v1.json`; cada ID aparece exactamente un
 | `C2-CON-08` | `contribution_implementation` | `solguard-value` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-08]` |
 | `C2-CON-09` | `contribution_implementation` | `solguard-validate` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-09]` |
 | `C2-CON-10` | `contribution_implementation` | `solguard-filter` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-10]` |
-| `C2-CON-11` | `contribution_implementation` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): dual-read canonical shared types [C2-CON-11]` |
+| `C2-CON-11` | `absence_receipt_contribution` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-11]` |
 | `C2-CON-12` | `contribution_implementation` | `solguard-database` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): consume generated canonical schemas [C2-CON-12]` |
 | `C2-CON-13` | `contribution_implementation` | `solguard-backend` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): consume generated canonical schemas [C2-CON-13]` |
 | `C2-CON-14` | `contribution_implementation` | `solguard-deploy` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): verify canonical schemas and goldens [C2-CON-14]` |
@@ -1598,12 +1598,12 @@ Tabla generada desde `acceptance-ledger.v1.json`; cada ID aparece exactamente un
 | `C2-CON-RM-07` | `contribution_implementation` | `solguard-value` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-07]` |
 | `C2-CON-RM-08` | `contribution_implementation` | `solguard-validate` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-08]` |
 | `C2-CON-RM-09` | `contribution_implementation` | `solguard-filter` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-09]` |
-| `C2-CON-RM-10` | `contribution_implementation` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-10]` |
+| `C2-CON-RM-10` | `absence_receipt_contribution` | `solguard-diff` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-RM-10]` |
 | `C2-CON-RM-11` | `contribution_implementation` | `solguard-database` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-11]` |
 | `C2-CON-RM-12` | `contribution_implementation` | `solguard-backend` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-12]` |
 | `C2-CON-RM-13` | `contribution_implementation` | `solguard-deploy` | `RUN-201` | `RUN-201` | 1 | `refactor(contracts): remove vendored authoritative copies [C2-CON-RM-13]` |
-| `C2-CON-RM-14` | `absence_receipt_contribution` | `solguard-docs` | `RUN-201` | `RUN-201` | 1 | `receipt de ausencia [C2-CON-RM-14]` |
-| `C2-CON-RM-15` | `absence_receipt_contribution` | `solguard-agents` | `RUN-201` | `RUN-201` | 1 | `receipt de ausencia [C2-CON-RM-15]` |
+| `C2-CON-RM-14` | `absence_receipt_contribution` | `solguard-docs` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-RM-14]` |
+| `C2-CON-RM-15` | `absence_receipt_contribution` | `solguard-agents` | `RUN-201` | `RUN-201` | 1 | `absence receipt [C2-CON-RM-15]` |
 | `C2-CON-RM-16` | `contribution_implementation` | `solguard-agents` | `RUN-201` | `RUN-201` | 1 | `ci(contracts): reject authoritative contract copies [C2-CON-RM-16]` |
 | `C2-RUN-01` | `contribution_implementation` | `solguard-core` | `RUN-202` | `RUN-202` | 0 | `feat(run-contracts): publish run spec source authority and generic materiality schemas with writers off [C2-RUN-01]` |
 | `C2-RUN-02` | `contribution_implementation` | `solguard-map` | `RUN-202` | `RUN-202` | 1 | `refactor(run-reader): dual-read run spec and source authority [C2-RUN-02]` |

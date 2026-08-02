@@ -194,7 +194,7 @@ export function validateGovernancePublicationDocument(document) {
   );
   invariant(
     document.program_id === "solguard-detection-maturity-2026-07-25" &&
-      document.program_version === "solguard-detection-maturity-2026-07-25.3",
+      document.program_version === "solguard-detection-maturity-2026-07-25.4",
     "program binding drifted",
   );
   invariant(
