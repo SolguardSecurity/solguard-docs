@@ -1,0 +1,63 @@
+{
+  "schema_version": "solguard-review-envelope.v1",
+  "contract_version": "v1",
+  "review_id": "review-envelope-v1-admission-review",
+  "run_id": "run-findings-golden-002",
+  "candidate_epoch_binding": {
+    "schema_version": "solguard-candidate-epoch-binding.v1",
+    "candidate_epoch_id": "candidate-epoch-truth-c1",
+    "candidate_epoch_definition_id": "candidate-epoch-definition-truth-c1",
+    "candidate_epoch_root": "0101010101010101010101010101010101010101010101010101010101010101",
+    "candidate_epoch_open_event_id": "candidate-epoch-open-truth-c1",
+    "candidate_epoch_open_event_root": "0202020202020202020202020202020202020202020202020202020202020202",
+    "binding_phase": "post_freeze",
+    "candidate_epoch_freeze_event_id": "candidate-epoch-freeze-truth-c1",
+    "candidate_epoch_freeze_event_root": "0303030303030303030303030303030303030303030303030303030303030303",
+    "candidate_accepted_input_membership_root": "0404040404040404040404040404040404040404040404040404040404040404",
+    "candidate_accepted_input_membership_count": 3,
+    "accepted_tooling_membership_root": "0505050505050505050505050505050505050505050505050505050505050505",
+    "accepted_tooling_membership_count": 11,
+    "resource_profile_id": "resource-profile-truth-c1",
+    "resource_profile_version": "1.0.0",
+    "resource_profile_root": "0606060606060606060606060606060606060606060606060606060606060606",
+    "resource_profile_policy_id": "resource-profile-policy-truth-c1",
+    "resource_profile_policy_version": "1.0.0",
+    "resource_profile_policy_root": "0707070707070707070707070707070707070707070707070707070707070707",
+    "resource_profile_policy_compliance_root": "0808080808080808080808080808080808080808080808080808080808080808"
+  },
+  "run_input_membership_root": "3030303030303030303030303030303030303030303030303030303030303030",
+  "run_input_membership_count": 7,
+  "producer": {
+    "repo": "solguard-core",
+    "tool_version": "1.0.0",
+    "contract_version": "v1"
+  },
+  "projection": {
+    "projector_id": "solguard-admission-to-product-envelopes",
+    "projector_version": "1.0.0",
+    "projector_root": "1010101010101010101010101010101010101010101010101010101010101010"
+  },
+  "candidate_id": "candidate-economic-loss-001",
+  "candidate_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "technical_verdict": "supported",
+  "verdict_ref": {
+    "artifact_id": "technical-verdict-v1-supported-economic",
+    "content_digest": "e7e2078661d68281d65ecbd7968ef50f0a2c49f6e566e329da6f565e9e3aab3e"
+  },
+  "admission_status": "review",
+  "admission_ref": {
+    "artifact_id": "admission-result-v1-review-checker-missing",
+    "content_digest": "3131313131313131313131313131313131313131313131313131313131313131"
+  },
+  "review_class": "checker_missing",
+  "admission_unresolved_checks": ["registered semantic checker for the exact semantic rule"],
+  "requested_admission_context": ["checker identity", "checker root", "checker version"],
+  "admission_debt": ["admission checker unavailable"],
+  "proof_certificate_ref": "proof-certificate-complete-economic-001",
+  "proof_certificate_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+  "source_tree_sha256": "2828282828282828282828282828282828282828282828282828282828282828",
+  "runtime_manifest_sha256": "2929292929292929292929292929292929292929292929292929292929292929",
+  "parent_artifact_ids": ["admission-result-v1-review-checker-missing", "proof-certificate-complete-economic-001", "technical-verdict-v1-supported-economic"],
+  "parent_roots": ["2222222222222222222222222222222222222222222222222222222222222222", "3131313131313131313131313131313131313131313131313131313131313131", "e7e2078661d68281d65ecbd7968ef50f0a2c49f6e566e329da6f565e9e3aab3e"],
+  "next_action": "resolve_checker"
+}

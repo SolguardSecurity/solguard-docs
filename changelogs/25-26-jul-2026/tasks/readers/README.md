@@ -47,3 +47,28 @@ Run the targeted tests:
 ```powershell
 node --test changelogs/25-26-jul-2026/tasks/readers/acceptance-ledger-markdown.test.mjs
 ```
+
+## Canonical findings Docs/UI projection
+
+The C1-009D read-only consumer validates the exact C1-009 finding and review
+schemas before deriving a closed JSON or Markdown presentation. Its local
+schema/golden copies are non-authoritative fixtures pinned byte-for-byte to
+`solguard-core@1ad350d8d3f54c227ca8f81b9cb42c4bf6a0494b`; the route semantics
+also pin
+`solguard-deploy@cb223071c0dab18190041129490702b8282f27bb`.
+
+The reader keeps all Pass envelopes, public findings and product reviews in
+three distinct roles. Reviews never increment finding counts, and
+`findings.json` rejects any member that is not both eligible and
+`unique|representative`. It accepts canonical empty arrays, preserves the
+source byte digest, exposes no writer/output-file mode and reports no measured
+capability. C1-009, C1-009C, C1-009D and TRUTH-105 remain pending acceptance.
+
+```powershell
+node changelogs/25-26-jul-2026/tasks/readers/findings-docs-ui-projection.mjs `
+  --input C:\evidence\project\review_queue.json `
+  --role product_review_envelopes `
+  --format json
+
+node --test changelogs/25-26-jul-2026/tasks/readers/findings-docs-ui-projection.test.mjs
+```

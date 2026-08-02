@@ -254,6 +254,7 @@ Documentacion detallada:
 
 - [Servicios y responsabilidades](./servicios-y-responsabilidades.md)
 - [Autoridad operacional de Core](./autoridad-operacional.md)
+- [Findings y revisiones canónicos v1](./finding-review-envelopes-v1.md)
 - [Pipeline, fases y artefactos](./pipeline-y-fases.md)
 - [Integridad de fuentes y cadena MAP -> TRACE -> FILTER](./integridad-de-fuentes.md)
 - [DISCOVER v2 y cierre candidate-directed VALUE](./discovery-v2-y-candidate-value.md)
