@@ -300,3 +300,22 @@ Los cinco campos `candidate_value` son aditivos. Backend no decide si una
 respuesta VALUE puede aplicarse: core exige cierre completo, autoridad
 `map_trace_reverified`, ausencia de autocorroboracion y binding exacto antes de
 emitir la vista efectiva.
+
+## Ciclo portable de ejecucion
+
+La superficie preparada para RUN-208 resuelve y expone artefactos por identidad,
+no por paths compartidos:
+
+- `POST /runs/:run_id/artifacts/resolve` resuelve `artifact_id` y `role` contra
+  el manifest cerrado de la ejecucion.
+- `POST /runs/:run_id/artifacts/expose` devuelve manifest, payloads verificados
+  y estado terminal sin convertir paths internos en autoridad.
+- `POST /runs/:run_id/attempts/:attempt_id/cancel` solicita cancelacion.
+- `GET /runs/:run_id/attempts/:attempt_id/terminal-receipt` recupera el unico
+  resultado terminal create-only.
+
+Una respuesta de cancelacion no sustituye el recibo terminal. Resume exige la
+misma identidad `run_id`/`run_spec_root`, un manifest compatible y una ejecucion
+no terminal. La reproduccion completa, la matriz de fallos y las revisiones
+draft fijadas se documentan en
+[Ciclo de vida portable](../solguard-core/runtime-portable-lifecycle.md).

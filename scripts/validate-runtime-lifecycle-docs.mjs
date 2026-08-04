@@ -1,0 +1,339 @@
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const contractPath = path.join(
+  root,
+  "docs",
+  "solguard-core",
+  "runtime-portable-lifecycle.v1.json",
+);
+const documentPath = path.join(root, "docs", "solguard-core", "runtime-portable-lifecycle.md");
+
+const expectedContracts = [
+  "solguard-run-artifact-manifest.v1",
+  "solguard-product-artifact-manifest.v1",
+  "solguard-artifact-complete-marker.v1",
+  "solguard-run-terminal-state.v1",
+];
+const expectedOutcomes = ["succeeded", "failed", "cancelled", "completed_with_debt"];
+const expectedEndpoints = [
+  "POST /runs/:run_id/artifacts/resolve",
+  "POST /runs/:run_id/artifacts/expose",
+  "POST /runs/:run_id/attempts/:attempt_id/cancel",
+  "GET /runs/:run_id/attempts/:attempt_id/terminal-receipt",
+];
+const expectedRefs = [
+  {
+    contribution_id: "C2-020",
+    repository: "solguard-core",
+    implementation_commit: "27f1ab9595b6c30fe285896b59b5a084c68a0c3b",
+    implementation_tree: "134585cd9c3103d5d63e8d6f6100d98519818bcb",
+    validated_head: "cc9bc31bd6e9d7940a52415a17ad7d2746c0b913",
+    merge_commit: "fea9ae6fb733ce34070bff305d4dd3b3f8717292",
+    merge_tree: "ac38d4a0953bddbe7b5f64d2bea648ec65526fda",
+    ledger_revision: 125,
+    publication_receipt_root: "b26a806655ad09d28a72bae3ecafeaf4be3cf7fbb88aca287493c5e1aa255f93",
+  },
+  {
+    contribution_id: "C2-020A",
+    repository: "solguard-database",
+    implementation_commit: "6b6529c6444705207e00db3dba4c1a3683b04bf5",
+    implementation_tree: "d6287959eff876de3ff5c1736b6cd7801c7c3965",
+    validated_head: "d93d369a2fd70c56b9df16b85d5137e0a3f497ba",
+    merge_commit: "437ef555ce07b204630688ef4a04d523d1977e24",
+    merge_tree: "5723feefd4a5335d9de377bad34c83289e6cd132",
+    ledger_revision: 126,
+    publication_receipt_root: "ee5ed8f0079c7a2a5aad4ad4589db49ac692ed4be8456b2a26941f50e68b2540",
+  },
+  {
+    contribution_id: "C2-020B",
+    repository: "solguard-backend",
+    implementation_commit: "79680a3d3679f1ef3cd5bac8bb6766a2b61178bb",
+    implementation_tree: "87dd73f71d86aa2ee453f83fbad0705d07e8ed98",
+    validated_head: "0cf2ebb998b4aceba461122e8956ea89c90f730b",
+    merge_commit: "982952427f9d9a6ec0b9564cb19d4a9382629151",
+    merge_tree: "555606e0a4192223ca104578b9add56ee27dc4af",
+    ledger_revision: 127,
+    publication_receipt_root: "fde02110d0662186d639bca0c919b88b4f88d08b2e149c0e1103c0e67aae820f",
+  },
+  {
+    contribution_id: "C2-020C",
+    repository: "solguard-deploy",
+    implementation_commit: "bb2e47b905631a86e8112fde64892fe48d51eeef",
+    implementation_tree: "43f7b3cbbf3e43333dd58e5b1b591047a2c34a37",
+    validated_head: "6d57e236673b212030a872b41b809c21bc5a16e9",
+    merge_commit: "92d4b21c3edd86e3b31ee1c168b0d3f98ef7eb5a",
+    merge_tree: "8ddf74af9edbbd0bbb107d02516b5ea40e2ea5d0",
+    ledger_revision: 128,
+    publication_receipt_root: "a892c0872b0815025e36b22c2c26888f846e3aa6ee212b8886c28d346c55b2aa",
+  },
+  {
+    contribution_id: "C2-020D",
+    repository: "solguard-deploy",
+    implementation_commit: "9ad66e0d2fcf1e3100c2d76d2fdb2bdf29ba36d5",
+    implementation_tree: "1ad2ce4c60f169a611cf31f5e7ec8611e35df8a0",
+    validated_head: "2f3baa78d65a6579195d617f770665208232a66f",
+    merge_commit: "4c6b781f392af67cd2aa7738855923789b156097",
+    merge_tree: "bd879e1210a172f59178d928b654c35d95661eae",
+    ledger_revision: 129,
+    publication_receipt_root: "9e6b7b07aac61ccbb9eaac769c50fba4a11764e803a31d95a037d841903fc190",
+  },
+  {
+    contribution_id: "C2-021",
+    repository: "solguard-core",
+    implementation_commit: "fb7b3e683d87afec41a9df7b8c7ab0a408f7124f",
+    implementation_tree: "e301d3443aa9fb3540def36a09d0f1ec3b337fb9",
+    validated_head: "f7f1b81f82b0e7d9d659765ddb7edda252d28af9",
+    merge_commit: "8565000e01ec6516b35a6729ab7734902126be14",
+    merge_tree: "ce879826da22d58f6993c79b9668e3dcbd03cb4f",
+    ledger_revision: 130,
+    publication_receipt_root: "6c84fdb8087396f702d9eed8d1ac52b593eb8b1257145487c1922e26c9c6dc94",
+  },
+  {
+    contribution_id: "C2-022",
+    repository: "solguard-backend",
+    implementation_commit: "a3bce94f1cc4fb69baede779d88beb7045328e25",
+    implementation_tree: "859e2c348159def22a6e0d2597f6dc416950061a",
+    validated_head: "70e317e59b952d8e50f3469ac886d82a9226ce38",
+    merge_commit: "eda9f7c989ad01f3ee6ab7674103003e20f0ddce",
+    merge_tree: "84b83c48cd80d7f016f43b18783d8a9aff6e44cc",
+    ledger_revision: 131,
+    publication_receipt_root: "ae8758e69b7fbf89c1249eccfadabb0985380a282ea85dd46746e07a3eb913b9",
+  },
+  {
+    contribution_id: "C2-023",
+    repository: "solguard-deploy",
+    implementation_commit: "0c16e5d53578e870ce301cc5f2f3ca2faa0dcd71",
+    implementation_tree: "a19b08540256c92dbe03c826fc44c89d02538856",
+    validated_head: "c7b0f68476cc4272fff59ef997850c7ddcc414b2",
+    merge_commit: "88403b89d08eede9eea775a6553bf7082a233f3c",
+    merge_tree: "6859a96f211bc2e1eee6dfac9f1c1852aea5b800",
+    ledger_revision: 132,
+    publication_receipt_root: "f8d2bdecda719d4420490a2d99576bf3b3a01d719dbb1179151158d04ee4b125",
+  },
+];
+const repositoryFlags = new Map([
+  ["--core-repo", "solguard-core"],
+  ["--database-repo", "solguard-database"],
+  ["--backend-repo", "solguard-backend"],
+  ["--deploy-repo", "solguard-deploy"],
+]);
+
+function parseArguments(argv) {
+  const options = {
+    negativeSelfTest: false,
+    verifyRepositories: false,
+    repositories: new Map(),
+  };
+  for (let index = 0; index < argv.length; index += 1) {
+    const argument = argv[index];
+    if (argument === "--negative-self-test") {
+      options.negativeSelfTest = true;
+      continue;
+    }
+    if (argument === "--verify-repositories") {
+      options.verifyRepositories = true;
+      continue;
+    }
+    const repository = repositoryFlags.get(argument);
+    assert(repository, `unknown argument ${argument}`);
+    const value = argv[index + 1];
+    assert(value && !value.startsWith("--"), `${argument} requires a path`);
+    options.repositories.set(repository, path.resolve(value));
+    index += 1;
+  }
+  if (options.verifyRepositories) {
+    for (const repository of repositoryFlags.values()) {
+      assert(options.repositories.has(repository), `repository path is required for ${repository}`);
+    }
+  } else {
+    assert.equal(options.repositories.size, 0, "repository paths require --verify-repositories");
+  }
+  return options;
+}
+
+function exactKeys(value, expected, label) {
+  assert(value && typeof value === "object" && !Array.isArray(value), `${label} must be object`);
+  assert.deepEqual(Object.keys(value).sort(), [...expected].sort(), `${label} fields drifted`);
+}
+
+function equalArray(actual, expected, field) {
+  assert.deepEqual(actual, expected, `${field} must match the closed ordered inventory`);
+}
+
+function validate(contract, document) {
+  exactKeys(
+    contract,
+    [
+      "schema_version",
+      "status",
+      "authoritative",
+      "acceptance_authority",
+      "assurance",
+      "ledger_baseline",
+      "contracts",
+      "terminal_outcomes",
+      "endpoints",
+      "resume",
+      "recovery",
+      "replay",
+      "upstream_refs",
+    ],
+    "contract",
+  );
+  assert.equal(contract.schema_version, "docs.runtime-portable-lifecycle.v1");
+  assert.equal(contract.status, "candidate_pending_at_ledger_baseline");
+  assert.equal(contract.authoritative, false);
+  assert.equal(contract.acceptance_authority, false);
+  assert.deepEqual(contract.assurance, {
+    mode: "development",
+    level: "single-custodian",
+    independence_claim: "forbidden",
+    production_requirement: "independent-custodians",
+  });
+  assert.deepEqual(contract.ledger_baseline, {
+    revision: 132,
+    authoritative_head_root: "273afbbede5b3c5284f8784d153e8faa5472afaeace98c7a8c34905bae61835c",
+  });
+  equalArray(contract.contracts, expectedContracts, "contracts");
+  equalArray(contract.terminal_outcomes, expectedOutcomes, "terminal_outcomes");
+  equalArray(contract.endpoints, expectedEndpoints, "endpoints");
+  assert.deepEqual(contract.resume, {
+    required_identity: ["run_id", "run_spec_root", "artifact_manifest_root", "artifact_id", "role"],
+    forbidden_authority: ["filename", "path", "cwd", "mtime"],
+    terminal_runs_are_immutable: true,
+  });
+  assert.deepEqual(contract.recovery, {
+    requires_empty_identity_store: true,
+    verify_all_before_publish: true,
+    tamper_fails_without_partial_write: true,
+    database_manifest_rows_create_only: true,
+  });
+  assert.deepEqual(contract.replay, {
+    writer_enabled: true,
+    terminal_root: "sha256:e3228bf66d8ac761dedcb3c0d0817d58287cdb69286eba1f735a68d1ce6dcc0b",
+    replay_root: "sha256:b54f74132e581fb5290500893737e29efcfac651cb4896d7bf9e8bda011b9336",
+    cross_runtime_golden: "sha256:cf29de055f5b5cb90d26ce035396dfbe4cc2697e42e1bb168fb1715cc5e974c2",
+  });
+  assert.deepEqual(contract.upstream_refs, expectedRefs, "upstream acceptance matrix drifted");
+
+  const requiredTokens = [
+    ...expectedContracts,
+    ...expectedOutcomes,
+    ...expectedEndpoints,
+    "development",
+    "single-custodian",
+    "independence_claim: forbidden",
+    "custodios independientes",
+    "--verify-repositories",
+    "--core-repo",
+    "--database-repo",
+    "--backend-repo",
+    "--deploy-repo",
+    contract.replay.terminal_root,
+    contract.replay.replay_root,
+  ];
+  for (const ref of expectedRefs) {
+    requiredTokens.push(
+      ref.contribution_id,
+      ref.implementation_commit,
+      ref.merge_commit,
+      ref.merge_tree,
+      String(ref.ledger_revision),
+    );
+  }
+  for (const token of requiredTokens) {
+    assert(document.includes(token), `documentation is missing ${token}`);
+  }
+  for (const forbidden of [
+    "pendiente de verificacion independiente",
+    "independent ledger transition",
+    "independent verification",
+  ]) {
+    assert(!document.toLowerCase().includes(forbidden), `documentation makes a forbidden claim: ${forbidden}`);
+  }
+}
+
+function git(repositoryPath, ...arguments_) {
+  return execFileSync("git", ["-C", repositoryPath, ...arguments_], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+}
+
+function verifyRepositories(repositories) {
+  const latestMerge = new Map();
+  for (const ref of expectedRefs) latestMerge.set(ref.repository, ref.merge_commit);
+
+  for (const [repository, repositoryPath] of repositories) {
+    assert.equal(git(repositoryPath, "rev-parse", "--is-inside-work-tree"), "true");
+    assert.equal(git(repositoryPath, "status", "--porcelain"), "", `${repository} checkout is dirty`);
+    assert.equal(
+      git(repositoryPath, "rev-parse", "HEAD"),
+      latestMerge.get(repository),
+      `${repository} HEAD is not the pinned accepted merge`,
+    );
+    assert(
+      git(repositoryPath, "config", "--get", "remote.origin.url").includes(repository),
+      `${repository} origin does not identify the expected repository`,
+    );
+  }
+
+  for (const ref of expectedRefs) {
+    const repositoryPath = repositories.get(ref.repository);
+    assert.equal(
+      git(repositoryPath, "rev-parse", `${ref.implementation_commit}^{commit}`),
+      ref.implementation_commit,
+      `${ref.contribution_id} implementation commit is absent`,
+    );
+    assert.equal(
+      git(repositoryPath, "rev-parse", `${ref.implementation_commit}^{tree}`),
+      ref.implementation_tree,
+      `${ref.contribution_id} implementation tree drifted`,
+    );
+    assert.equal(
+      git(repositoryPath, "rev-parse", `${ref.validated_head}^{tree}`),
+      ref.merge_tree,
+      `${ref.contribution_id} validated tree drifted`,
+    );
+    assert.equal(
+      git(repositoryPath, "rev-parse", `${ref.merge_commit}^{tree}`),
+      ref.merge_tree,
+      `${ref.contribution_id} merge tree drifted`,
+    );
+    execFileSync(
+      "git",
+      ["-C", repositoryPath, "merge-base", "--is-ancestor", ref.implementation_commit, ref.merge_commit],
+      { stdio: "ignore" },
+    );
+    execFileSync(
+      "git",
+      ["-C", repositoryPath, "merge-base", "--is-ancestor", ref.validated_head, ref.merge_commit],
+      { stdio: "ignore" },
+    );
+  }
+}
+
+const options = parseArguments(process.argv.slice(2));
+const contract = JSON.parse(fs.readFileSync(contractPath, "utf8"));
+const document = fs.readFileSync(documentPath, "utf8");
+validate(contract, document);
+
+if (options.verifyRepositories) verifyRepositories(options.repositories);
+
+if (options.negativeSelfTest) {
+  const corrupt = structuredClone(contract);
+  corrupt.assurance.level = "independent-custodians";
+  assert.throws(() => validate(corrupt, document), /Expected values to be strictly deep-equal/u);
+}
+
+const checks = [
+  "closed documentation contract",
+  ...(options.verifyRepositories ? ["8 accepted refs across 4 clean repositories"] : []),
+  ...(options.negativeSelfTest ? ["single-custodian negative self-test"] : []),
+];
+console.log(`runtime lifecycle documentation: PASS (${checks.join("; ")})`);

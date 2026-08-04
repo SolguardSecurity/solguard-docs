@@ -1,0 +1,137 @@
+name: Runtime lifecycle documentation
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/runtime-lifecycle-docs.yml"
+      - "README.md"
+      - "agents/README.md"
+      - "docs/solguard-backend/04-api-externa-y-rutas-http.md"
+      - "docs/solguard-core/README.md"
+      - "docs/solguard-core/runtime-portable-lifecycle.md"
+      - "docs/solguard-core/runtime-portable-lifecycle.v1.json"
+      - "scripts/validate-runtime-lifecycle-docs.mjs"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/runtime-lifecycle-docs.yml"
+      - "README.md"
+      - "agents/README.md"
+      - "docs/solguard-backend/04-api-externa-y-rutas-http.md"
+      - "docs/solguard-core/README.md"
+      - "docs/solguard-core/runtime-portable-lifecycle.md"
+      - "docs/solguard-core/runtime-portable-lifecycle.v1.json"
+      - "scripts/validate-runtime-lifecycle-docs.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-lifecycle-docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-document:
+    name: Validate closed documentation contract
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out documentation candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.16.0"
+
+      - name: Validate document and adversarial assurance case
+        run: node scripts/validate-runtime-lifecycle-docs.mjs --negative-self-test
+
+      - name: Reject whitespace errors
+        run: git diff --check
+
+  reproduce-lifecycle:
+    name: Reproduce accepted portable lifecycle
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: solguard-docs
+
+    steps:
+      - name: Check out documentation candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: solguard-docs
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.16.0"
+
+      - name: Verify private source access
+        env:
+          SOLGUARD_REPO_TOKEN: ${{ secrets.SOLGUARD_REPO_TOKEN }}
+        run: node -e "if (!(process.env.SOLGUARD_REPO_TOKEN ?? '').trim()) throw new Error('SOLGUARD_REPO_TOKEN must read the four accepted lifecycle repositories')"
+
+      - name: Check out accepted Core lifecycle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: SolguardSecurity/solguard-core
+          path: runtime-lifecycle/solguard-core
+          ref: 8565000e01ec6516b35a6729ab7734902126be14
+          token: ${{ secrets.SOLGUARD_REPO_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check out accepted Database lifecycle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: SolguardSecurity/solguard-database
+          path: runtime-lifecycle/solguard-database
+          ref: 437ef555ce07b204630688ef4a04d523d1977e24
+          token: ${{ secrets.SOLGUARD_REPO_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check out accepted Backend lifecycle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: SolguardSecurity/solguard-backend
+          path: runtime-lifecycle/solguard-backend
+          ref: eda9f7c989ad01f3ee6ab7674103003e20f0ddce
+          token: ${{ secrets.SOLGUARD_REPO_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check out accepted Deploy lifecycle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: SolguardSecurity/solguard-deploy
+          path: runtime-lifecycle/solguard-deploy
+          ref: 88403b89d08eede9eea775a6553bf7082a233f3c
+          token: ${{ secrets.SOLGUARD_REPO_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify accepted implementation and publication graph
+        run: |
+          node scripts/validate-runtime-lifecycle-docs.mjs \
+            --verify-repositories \
+            --core-repo ../runtime-lifecycle/solguard-core \
+            --database-repo ../runtime-lifecycle/solguard-database \
+            --backend-repo ../runtime-lifecycle/solguard-backend \
+            --deploy-repo ../runtime-lifecycle/solguard-deploy
+
+      - name: Replay into an empty identity store
+        run: |
+          node ../runtime-lifecycle/solguard-deploy/scripts/contracts/portable-run-replay.mjs \
+            --core-repo ../runtime-lifecycle/solguard-core \
+            --backend-repo ../runtime-lifecycle/solguard-backend \
+            --json
