@@ -4,12 +4,18 @@ on:
   pull_request:
     paths:
       - "changelogs/25-26-jul-2026/tasks/**"
+      - "docs/governance/**"
+      - "scripts/validate-governance-program.mjs"
+      - "test/governance-program.test.mjs"
       - ".github/workflows/plan-validation.yml"
   push:
     branches:
       - main
     paths:
       - "changelogs/25-26-jul-2026/tasks/**"
+      - "docs/governance/**"
+      - "scripts/validate-governance-program.mjs"
+      - "test/governance-program.test.mjs"
       - ".github/workflows/plan-validation.yml"
   workflow_dispatch:
 
@@ -53,4 +59,8 @@ jobs:
         run: node validate-final-plan.mjs
 
       - name: Run generator and reader tests
+        run: node --test
+
+      - name: Run repository contract tests
+        working-directory: .
         run: node --test
