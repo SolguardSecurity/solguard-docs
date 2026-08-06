@@ -63,7 +63,7 @@
     {
       "source_id": "structural-program",
       "path": "changelogs/25-26-jul-2026/tasks/02_PROGRAMA_ESTRUCTURAL.md",
-      "sha256": "861eea94694837d26d1373a4aa3d6df1adedc30cd49f3d7fcbd44f1af626d7c0"
+      "sha256": "0c9d0f7d5a7753f6bffea322503a47f230157eeac62d40ad6a0ea74e87a10dd5"
     },
     {
       "source_id": "ledger-and-dependencies",
@@ -164,5 +164,5 @@
     "content_hashes_required": true,
     "negative_authority_tests_required": true
   },
-  "publication_root": "1765a35843598612a6e22d3a69c156aa857767ef956953745fe08dede2488e1b"
+  "publication_root": "2885d022299fc29b7a30673b6e85d662d601d68cb1ced3938b0e9cf79e617041"
 }
