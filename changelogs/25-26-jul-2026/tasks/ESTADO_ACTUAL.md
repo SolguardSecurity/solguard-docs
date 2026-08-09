@@ -1,7 +1,7 @@
 # Estado actual del plan de mejora
 
 > **Vista humana no autoritativa.** Este documento refleja exclusivamente el
-> corte del acceptance ledger externo en la revisión **330**. Marcar una casilla
+> corte del acceptance ledger externo en la revisión **349**. Marcar una casilla
 > aquí no acepta ningún trabajo ni modifica el ledger. La autoridad sigue siendo
 > el snapshot externo firmado y sus receipts.
 
@@ -11,23 +11,23 @@
 |---|---|
 | Programa | `solguard-detection-maturity-2026-07-25` |
 | Versión | `solguard-detection-maturity-2026-07-25.4` |
-| Revisión del ledger | `330` |
+| Revisión del ledger | `349` |
 | Modo de assurance | `development` |
 | Nivel de assurance | `single-custodian` |
-| SHA-256 del snapshot | `84aec331facfe9dc2ec2e70c2ec445b7ef32aaf91cd4c9df3fadab392b5073f2` |
-| SHA-256 de la proyección checklist | `1f7e9361d771d5e4ca2a0cfa326be410f35b911b7b5bd224b0f0a64f2eb38772` |
-| Fecha de revisión humana | `2026-08-08` |
+| SHA-256 del snapshot | `41f94298c8e79cef9426ca06b539b3ab123d4e1c5d4d280ee6c37387824360db` |
+| SHA-256 de la proyección checklist | `06521c633fd86966c1bfbe045beee344a5b54ecdb3de1a4cb2f1418ebd69b6a0` |
+| Fecha de revisión humana | `2026-08-09` |
 
 Snapshot autoritativo usado:
 
 ```text
-C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\snapshots\000000000330-84aec331facfe9dc2ec2e70c2ec445b7ef32aaf91cd4c9df3fadab392b5073f2.json
+C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\snapshots\000000000349-41f94298c8e79cef9426ca06b539b3ab123d4e1c5d4d280ee6c37387824360db.json
 ```
 
 Proyección externa correspondiente:
 
 ```text
-C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\checklists\000000000330-1f7e9361d771d5e4ca2a0cfa326be410f35b911b7b5bd224b0f0a64f2eb38772.md
+C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\checklists\000000000349-06521c633fd86966c1bfbe045beee344a5b54ecdb3de1a4cb2f1418ebd69b6a0.md
 ```
 
 ## Estado por fase
@@ -46,13 +46,10 @@ fusionada, por sí sola, no basta.
   puertas formales de R2 están aceptadas.
 - [X] **S3 — Substrato semántico y bindings.** `59/59` contribuciones del tren
   C3-A y `IR-301` a `IR-308` están aceptadas.
-- [ ] **W4 — World model e hipótesis.** En curso: `56/68` contribuciones
-  aceptadas. Están aceptadas las puertas `MODEL-401`, `MODEL-402`, `MODEL-403`,
-  `MODEL-405`, `MODEL-408-DISCOVER`, `MODEL-408-TRACE` y `MODEL-410`. Siguen
-  pendientes `C3-013G`, `C3-013H`, `C3-013I`, `C3-015F`, `C3-015G`,
-  `C3-015H`, `C3-017`, `C3-017A`, `C3-020`, `C3-021`,
-  `C3-022` y `C3-023`. Las demás puertas de W4, incluida `MODEL-406`, y el
-  derivado `MODEL-408` permanecen pendientes.
+- [X] **W4 — World model e hipótesis.** `68/68` contribuciones aceptadas. Las
+  puertas primarias `MODEL-401` a `MODEL-407`, los cuatro componentes primarios
+  de `MODEL-408` y `MODEL-409` a `MODEL-411` están aceptadas; el derivado
+  `MODEL-408` está satisfecho.
 - [ ] **P5 — Prueba económica iterativa.** Pendiente.
 - [ ] **D6 — Decisión y producto.** Pendiente.
 - [ ] **L7.** Pendiente.
@@ -68,13 +65,13 @@ de fases completadas.
 
 | Tipo de elemento | Aceptados o satisfechos | Total | Pendientes o no satisfechos |
 |---|---:|---:|---:|
-| Contribuciones | 281 | 1103 | 822 |
-| Puertas primarias | 57 | 440 | 383 |
-| Puertas derivadas | 3 | 128 | 125 |
-| **Total** | **341** | **1671** | **1330** |
+| Contribuciones | 293 | 1103 | 810 |
+| Puertas primarias | 64 | 440 | 376 |
+| Puertas derivadas | 5 | 128 | 123 |
+| **Total** | **362** | **1671** | **1309** |
 
 No hay elementos reabiertos ni cierres operativos `non-pass` en la revisión
-330.
+349.
 
 ## Por qué la checklist maestra conserva `[ ]`
 
