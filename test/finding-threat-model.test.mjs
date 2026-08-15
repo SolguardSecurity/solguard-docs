@@ -77,8 +77,15 @@ test("authority escalation and forged upstream acceptance fail closed", () => {
 
   const forgedSuite = structuredClone(canonical);
   forgedSuite.upstream_acceptance.threat_suite.commit_sha = "0".repeat(40);
-  forgedSuite.upstream_acceptance.threat_suite.ledger_revision = 445;
-  assert.throws(() => validateThreatModel(forgedSuite));
+  assert.throws(() => validateThreatModel(forgedSuite), /threat suite pin drifted/);
+
+  const substitutedGateRoot = structuredClone(canonical);
+  substitutedGateRoot.upstream_acceptance.finding_bundle_gate.evidence_root = "0".repeat(64);
+  assert.throws(() => validateThreatModel(substitutedGateRoot), /finding bundle gate pin drifted/);
+
+  const substitutedPublicationRoot = structuredClone(canonical);
+  substitutedPublicationRoot.upstream_acceptance.threat_suite.publication_receipt_root = "f".repeat(64);
+  assert.throws(() => validateThreatModel(substitutedPublicationRoot), /threat suite pin drifted/);
 
   const claim = structuredClone(canonical);
   claim.non_claims = claim.non_claims.filter((entry) => !entry.includes("does not accept DECIDE-605"));
