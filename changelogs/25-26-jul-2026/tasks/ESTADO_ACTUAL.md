@@ -1,7 +1,7 @@
 # Estado actual del plan de mejora
 
 > **Vista humana no autoritativa.** Este documento refleja exclusivamente el
-> corte del acceptance ledger externo en la revisión **431**. Marcar una casilla
+> corte del acceptance ledger externo en la revisión **453**. Marcar una casilla
 > aquí no acepta ningún trabajo ni modifica el ledger. La autoridad sigue siendo
 > el snapshot externo firmado y sus receipts.
 
@@ -11,23 +11,23 @@
 |---|---|
 | Programa | `solguard-detection-maturity-2026-07-25` |
 | Versión | `solguard-detection-maturity-2026-07-25.4` |
-| Revisión del ledger | `431` |
+| Revisión del ledger | `453` |
 | Modo de assurance | `development` |
 | Nivel de assurance | `single-custodian` |
-| SHA-256 del snapshot | `fb1121e0e5941d1b80d03bcdbc84755d94e6f0ac4a475b94a6d8a1bbd89e8983` |
-| SHA-256 de la proyección checklist | `f3495fdcb1b0a42c28434dd0e62ecef0e1549995e06d634e37a01124ef463453` |
-| Fecha de revisión humana | `2026-08-14` |
+| SHA-256 del snapshot | `97a723b9ebb8f77e18b29f683060b2806790443254a351904888f29e5fe53b9c` |
+| SHA-256 de la proyección checklist | `36e87c50b3bb2cd0dd26683c52e1a5670201125c6a7fba3bd6da7d30e9042fae` |
+| Fecha de revisión humana | `2026-08-15` |
 
 Snapshot autoritativo usado:
 
 ```text
-C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\snapshots\000000000431-fb1121e0e5941d1b80d03bcdbc84755d94e6f0ac4a475b94a6d8a1bbd89e8983.json
+C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\snapshots\000000000453-97a723b9ebb8f77e18b29f683060b2806790443254a351904888f29e5fe53b9c.json
 ```
 
 Proyección externa correspondiente:
 
 ```text
-C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\checklists\000000000431-f3495fdcb1b0a42c28434dd0e62ecef0e1549995e06d634e37a01124ef463453.md
+C:\Users\Roger Gómez Martínez\.solguard\acceptance-ledger\evidence-store-20260801T2323Z\ledger\checklists\000000000453-36e87c50b3bb2cd0dd26683c52e1a5670201125c6a7fba3bd6da7d30e9042fae.md
 ```
 
 ## Estado por fase
@@ -53,7 +53,13 @@ fusionada, por sí sola, no basta.
 - [X] **P5 — Prueba económica iterativa.** `50/50` contribuciones y las
   `15/15` puertas primarias del tren `PROOF-5*` están aceptadas. `C4-012` quedó
   aceptada en la revisión 430 y `PROOF-506` cerró formalmente P5 en la 431.
-- [ ] **D6 — Decisión y producto.** Pendiente.
+- [ ] **D6 — Decisión y producto.** Implementación completa donde las
+  dependencias lo permiten: `14/16` contribuciones aceptadas. `C4-022` y
+  `C4-022A` permanecen pendientes. Están aceptadas `DECIDE-601`, `DECIDE-602`,
+  `DECIDE-603-VALIDATE`, `DECIDE-603-CORE` y `DECIDE-604` a `DECIDE-608`;
+  `DECIDE-606` quedó aceptada en la revisión 453. El cierre formal sigue
+  bloqueado por `MEASURE-901 → C4-022 → DECIDE-603-DEPLOY → C4-022A →
+  DECIDE-603-E2E → DECIDE-603`. Por eso la fase conserva `[ ]`.
 - [ ] **L7.** Pendiente.
 - [ ] **O8 — Plataforma y operación.** Pendiente.
 - [ ] **K9.** Pendiente.
@@ -67,13 +73,13 @@ de fases completadas.
 
 | Tipo de elemento | Aceptados o satisfechos | Total | Pendientes o no satisfechos |
 |---|---:|---:|---:|
-| Contribuciones | 355 | 1103 | 748 |
-| Puertas primarias | 84 | 440 | 356 |
+| Contribuciones | 369 | 1103 | 734 |
+| Puertas primarias | 92 | 440 | 348 |
 | Puertas derivadas | 6 | 128 | 122 |
-| **Total** | **445** | **1671** | **1226** |
+| **Total** | **467** | **1671** | **1204** |
 
 No hay elementos actualmente reabiertos ni cierres operativos `non-pass` en la
-revisión 431.
+revisión 453.
 
 ## Por qué la checklist maestra conserva `[ ]`
 
