@@ -29,9 +29,29 @@ const OUTCOMES = Object.freeze({
   report_json_discrepancy: "abort_publication_without_output_root",
 });
 
-const SHA256 = /^[0-9a-f]{64}$/u;
-const GIT_SHA1 = /^[0-9a-f]{40}$/u;
 const TEST_REF = /^solguard-filter:[A-Za-z0-9_./-]+::[a-z0-9_]+$/u;
+
+const ACCEPTED_FINDING_BUNDLE_GATE = Object.freeze({
+  id: "DECIDE-604",
+  state: "accepted",
+  ledger_revision: 445,
+  evidence_root: "62ce464dc9125261d122310d97120f1cfffd5a2dd34671f401cd29526dbda3e3",
+  verifier_root: "c6a5b82fdfed619dd75c3e1fb9acdec3aa9fa8e6b325edf433701b470afe6111",
+  reopened_by: [],
+});
+
+const ACCEPTED_THREAT_SUITE = Object.freeze({
+  id: "C4-024",
+  state: "accepted",
+  ledger_revision: 446,
+  repository: "SolguardSecurity/solguard-filter",
+  commit_sha: "d02f71832889e0691df173dc7cdc850cd7b5cf53",
+  repository_tree_sha: "3e651b7db9b1b173218e68e4d1ba51447c321c35",
+  publication_receipt_root: "223f546bb4f8cf2a7baf387088ce5a1d1f75848a4f57216cb04703ed6a5b6048",
+  evidence_root: "994bc0636512785e7cb1ac43bbad589c357c831ffb0cd27a34d048bb381490f5",
+  verifier_root: "97401439ecb81ff3ad076a13197bcdede5c2a76bd2d74890b4ef71e7cd611899",
+  reopened_by: [],
+});
 
 function exactKeys(value, expected, label) {
   assert.ok(value && typeof value === "object" && !Array.isArray(value), `${label} must be an object`);
@@ -48,14 +68,6 @@ function exactStringArray(value, label) {
   assert.ok(Array.isArray(value) && value.length > 0, `${label} must be a nonempty array`);
   value.forEach((entry, index) => nonempty(entry, `${label}[${index}]`));
   assert.equal(new Set(value).size, value.length, `${label} contains duplicates`);
-}
-
-function sha(value, label) {
-  assert.match(value, SHA256, `${label} must be lowercase SHA-256`);
-}
-
-function gitSha(value, label) {
-  assert.match(value, GIT_SHA1, `${label} must be lowercase Git SHA-1`);
 }
 
 export function validateThreatModel(document) {
@@ -106,12 +118,7 @@ export function validateThreatModel(document) {
   exactKeys(document.upstream_acceptance, ["finding_bundle_gate", "threat_suite"], "upstream_acceptance");
   const gate = document.upstream_acceptance.finding_bundle_gate;
   exactKeys(gate, ["id", "state", "ledger_revision", "evidence_root", "verifier_root", "reopened_by"], "finding_bundle_gate");
-  assert.equal(gate.id, "DECIDE-604");
-  assert.equal(gate.state, "accepted");
-  assert.equal(gate.ledger_revision, 445);
-  sha(gate.evidence_root, "finding_bundle_gate.evidence_root");
-  sha(gate.verifier_root, "finding_bundle_gate.verifier_root");
-  assert.deepEqual(gate.reopened_by, []);
+  assert.deepEqual(gate, ACCEPTED_FINDING_BUNDLE_GATE, "finding bundle gate pin drifted");
 
   const suite = document.upstream_acceptance.threat_suite;
   exactKeys(
@@ -130,15 +137,7 @@ export function validateThreatModel(document) {
     ],
     "threat_suite",
   );
-  assert.equal(suite.id, "C4-024");
-  assert.equal(suite.state, "accepted");
-  assert.equal(suite.ledger_revision, 446);
-  assert.equal(suite.repository, "SolguardSecurity/solguard-filter");
-  for (const field of ["commit_sha", "repository_tree_sha"])
-    gitSha(suite[field], `threat_suite.${field}`);
-  for (const field of ["publication_receipt_root", "evidence_root", "verifier_root"])
-    sha(suite[field], `threat_suite.${field}`);
-  assert.deepEqual(suite.reopened_by, []);
+  assert.deepEqual(suite, ACCEPTED_THREAT_SUITE, "threat suite pin drifted");
 
   exactKeys(
     document.protected_transition,
