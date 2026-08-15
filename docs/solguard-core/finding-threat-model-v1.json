@@ -1,0 +1,152 @@
+{
+  "schema_version": "solguard-finding-threat-model-doc.v1",
+  "document_id": "finding-threat-model-v1",
+  "publication_status": "published_documentation",
+  "authority": {
+    "kind": "documentation_only",
+    "claim_authority": "none",
+    "assurance_mode": "development",
+    "assurance_level": "single-custodian",
+    "independence_claim": "forbidden",
+    "gate_id": "DECIDE-605",
+    "gate_state_at_source_revision": "pending",
+    "source_ledger_revision": 446
+  },
+  "upstream_acceptance": {
+    "finding_bundle_gate": {
+      "id": "DECIDE-604",
+      "state": "accepted",
+      "ledger_revision": 445,
+      "evidence_root": "62ce464dc9125261d122310d97120f1cfffd5a2dd34671f401cd29526dbda3e3",
+      "verifier_root": "c6a5b82fdfed619dd75c3e1fb9acdec3aa9fa8e6b325edf433701b470afe6111",
+      "reopened_by": []
+    },
+    "threat_suite": {
+      "id": "C4-024",
+      "state": "accepted",
+      "ledger_revision": 446,
+      "repository": "SolguardSecurity/solguard-filter",
+      "commit_sha": "d02f71832889e0691df173dc7cdc850cd7b5cf53",
+      "repository_tree_sha": "3e651b7db9b1b173218e68e4d1ba51447c321c35",
+      "publication_receipt_root": "223f546bb4f8cf2a7baf387088ce5a1d1f75848a4f57216cb04703ed6a5b6048",
+      "evidence_root": "994bc0636512785e7cb1ac43bbad589c357c831ffb0cd27a34d048bb381490f5",
+      "verifier_root": "97401439ecb81ff3ad076a13197bcdede5c2a76bd2d74890b4ef71e7cd611899",
+      "reopened_by": []
+    }
+  },
+  "protected_transition": {
+    "technical_truth": "VALIDATE TechnicalVerdict v1 remains immutable upstream truth",
+    "admission": "FILTER emits AdmissionResult v1 only after reopening exact physical authority",
+    "finding": "Core projects FindingEnvelope only from authentic FILTER pass",
+    "publication": "PublishedFinding requires eligible unique or representative presentation",
+    "review": "ReviewEnvelope requires authentic FILTER review or reject and never counts as a finding",
+    "failure": "input or publication integrity failure emits no synthetic AdmissionResult or ReviewEnvelope"
+  },
+  "threats": [
+    {
+      "id": "source_drift",
+      "attack": "Change source or candidate bytes after VALIDATE sealed the input hash",
+      "protected_boundary": "physical source and candidate hash binding",
+      "fail_closed_outcome": "reject_input_without_admission",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/input_and_trace_contracts.rs::stale_candidate_hash_fails_the_whole_assessment"
+      ]
+    },
+    {
+      "id": "copied_evidence",
+      "attack": "Copy one physical observation under multiple source or TRACE labels to inflate corroboration",
+      "protected_boundary": "evidence ancestor and physical-origin grouping",
+      "fail_closed_outcome": "review_insufficient_corroboration",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/semantic_checkers.rs::mirrored_source_and_trace_at_one_location_are_one_origin"
+      ]
+    },
+    {
+      "id": "stale_invariant",
+      "attack": "Replace the selected invariant primary while retaining an old runtime or source digest",
+      "protected_boundary": "invariant runtime and selected-source dual hash binding",
+      "fail_closed_outcome": "reject_input_without_admission",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/bounded_invariants_and_reporting.rs::bounded_invariant_source_tampering_fails_closed"
+      ]
+    },
+    {
+      "id": "forged_solver_result",
+      "attack": "Label a partial proof certificate as a supported complete solver verdict",
+      "protected_boundary": "TechnicalVerdict proof-certificate and obligation closure",
+      "fail_closed_outcome": "reject_input_without_admission",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/threat_suite.rs::c4_024_forged_solver_result_cannot_claim_supported"
+      ]
+    },
+    {
+      "id": "cross_run_mix",
+      "attack": "Combine individually valid TechnicalVerdict rows from different run bindings",
+      "protected_boundary": "one exact run cohort across five binding dimensions",
+      "fail_closed_outcome": "reject_input_without_admission",
+      "evidence_tests": [
+        "solguard-filter:src/technical_verdict.rs::cross_run_mixes_fail_closed_across_every_run_binding_dimension",
+        "solguard-filter:tests/filter_workflow/threat_suite.rs::c4_024_cross_run_mix_fails_before_assessment"
+      ]
+    },
+    {
+      "id": "duplicate_id",
+      "attack": "Repeat one candidate identity so two rows compete for finding ownership",
+      "protected_boundary": "closed unique candidate identity set",
+      "fail_closed_outcome": "reject_input_without_admission",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/bounded_invariants_and_reporting.rs::duplicate_candidate_identity_fails_before_assessment"
+      ]
+    },
+    {
+      "id": "malicious_artifact",
+      "attack": "Use duplicate JSON fields so a permissive parser can overwrite authoritative identity",
+      "protected_boundary": "strict bounded JSON parsing",
+      "fail_closed_outcome": "reject_input_without_admission",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/threat_suite.rs::c4_024_duplicate_json_key_is_not_a_valid_candidate_artifact"
+      ]
+    },
+    {
+      "id": "coverage_laundering",
+      "attack": "Present a visible contradiction as terminal while callable or invariant acquisition retains debt",
+      "protected_boundary": "coverage completeness precedence",
+      "fail_closed_outcome": "review_coverage_debt",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/semantic_checkers.rs::coverage_debt_precedes_a_concrete_contradiction_until_complete_replay"
+      ]
+    },
+    {
+      "id": "known_origin_stripping",
+      "attack": "Remove origin ledgers or relabel known-pattern material inside a generic-blind TRACE batch",
+      "protected_boundary": "generic-blind profile and exact signal-origin ledger",
+      "fail_closed_outcome": "reject_input_without_admission",
+      "evidence_tests": [
+        "solguard-filter:src/input/trace_tree.rs::c4_024_known_origin_stripping_and_relabeling_fail_closed"
+      ]
+    },
+    {
+      "id": "report_json_discrepancy",
+      "attack": "Mutate staged JSON, Markdown, summary or phase bytes after their first validation",
+      "protected_boundary": "final byte reopening before atomic publication",
+      "fail_closed_outcome": "abort_publication_without_output_root",
+      "evidence_tests": [
+        "solguard-filter:tests/filter_workflow/threat_suite.rs::c4_024_report_json_discrepancy_aborts_publication"
+      ]
+    }
+  ],
+  "product_invariants": [
+    "No PublishedFinding exists without immutable TechnicalVerdict Supported, authentic AdmissionResult Pass and publication eligibility",
+    "No pre-assessment input failure is converted into AdmissionResult Review or ReviewEnvelope",
+    "Copied evidence contributes one physical origin and never manufactures independent corroboration",
+    "Coverage debt blocks terminal pass and reject until complete replay",
+    "Every TechnicalVerdict row in one validation artifact shares one exact run binding",
+    "JSON, Markdown, summary and phase bytes are rederived and reopened before atomic publication"
+  ],
+  "non_claims": [
+    "This documentation does not accept DECIDE-605 or any contribution",
+    "Development single-custodian receipts are not independent custody",
+    "The threat suite does not establish recall, precision, severity, benchmark performance or absence of all defects",
+    "A green pull request, merge or local test result is not acceptance-ledger authority"
+  ]
+}

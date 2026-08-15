@@ -2,21 +2,21 @@
 
 ## Estado y autoridad
 
-`solguard-core` publica en C1-009 los contratos de lectura
-`solguard-finding-envelope.v1` y `solguard-review-envelope.v1`. La publicación
-prepara schemas y goldens; no activa el writer de producto. `DECIDE-604` sigue
-siendo la única autoridad futura para escribir estos artefactos en runtime.
+`solguard-core` publica los contratos
+`solguard-finding-envelope.v1` y `solguard-review-envelope.v1`. El writer de
+runtime y su cadena de bundles quedaron autorizados por `DECIDE-604`, aceptado
+en la revisión 445 del ledger de desarrollo con evidence root
+`62ce464dc9125261d122310d97120f1cfffd5a2dd34671f401cd29526dbda3e3` y
+verifier root
+`c6a5b82fdfed619dd75c3e1fb9acdec3aa9fa8e6b325edf433701b470afe6111`.
 
-La vista Docs/UI C1-009D fija exactamente:
-
-- Core `1ad350d8d3f54c227ca8f81b9cb42c4bf6a0494b`, con evidence root
-  `sha256:319c7e246aefbf41934bde419021f8bd38566c4add32d3032cb52e5f26a8a7c7`;
-- Deploy `cb223071c0dab18190041129490702b8282f27bb`, con evidence root
-  `sha256:def7ed84d98fca40317a79193e4b11e5b02db91fd900c1a3959c7a71744c792a`.
-
-Ambas referencias son implementaciones draft pendientes de aceptación
-independiente. No aceptan C1-009, C1-009C, C1-009D ni TRUTH-105 y no demuestran
-recall, precisión, severidad, rendimiento o generalización.
+Esta página sigue siendo una vista Docs/UI de solo lectura: no reautoriza el
+writer, no acepta contribuciones y no eleva el assurance
+`development / single-custodian` a custodia independiente. La frontera de
+ataques que protege esta transición se fija en el
+[Threat model del finding v1](./finding-threat-model-v1.md); `DECIDE-605`
+permanece pendiente en la revisión fuente 446. Ninguna de estas publicaciones
+demuestra recall, precisión, severidad, rendimiento o generalización.
 
 ## Colecciones y roles
 
@@ -24,7 +24,7 @@ recall, precisión, severidad, rendimiento o generalización.
 | ------------------------------- | ------------------------ | ------------------------------ | ---------------------------------------------------------------------------- |
 | `finding_envelopes_all`         | `finding_envelopes.json` | `solguard-finding-envelope.v1` | Conserva todo FILTER Pass, incluido un Pass inelegible o duplicado.          |
 | `published_findings_projection` | `findings.json`          | `solguard-finding-envelope.v1` | Sólo `publication_eligibility=eligible` con rol `unique` o `representative`. |
-| `product_review_envelopes`      | `review_queue.json`      | `solguard-review-envelope.v1`  | Conserva FILTER `review                                                      | reject`; nunca suma findings. |
+| `product_review_envelopes`      | `review_queue.json`      | `solguard-review-envelope.v1`  | Conserva FILTER `review` o `reject`; nunca suma findings.                     |
 
 Cada ruta es un array tipado por su rol, incluido `[]`. Un array vacío no puede
 inferirse como otra colección. Los alias `FindingEnvelope.v1`,

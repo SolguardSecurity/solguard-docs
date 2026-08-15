@@ -86,7 +86,7 @@ valida la membresia completa y publica con un rename:
 
 - `filter_results.json` / `filter_results.md` en modo orquestado;
 - variantes `.untrusted` en modo standalone;
-- `summary.txt`, `tool_phase.json` y, cuando Core entrega autoridad de fuente,
+- `summary.txt`, `phase.json` y, cuando Core entrega autoridad de fuente,
   `source_integrity.json`.
 
 Core y FILTER exigen el mismo inventario exacto. El receipt Core se publica
@@ -99,6 +99,21 @@ Cada review se clasifica como `checker_missing`, `proof_inconclusive` o
 `metadata.source_hashes` debe coincidir exactamente con todos los inputs de
 producto, incluido el `value/attack_paths.json` físico. Una key ausente, stale
 o extra bloquea la admisión.
+
+## Threat model cerrado del finding
+
+La contribución `C4-024`, aceptada en la revisión 446 del ledger de desarrollo,
+fija diez amenazas y sus pruebas ejecutables: source drift, copied evidence,
+stale invariant, forged solver result, cross-run mix, duplicate ID, malicious
+artifact, coverage laundering, known-origin stripping y discrepancia entre
+reporte y JSON. La matriz y sus resultados fail-closed se publican como un par
+JSON/Markdown validado en
+[Threat model del finding v1](../solguard-core/finding-threat-model-v1.md).
+
+La documentación es de solo lectura y no acepta `DECIDE-605`. Los receipts
+citados siguen siendo `development / single-custodian`; ni la matriz ni sus
+tests constituyen custodia independiente, medición de recall o prueba de
+ausencia de defectos.
 
 Cuando el bundle incluye autoridad de fuente, antes de leer TRACE FILTER
 verifica con `source-integrity.v1` el receipt TRACE ya publicado, su índice

@@ -1,5 +1,22 @@
 # Changelog
 
+## D6 C4-025 finding threat model (unpublished)
+
+- Program: `25-jul-2026`
+- Status: `unpublished_candidate`
+- Task ID: `C4-025`
+- Parent gate: `DECIDE-605`
+- Depends-On: `C4-024@revision-446`, `DECIDE-604@revision-445`
+- Contracts: `solguard-finding-threat-model-doc.v1` documentation-only view of
+  `solguard-finding-envelope.v1`; no product schema or ledger contract changes.
+- Authority: `claim_authority=none`; source ledger revision 446;
+  `DECIDE-605=pending`; receipts remain `development / single-custodian` and do
+  not claim independent custody.
+- Evidence: exact ten-threat inventory, fail-closed outcomes, unique executable
+  test references and byte-identical canonical JSON/Markdown rendering.
+- Validation: `node scripts/validate-finding-threat-model.mjs` and
+  `node --test test/finding-threat-model.test.mjs`.
+
 ## solguard-detection-maturity-2026-07-25.3 (unpublished)
 
 - Program: `25-jul-2026`
